@@ -1,0 +1,8 @@
+Unhandled Rejection: Error: EBUSY: resource busy or locked, watch 'C:\Users\j\Downloads\pizza-city-oman-backend\src\assets\pizza-box-order.json'
+    at FSWatcher.<computed> (node:internal/fs/watchers:321:19)
+    at Object.watch (node:fs:2548:36)
+    at createFsWatchInstance (C:\Users\j\Downloads\pizza-city-oman-backend\node_modules\vite\dist\node\chunks\dep-Dm0c1Wj2.js:22195:17)
+    at setFsWatchListener (C:\Users\j\Downloads\pizza-city-oman-backend\node_modules\vite\dist\node\chunks\dep-Dm0c1Wj2.js:22242:15)
+    at NodeFsHandler._watchWithNodeFs (C:\Users\j\Downloads\pizza-city-oman-backend\node_modules\vite\dist\node\chunks\dep-Dm0c1Wj2.js:22397:14)
+    at NodeFsHandler._handleFile (C:\Users\j\Downloads\pizza-city-oman-backend\node_modules\vite\dist\node\chunks\dep-Dm0c1Wj2.js:22461:23)
+    at NodeFsHandler._addToNodeFs (C:\Users\j\Downloads\pizza-city-oman-backend\node_modules\vite\dist\node\chunks\dep-Dm0c1Wj2.js:22703:21)

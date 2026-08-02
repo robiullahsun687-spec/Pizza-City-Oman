@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "local_seed_1",
+    "code": "PIZZA10",
+    "discountType": "percentage",
+    "discountValue": 10,
+    "minOrderAmount": 0,
+    "isActive": true
+  },
+  {
+    "_id": "local_seed_2",
+    "code": "WELCOME50",
+    "discountType": "percentage",
+    "discountValue": 50,
+    "minOrderAmount": 5,
+    "isActive": true
+  },
+  {
+    "_id": "local_seed_3",
+    "code": "OMAN30",
+    "discountType": "percentage",
+    "discountValue": 30,
+    "minOrderAmount": 0,
+    "isActive": true
+  },
+  {
+    "_id": "local_seed_4",
+    "code": "FLAT1OMR",
+    "discountType": "flat",
+    "discountValue": 1,
+    "minOrderAmount": 5,
+    "isActive": true
+  },
+  {
+    "_id": "local_seed_4",
+    "code": "EVAN20",
+    "discountType": "flat",
+    "discountValue": 1,
+    "minOrderAmount": 5,
+    "isActive": true
+  },
+  {
+    "_id": "local_1783695428712_1vs8",
+    "code": "SOHEL20",
+    "discountType": "percentage",
+    "discountValue": 20,
+    "minOrderAmount": 0,
+    "isActive": true
+  }
+]

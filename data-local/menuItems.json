@@ -1,0 +1,103 @@
+[
+  {
+    "_id": "SgYH01NyqpS4tFELS8vu",
+    "name": "Chicken Spicy Runch",
+    "featured": true,
+    "description": "RANCH SAUCE, MOZZARELLA CHEESE. GRILL CHICKEN, MUSHROOM, TOMATO, JALAPENO. SPICY SAUCE",
+    "badge": "",
+    "discountPercentage": 9,
+    "subCategory": "Spicy Pizza",
+    "available": true,
+    "category": "pizza",
+    "price": 3.6,
+    "discountPrice": 3.0,
+    "image": "/uploads/1783766966292-lfrqgru1.jpeg"
+  },
+  {
+    "_id": "bXwxgxQEPGxSmZ4Kt0Qm",
+    "subCategory": "",
+    "available": true,
+    "badge": "",
+    "description": "Creamy Base hot burger",
+    "discountPercentage": 0,
+    "featured": true,
+    "name": "Spicy Hot Burger",
+    "image": "/uploads/1783766999501-huru0t3l.png",
+    "price": 3,
+    "discountPrice": 0,
+    "category": "sides"
+  },
+  {
+    "_id": "local_1783776061614_t3k8",
+    "name": "CHICKEN BBQ PIZZA",
+    "category": "pizza",
+    "price": 3.6,
+    "description": "Ranch sauce, mozzarella cheese, grilled chicken, mushrooms, fresh onion, BBQ sauce",
+    "image": "/uploads/1783776056630-h1t0zs4m.jpeg",
+    "available": true,
+    "subCategory": "BBQ Pizza",
+    "badge": "",
+    "featured": true,
+    "discountPrice": 3,
+    "discountPercentage": 17
+    
+  },
+  {
+    "_id": "local_1783776143247_40vv",
+    "name": "PRAWNS PIZZA",
+    "category": "sides",
+
+    "price": 3.6,
+    "description": "Homemade sauce, mozzarella cheese, green pepper, prawns, black olives, and fresh tomatoes",
+    "image": "/uploads/1783776139575-3yxzh9oi.png",
+    "available": true,
+    "subCategory": "Seafood Pizza",
+    "badge": "New",
+    "featured": true,
+    "discountPrice": 3,
+    "discountPercentage": 17
+  },
+  {
+    "_id": "local_1783776288141_7pfu",
+    "name": "Margherita Pizza",
+    "category": "pizza",
+    "price": 3.6,
+    "description": "Mozzarella cheese with basil leaves",
+    "image": "/uploads/1783776284505-djnswjjc.png",
+    "available": true,
+    "subCategory": "Veggie Pizza",
+    "badge": "",
+    "featured": true,
+    "discountPrice": -0.001,
+    "discountPercentage": 100
+  },
+  {
+    "_id": "local_1783776288141",
+  
+    "name": "Margherita Pizza",
+    "category": "pizza",
+    "price": 3.6,
+    "description": "Mozzarella cheese with basil leaves",
+    "image": "/uploads/1783776284505-djnswjjc.png",
+    "available": true,
+    "subCategory": "Veggie Pizza",
+    "badge": "",
+    "featured": true,
+    "discountPrice": -0.001,
+    "discountPercentage": 100
+  },
+  {
+    "_id": "local_1783776061614",
+    "name": "CHICKEN BBQ PIZZA",
+    "category": "pizza",
+    "price": 3.6,
+    "description": "Ranch sauce, mozzarella cheese, grilled chicken, mushrooms, fresh onion, BBQ sauce",
+    "image": "/uploads/1783776056630-h1t0zs4m.jpeg",
+    "available": true,
+    "subCategory": "BBQ Pizza",
+    "badge": "",
+    "featured": true,
+    "discountPrice": 3,
+    "discountPercentage": 17
+  }
+]

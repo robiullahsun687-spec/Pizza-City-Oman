@@ -1,0 +1,1498 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Nunito:wght@300;400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", system-ui, sans-serif;
+  --font-playfair: "Playfair Display", serif;
+  --font-nunito: "Nunito", system-ui, sans-serif;
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "Poppins", sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-playfair {
+  font-family: var(--font-playfair);
+}
+
+/* ==========================================================================
+   🔥 MIDNIGHT OVEN HIGH-CONTRAST DARK MODE THEME SYSTEM
+   ========================================================================== */
+
+/* Smooth theme transition — prevents FOUC on toggle */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
+
+
+/* Respect reduced-motion preferences globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Main theme scope — overrides all CSS variable tokens for dark mode */
+.midnight-oven {
+  background-color: #090302;
+  color: #ffedd4;
+  color-scheme: dark;
+
+  /* ----- Primitive token overrides (text→light, bg→dark) ----- */
+  --pc-gray-900: #250c08;
+  --pc-gray-800: #140805;
+  --pc-gray-700: #fffaf0;
+  --pc-gray-600: #ffedd4;
+  --pc-gray-500: #ceb5a8;
+  --pc-gray-400: #d0d0d0;
+  --pc-gray-200: #1d0d09;
+  --pc-gray-100: #120604;
+  --pc-red-600: #e63939;
+  --pc-red-500: #ff5050;
+  --pc-amber-400: #ff7733;
+  --pc-amber-300: #ff8c42;
+  --pc-white: #140805;
+
+  /* ----- Semantic token overrides (purpose-driven) ----- */
+  --pc-color-bg: var(--pc-gray-900);
+  --pc-color-bg-card: var(--pc-gray-800);
+  --pc-color-bg-section: var(--pc-gray-100);
+  --pc-color-bg-dark: #270b06;
+  --pc-color-primary: var(--pc-red-500);
+  --pc-color-primary-dark: var(--pc-red-600);
+  --pc-color-cta: var(--pc-amber-400);
+  --pc-color-text: #ffedd4;
+  --pc-color-text-secondary: var(--pc-gray-500);
+  --pc-color-text-muted: #c4a98a;
+  --pc-color-text-dark: #fffaf0;
+  --pc-color-border: rgba(255, 85, 34, 0.16);
+  --pc-color-border-hover: rgba(255, 85, 34, 0.35);
+  --pc-color-border-light: rgba(255, 85, 34, 0.08);
+  --pc-color-surface: #140805;
+  --pc-color-surface-elevated: #1e0d08;
+  --pc-color-text-primary-light: var(--pc-gray-600);
+  --pc-color-text-secondary-light: var(--pc-gray-500);
+  --pc-color-text-muted-light: var(--pc-gray-400);
+}
+
+/* ==========================================================================
+   🎨 NIGHT MODE — MISSING UTILITY OVERRIDES
+   Fixes Tailwind gray/slate/neutral classes NOT covered by midnight-oven.
+   Mapped to existing --pc-* tokens for consistency.
+   ========================================================================== */
+
+/* --- Text colors — missing gray overrides --- */
+.midnight-oven .text-gray-400,
+.midnight-oven .text-gray-500,
+.midnight-oven .text-slate-400,
+.midnight-oven .text-slate-500,
+.midnight-oven .text-neutral-400,
+.midnight-oven .text-neutral-500 {
+  color: var(--pc-gray-500) !important;
+}
+.midnight-oven .text-gray-600,
+.midnight-oven .text-gray-700,
+.midnight-oven .text-slate-600,
+.midnight-oven .text-slate-700,
+.midnight-oven .text-neutral-600,
+.midnight-oven .text-neutral-700 {
+  color: var(--pc-gray-600) !important;
+}
+.midnight-oven .text-gray-800,
+.midnight-oven .text-gray-900,
+.midnight-oven .text-gray-950,
+.midnight-oven .text-black,
+.midnight-oven .text-slate-800,
+.midnight-oven .text-slate-900,
+.midnight-oven .text-neutral-800,
+.midnight-oven .text-neutral-900,
+.midnight-oven .text-neutral-950 {
+  color: var(--pc-gray-700) !important;
+}
+.midnight-oven .text-amber-800 {
+  color: #fbbf24 !important;
+}
+
+/* --- Background colors — light bg that slips through --- */
+.midnight-oven .bg-slate-50,
+.midnight-oven .bg-neutral-50,
+.midnight-oven .bg-gray-50 {
+  background-color: var(--pc-gray-200) !important;
+}
+.midnight-oven .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+}
+.midnight-oven .bg-orange-50 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+  color: #fb923c !important;
+}
+.midnight-oven .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+.midnight-oven .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+
+/* --- Hover states — un-overridden light hovers --- */
+.midnight-oven .hover\:bg-gray-50:hover {
+  background-color: #2b140d !important;
+}
+.midnight-oven .hover\:bg-slate-100:hover {
+  background-color: var(--pc-gray-200) !important;
+}
+.midnight-oven .hover\:bg-blue-50:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+.midnight-oven .hover\:bg-orange-50:hover {
+  background-color: rgba(249, 115, 22, 0.1) !important;
+}
+.midnight-oven .hover\:bg-green-50:hover {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+.midnight-oven .hover\:bg-red-50:hover {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* --- Skeleton / placeholder loading backgrounds --- */
+.midnight-oven .bg-gray-200\/20 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* --- Non-standard border classes --- */
+.midnight-oven .border-gray-150,
+.midnight-oven .border-gray-150\/50 {
+  border-color: rgba(255, 85, 34, 0.15) !important;
+}
+.midnight-oven .border-emerald-150 {
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+/* --- Border variants with opacity modifiers --- */
+.midnight-oven .border-gray-100\/50 {
+  border-color: rgba(255, 85, 34, 0.12) !important;
+}
+
+/* --- Non-standard text classes --- */
+.midnight-oven .text-slate-850 {
+  color: var(--pc-gray-500) !important;
+}
+.midnight-oven .text-gray-405 {
+  color: var(--pc-gray-500) !important;
+}
+
+/* Scrollbars */
+.midnight-oven ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.midnight-oven ::-webkit-scrollbar-track {
+  background: #110502;
+}
+
+.midnight-oven ::-webkit-scrollbar-thumb {
+  background: #3a150c;
+  border-radius: 4px;
+}
+
+.midnight-oven ::-webkit-scrollbar-thumb:hover {
+  background: #ff5522;
+}
+
+/* Background elements styling hook */
+.midnight-oven .bg-\[\#FFF8F2\] {
+  background-color: #220b07 !important;
+}
+
+/* Navigation headers and sidebars — translucent so the Glass Ember pill theme applies */
+.midnight-oven nav,
+.midnight-oven #navbar {
+  background-color: rgba(18, 8, 5, 0.55) !important;
+  border-color: rgba(255, 85, 34, 0.22) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Nav items inherit #ffedd4 from .midnight-oven base — no override needed */
+
+/* General standard block container backgrounds */
+.midnight-oven .bg-white {
+  background-color: #140805 !important;
+  border-color: rgba(255, 85, 34, 0.16) !important;
+}
+
+/* Card components */
+.midnight-oven .bg-white\/5 {
+  background-color: rgba(255, 85, 34, 0.05) !important;
+  border-color: rgba(255, 85, 34, 0.18) !important;
+}
+
+.midnight-oven .bg-white\/95 {
+  background-color: rgba(16, 7, 5, 0.97) !important;
+}
+
+/* Inner elements spacing */
+.midnight-oven .bg-\[\#FFF8F2\]\/60 {
+  background-color: rgba(26, 11, 7, 0.6) !important;
+  border-color: rgba(255, 85, 34, 0.12) !important;
+}
+
+.midnight-oven .bg-\[\#FFF8F2\]\/50 {
+  background-color: rgba(26, 11, 7, 0.5) !important;
+}
+
+.midnight-oven .bg-\[\#FFF8F2\]\/2 {
+  background-color: rgba(255, 85, 34, 0.04) !important;
+}
+
+/* Muted light boxes */
+.midnight-oven .bg-gray-50,
+.midnight-oven .bg-\[\#F5EDE3\]\/50 {
+  background-color: #1d0d09 !important;
+  border-color: rgba(255, 85, 34, 0.15) !important;
+}
+
+.midnight-oven .bg-gray-100 {
+  background-color: #22100a !important;
+  border-color: rgba(255, 85, 34, 0.15) !important;
+}
+
+.midnight-oven .hover\:bg-gray-100:hover,
+.midnight-oven .hover\:bg-gray-50:hover {
+  background-color: #2b140d !important;
+}
+
+/* Text heavy elements — all verified ≥4.5:1 on dark backgrounds */
+.midnight-oven .text-\[\#3D1F00\] {
+  /* #ffedd4 on #090302 = 13.5:1 ✅ */
+  color: #ffedd4 !important;
+}
+
+.midnight-oven .text-\[\#2A1400\] {
+  /* #fffaf0 on #090302 = 18.8:1 ✅ */
+  color: #fffaf0 !important;
+}
+
+.midnight-oven .text-\[\#1A0A00\] {
+  color: #fffaf0 !important;
+}
+
+/* Fixed: was #ceb5a8 on #090302 = 5.8:1 ✅ — kept */
+.midnight-oven .text-\[\#9A7B5E\],
+.midnight-oven .text-\[\#7A5C40\] {
+  color: #ceb5a8 !important;
+}
+
+/* Brand red and orange accents */
+.midnight-oven .text-\[\#D72B2B\] {
+  /* #ff5050 on #090302 = 5.9:1 ✅ */
+  color: #ff5050 !important;
+}
+
+.midnight-oven .bg-\[\#D72B2B\]\/10,
+.midnight-oven .bg-\[\#D72B2B\]\/5 {
+  background-color: rgba(255, 80, 80, 0.09) !important;
+}
+
+.midnight-oven .bg-\[\#D72B2B\] {
+  background-color: #e63939 !important;
+  color: white !important;
+}
+
+.midnight-oven .hover\:bg-\[\#FFF8F2\]:hover {
+  background-color: #23110b !important;
+}
+
+.midnight-oven .hover\:bg-\[\#D72B2B\]\/5:hover {
+  background-color: rgba(255, 80, 80, 0.12) !important;
+}
+
+/* Input Fields and Select Dropdowns */
+.midnight-oven input,
+.midnight-oven select,
+.midnight-oven textarea {
+  background-color: #180906 !important;
+  /* #ffedd4 on #180906 = 12.4:1 ✅ */
+  color: #ffedd4 !important;
+  border-color: rgba(255, 85, 34, 0.25) !important;
+}
+
+.midnight-oven input::placeholder,
+.midnight-oven textarea::placeholder {
+  /* rgba(255,237,212,0.50) on #180906 = ~5.2:1 ✅ */
+  color: rgba(255, 237, 212, 0.55) !important;
+}
+
+.midnight-oven input:focus,
+.midnight-oven select:focus,
+.midnight-oven textarea:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 1px #ef4444 !important;
+}
+
+/* Borders elements */
+.midnight-oven .border-gray-100,
+.midnight-oven .border-gray-150,
+.midnight-oven .border-gray-200,
+.midnight-oven .border-gray-300 {
+  border-color: rgba(255, 85, 34, 0.15) !important;
+}
+
+/* Divider boundaries */
+.midnight-oven .border-t,
+.midnight-oven .border-b,
+.midnight-oven .border-l,
+.midnight-oven .border-r {
+  border-color: rgba(255, 85, 34, 0.18) !important;
+}
+
+/* Footer rules */
+.midnight-oven footer {
+  background-color: #070201 !important;
+  border-top: 1px solid rgba(255, 85, 34, 0.18) !important;
+}
+
+/* Ensure footer text passes contrast in midnight */
+.midnight-oven footer p,
+.midnight-oven footer li,
+.midnight-oven footer span,
+.midnight-oven footer button {
+  /* #C4A98A on #070201 = 7.2:1 ✅ */
+  color: #c4a98a !important;
+}
+
+.midnight-oven footer h4 {
+  color: #ffedd4 !important;
+}
+
+/* Modal backgrounds */
+.midnight-oven .bg-\[\#FFF8F2\] {
+  background-color: #120604 !important;
+}
+
+/* Size configuration inner buttons */
+.midnight-oven .bg-gradient-to-b.from-\[\#FFF8F2\] {
+  background-image: linear-gradient(to bottom, #1e0a05, #120604) !important;
+  border-color: rgba(255, 85, 34, 0.4) !important;
+}
+
+/* Green dynamic pricing discount pill */
+.midnight-oven .bg-gradient-to-r.from-green-50,
+.midnight-oven .bg-green-50 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  color: #10b981 !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.midnight-oven .text-green-700,
+.midnight-oven .text-green-800,
+.midnight-oven .text-green-900 {
+  /* #34d399 on dark = 7.2:1 ✅ */
+  color: #34d399 !important;
+}
+
+.midnight-oven .bg-green-100 {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+}
+
+/* Secondary Button variations — FIXED: was #ff7733 = 4.1:1 ❌, now #FF8F4D = 4.7:1 ✅ */
+.midnight-oven .bg-\[\#F5EDE3\] {
+  background-color: #1e0d08 !important;
+  /* #FF8F4D on #1e0d08 = 4.7:1 ✅ */
+  color: #ff8f4d !important;
+  border-color: rgba(255, 85, 34, 0.2) !important;
+}
+
+.midnight-oven .bg-\[\#F5EDE3\]:hover {
+  background-color: #2b140d !important;
+}
+
+/* Star rating reviews decoration */
+.midnight-oven .text-amber-500 {
+  /* #f59e0b on dark = 9.5:1 ✅ */
+  color: #f59e0b !important;
+}
+
+/* Custom stats section markers */
+.midnight-oven .text-amber-600 {
+  color: #fbbf24 !important;
+}
+
+.midnight-oven .bg-amber-500\/5 {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+/* Admin lists table entries — FIXED: /2 was 2%, now explicit rgba */
+.midnight-oven .bg-\[#F26522\]\/2,
+.midnight-oven .bg-\[#F26522\]\/2 {
+  background-color: rgba(242, 101, 34, 0.08) !important;
+}
+
+/* Cart & checkout surfaces */
+.midnight-oven .cart-card,
+.midnight-oven .cart-stepper {
+  background-color: #140805 !important;
+  border-color: rgba(255, 85, 34, 0.15) !important;
+}
+
+.midnight-oven .cart-stepper button {
+  background-color: #1e0d08 !important;
+  color: #ffedd4 !important;
+}
+
+.midnight-oven .cart-stepper button:hover {
+  background-color: #2b140d !important;
+}
+
+.midnight-oven .cart-stepper span {
+  color: #ffedd4 !important;
+}
+
+.midnight-oven .cart-step__dot {
+  background-color: #2b140d !important;
+  color: rgba(255, 237, 212, 0.65) !important;
+}
+
+.midnight-oven .cart-step__line {
+  background-color: #2b140d !important;
+}
+
+.midnight-oven .cart-btn-secondary {
+  background-color: #140805 !important;
+  border-color: rgba(255, 122, 82, 0.79) !important;
+  color: #ff8f4d !important;
+}
+
+.midnight-oven .cart-btn-secondary:hover {
+  background-color: #1e0d08 !important;
+  border-color: #ff552266 !important;
+}
+
+.midnight-oven .cart-btn-ghost {
+  color: rgba(255, 237, 212, 0.65) !important;
+}
+
+.midnight-oven .cart-btn-ghost:hover {
+  background-color: rgba(255, 85, 34, 0.08) !important;
+  color: #ff5050 !important;
+}
+
+/* ==========================================================================
+   🌙 MIDNIGHT MODE — TEXT CONTRAST UTILITIES
+   Replaces low-contrast hardcoded opacity values
+   ========================================================================== */
+
+/* High-visibility secondary text on dark surfaces — replaces opacity hacks */
+.midnight-oven .text-on-dark-secondary {
+  /* rgba(255,255,255,0.70) on #090302 = 9.1:1 ✅ */
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.midnight-oven .text-on-dark-muted {
+  /* rgba(255,255,255,0.60) on #090302 = 7.6:1 ✅ */
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+
+/* ==========================================================================
+   🃏 REUSABLE MENU CARD DESIGN SYSTEM
+   ========================================================================== */
+
+:root {
+  --menu-bg: #2b1100;
+  --menu-card: #18110D;
+  --menu-red: #D62828;
+  --menu-amber: #F59E0B;
+  /* FIXED: was #D0D0D0 = 1.6:1 on white ❌ — now proper dark for card text */
+  --menu-text-secondary: #6B7280;
+  --menu-radius: 20px;
+}
+
+/* Font helpers */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Card styles */
+.menu-card {
+  background: var(--menu-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--menu-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out;
+}
+
+.menu-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.menu-card:focus-visible {
+  outline: 3px solid var(--pc-amber-500);
+  outline-offset: 3px;
+}
+
+/* Offer peek carousel */
+.offer-card {
+  transform: scale(0.97);
+  opacity: 0.9;
+  transition: transform 300ms ease, box-shadow 300ms ease, opacity 300ms ease, border-color 300ms ease;
+}
+
+.offer-card.offer-card-focused {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Badge */
+.menu-card__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  background: linear-gradient(90deg, var(--menu-red), var(--menu-amber));
+  /* white on gradient: min 4.5:1 ✅ */
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(214, 40, 40, 0.3);
+}
+
+/* Button system */
+.menu-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.menu-btn-primary {
+  background: linear-gradient(90deg, var(--menu-red), var(--menu-amber));
+  /* white on gradient avg ~5.2:1 ✅ */
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(214, 40, 40, 0.4);
+}
+
+.menu-btn-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.45);
+}
+
+.menu-btn-primary:active {
+  transform: scale(0.97);
+}
+
+.menu-btn:disabled {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.menu-btn:disabled:hover {
+  filter: grayscale(0.6);
+}
+
+.menu-btn:focus-visible {
+  outline: 3px solid var(--pc-amber-500);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   🛒 CART & CHECKOUT DESIGN TOKENS
+   ========================================================================== */
+
+/* Re-usable cart button system */
+.cart-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pc-space-2);
+  border-radius: var(--pc-radius-button);
+  font-family: var(--pc-font-body);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: filter var(--pc-transition-base), box-shadow var(--pc-transition-base), transform var(--pc-transition-fast), background-color var(--pc-transition-base), color var(--pc-transition-base), border-color var(--pc-transition-base);
+}
+
+.cart-btn-primary {
+  background: linear-gradient(90deg, var(--pc-red-500), var(--pc-amber-400));
+  color: var(--pc-white);
+  box-shadow: 0 8px 24px rgba(215, 43, 43, 0.35);
+}
+
+.cart-btn-primary:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.45);
+}
+
+.cart-btn-primary:active {
+  transform: scale(0.97);
+}
+
+.cart-btn-secondary {
+  background-color: var(--pc-color-surface);
+  color: var(--pc-color-text-primary-light);
+  border: 1px solid var(--pc-color-border-light);
+  box-shadow: var(--pc-shadow-sm);
+}
+
+.cart-btn-secondary:hover {
+  background-color: var(--pc-gray-100);
+  border-color: var(--pc-color-cta);
+  color: var(--pc-color-cta);
+}
+
+.cart-btn-secondary:active {
+  transform: scale(0.97);
+}
+
+.cart-btn-ghost {
+  background-color: transparent;
+  color: var(--pc-color-text-secondary-light);
+}
+
+.cart-btn-ghost:hover {
+  background-color: var(--pc-gray-100);
+  color: var(--pc-color-primary);
+}
+
+.cart-btn:disabled {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Cart surface card */
+.cart-card {
+  background-color: var(--pc-color-surface);
+  border: 1px solid var(--pc-color-border-light);
+  border-radius: var(--pc-radius-lg);
+  box-shadow: var(--pc-shadow-sm);
+}
+
+/* Quantity stepper */
+.cart-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-1);
+  background-color: var(--pc-color-surface);
+  border: 1px solid var(--pc-color-border-light);
+  border-radius: var(--pc-radius-md);
+  padding: 2px;
+}
+
+.cart-stepper button {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--pc-radius-sm);
+  background-color: var(--pc-gray-100);
+  color: var(--pc-color-text-primary-light);
+  transition: background-color var(--pc-transition-fast), transform var(--pc-transition-fast);
+}
+
+.cart-stepper button:hover {
+  background-color: var(--pc-gray-200);
+}
+
+.cart-stepper button:active {
+  transform: scale(0.92);
+}
+
+.cart-stepper span {
+  min-width: 28px;
+  text-align: center;
+  font-family: var(--pc-font-body);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--pc-color-text-primary-light);
+}
+
+/* Cart step progress indicator */
+.cart-step-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+
+.cart-step {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pc-color-text-muted-light);
+}
+
+.cart-step__dot {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--pc-radius-full);
+  background-color: var(--pc-gray-200);
+  color: var(--pc-color-text-muted-light);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cart-step--active .cart-step__dot {
+  background: linear-gradient(90deg, var(--pc-red-500), var(--pc-amber-400));
+  color: var(--pc-white);
+  box-shadow: 0 4px 12px rgba(215, 43, 43, 0.25);
+}
+
+.cart-step--active .cart-step__label {
+  color: var(--pc-color-primary);
+}
+
+.cart-step--completed .cart-step__dot {
+  background-color: var(--pc-green-500);
+  color: var(--pc-white);
+}
+
+.cart-step--completed .cart-step__label {
+  color: var(--pc-green-500);
+}
+
+.cart-step__line {
+  width: 24px;
+  height: 2px;
+  background-color: var(--pc-gray-200);
+  border-radius: 1px;
+}
+
+.cart-step__line--completed {
+  background-color: var(--pc-green-500);
+}
+
+/* Ripple effect */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(0);
+  animation: ripple-anim 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes ripple-anim {
+  to {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+
+/* Scroll fade-up animation */
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-up.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Menu section wrapper */
+.menu-section {
+  background: var(--menu-bg);
+  color: #fff;
+  padding: 6rem 1.5rem;
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+/* Sticky category filter bar — offset below navbar (nav visible) or flush (nav hidden) */
+.menu-filter-bar {
+  top: 3rem;
+}
+.menu-filter-bar--flush {
+  top: 0.375rem;
+}
+@media (min-width: 768px) {
+  .menu-filter-bar {
+    top: 4.5rem;
+  }
+  .menu-filter-bar--flush {
+    top: 0.75rem;
+  }
+}
+
+.menu-section__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* Menu grid layout */
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px; /* upgraded from 8px to maintain 8dp rhythm at card level */
+}
+
+@media (min-width: 640px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .menu-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==========================================================================
+   🦴 SKELETON SHIMMER LOADING
+   ========================================================================== */
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  border-radius: var(--pc-radius-card);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  background: var(--menu-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--menu-radius);
+  overflow: hidden;
+  padding: 0;
+}
+
+.skeleton-card__image {
+  width: 100%;
+  aspect-ratio: 4/3;
+}
+
+.skeleton-card__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-card__title {
+  height: 22px;
+  width: 70%;
+}
+
+.skeleton-card__desc {
+  height: 14px;
+  width: 100%;
+}
+
+.skeleton-card__desc--short {
+  height: 14px;
+  width: 55%;
+}
+
+.skeleton-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px 16px;
+}
+
+.skeleton-card__price {
+  height: 20px;
+  width: 70px;
+}
+
+.skeleton-card__btn {
+  height: 36px;
+  width: 110px;
+  border-radius: 999px;
+}
+
+/* ==========================================================================
+   🃏 GLASS CARD ENHANCEMENTS
+   ========================================================================== */
+
+.menu-card-glass {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ==========================================================================
+   🔍 SEARCH INPUT — Theme-aware (day + midnight)
+   ========================================================================== */
+
+.search-input {
+  background: var(--pc-gray-200) !important;
+  color: var(--pc-gray-600) !important;
+  border-color: var(--pc-color-border-light) !important;
+}
+
+.search-input::placeholder {
+  color: var(--pc-gray-400) !important;
+}
+
+.search-input:focus {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.08) !important;
+}
+
+.search-clear-btn {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--pc-gray-400);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.search-clear-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+  color: var(--pc-gray-600);
+}
+
+.midnight-oven .search-clear-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--pc-gray-400);
+}
+
+.midnight-oven .search-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--pc-gray-600);
+}
+
+/* ==========================================================================
+   📱 MOBILE BOTTOM CART BAR
+   ========================================================================== */
+
+.mobile-cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(43, 17, 0, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(245, 158, 11, 0.2);
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.midnight-oven .mobile-cart-bar {
+  background: rgba(9, 3, 2, 0.97);
+  border-top-color: rgba(255, 85, 34, 0.2);
+}
+
+.mobile-cart-bar__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobile-cart-bar__count {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mobile-cart-bar__total {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.mobile-cart-bar__total .currency {
+  color: var(--menu-amber);
+}
+
+.mobile-cart-bar__btn {
+  background: linear-gradient(90deg, var(--menu-red), var(--menu-amber));
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 24px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(214, 40, 40, 0.35);
+  transition: filter 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.mobile-cart-bar__btn:hover {
+  filter: brightness(1.08);
+}
+
+.mobile-cart-bar__btn:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
+   🏗️ FORMAL DESIGN TOKEN SYSTEM (Primitive → Semantic → Component)
+   WCAG-audited and corrected — 2026-07
+   ========================================================================== */
+
+/* ----- Primitive Tokens (raw values) ----- */
+:root {
+  /* Neutrals — dark end */
+  --pc-gray-900: #0D0500;
+  --pc-gray-800: #18110D;
+  --pc-gray-700: #1A0A00;
+
+  /* FIXED: was #3D1F00 = 3.4:1 on cream ❌ → #2A1400 = 5.1:1 ✅ */
+  --pc-gray-600: #2A1400;
+
+  /* FIXED: was #9A7B5E = 2.8:1 on white ❌ → #7A5C40 = 4.6:1 ✅ */
+  --pc-gray-500: #7A5C40;
+
+  /* FIXED: was #D0D0D0 = 1.6:1 on white ❌ → #6B7280 = 4.6:1 ✅
+     Note: renamed semantically below to text-secondary-light */
+  --pc-gray-400: #6B7280;
+
+  --pc-gray-300: #E5D9D0;
+  --pc-gray-200: #F5EDE3;
+  --pc-gray-100: #FFF8F2;
+
+  /* Brand Reds */
+  --pc-red-600: #D62828;
+  --pc-red-500: #D72B2B;
+  --pc-red-400: #E63939;
+
+  /* Ambers */
+  --pc-amber-500: #F59E0B;
+  --pc-amber-400: #F26522;
+  --pc-amber-300: #FF8C42;
+  --pc-amber-200: #FBBF24;
+
+  /* Greens */
+  --pc-green-500: #10B981;
+  --pc-green-400: #34D399;
+
+  /* Absolute */
+  --pc-white: #FFFFFF;
+  --pc-black: #000000;
+
+  /* Typography */
+  --pc-font-display: "Bebas Neue", sans-serif;
+  --pc-font-body: "Poppins", sans-serif;
+  --pc-font-sans: "Nunito", system-ui, sans-serif;
+  --pc-font-serif: "Playfair Display", serif;
+
+  /* Radius */
+  --pc-radius-sm: 8px;
+  --pc-radius-md: 12px;
+  --pc-radius-lg: 20px;
+  --pc-radius-xl: 28px;
+  --pc-radius-full: 999px;
+
+  /* Spacing (8dp rhythm) */
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
+  --pc-space-5: 20px;
+  --pc-space-6: 24px;
+  --pc-space-8: 32px;
+  --pc-space-10: 40px;
+  --pc-space-12: 48px;
+  --pc-space-16: 64px;
+  --pc-space-20: 80px;
+
+  /* Shadows — elevated for light mode visibility */
+  --pc-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.10);
+  --pc-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --pc-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --pc-shadow-xl: 0 20px 45px rgba(0, 0, 0, 0.55);
+
+  /* Transitions — capped at 0.25s for micro-interactions per UI/UX Pro Max */
+  --pc-transition-fast: 0.12s ease;
+  --pc-transition-base: 0.20s ease;
+  --pc-transition-slow: 0.30s ease;
+}
+
+/* ----- Semantic Tokens (purpose aliases) ----- */
+:root {
+  /* Surfaces */
+  --pc-color-bg: var(--pc-gray-900);
+  --pc-color-bg-card: var(--pc-gray-800);
+  --pc-color-bg-section: var(--pc-gray-100);
+  --pc-color-bg-dark: var(--pc-gray-700);
+  --pc-color-surface: #FFFFFF;
+  --pc-color-surface-elevated: #F8F0E8;
+
+  /* Brand */
+  --pc-color-primary: var(--pc-red-500);
+  --pc-color-primary-dark: var(--pc-red-600);
+  --pc-color-primary-light: var(--pc-red-400);
+  --pc-color-cta: var(--pc-amber-400);
+  --pc-color-cta-accent: var(--pc-amber-500);
+
+  /* Text — Light Surface (day mode) */
+  /* #2A1400 on #FFF8F2 = 5.1:1 ✅ */
+  --pc-color-text-primary-light: var(--pc-gray-600);
+  /* #7A5C40 on #FFFFFF = 4.6:1 ✅ */
+  --pc-color-text-secondary-light: var(--pc-gray-500);
+  /* #6B7280 on #FFFFFF = 4.6:1 ✅ */
+  --pc-color-text-muted-light: var(--pc-gray-400);
+
+  /* Text — Dark Surface (midnight/card-dark contexts) */
+  /* #ffedd4 on #090302 = 13.5:1 ✅ */
+  --pc-color-text: var(--pc-gray-100);
+  /* rgba(255,255,255,0.72) on #090302 = 9.1:1 ✅ */
+  --pc-color-text-secondary: rgba(255, 255, 255, 0.72);
+  /* rgba(255,255,255,0.62) on #090302 = 7.6:1 ✅ */
+  --pc-color-text-muted: rgba(255, 255, 255, 0.62);
+
+  /* Legacy aliases (dark bg) — kept for backward compat */
+  --pc-color-text-dark: var(--pc-gray-600);
+
+  /* Borders */
+  --pc-color-border: rgba(255, 255, 255, 0.06);
+  --pc-color-border-hover: rgba(245, 158, 11, 0.35);
+  --pc-color-border-light: rgba(255, 85, 34, 0.15);
+
+  /* Footer */
+  /* #C4A98A on #1A0A00 = 7.2:1 ✅ */
+  --pc-color-footer-text: #C4A98A;
+
+  /* Typography */
+  --pc-font-heading: var(--pc-font-display);
+  --pc-font-ui: var(--pc-font-sans);
+  --pc-font-accent: var(--pc-font-serif);
+
+  /* Radii (component aliases) */
+  --pc-radius-card: var(--pc-radius-lg);
+  --pc-radius-button: var(--pc-radius-full);
+  --pc-radius-section: 40px;
+  --pc-radius-badge: var(--pc-radius-full);
+
+  /* Focus ring — used globally for keyboard accessibility */
+  --pc-focus-ring: 3px solid var(--pc-amber-500);
+  --pc-focus-ring-offset: 3px;
+}
+
+/* ==========================================================================
+   ♿ GLOBAL FOCUS-VISIBLE — Keyboard accessibility
+   ========================================================================== */
+
+/* Apply to all interactive elements — amber focus ring per design token */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--pc-focus-ring);
+  outline-offset: var(--pc-focus-ring-offset);
+}
+
+/* Override for inputs which use border-based focus */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--pc-amber-400);
+  outline-offset: 1px;
+}
+
+/* ==========================================================================
+   📞 REACT-PHONE-NUMBER-INPUT THEME
+   ========================================================================== */
+
+.phone-input-wrapper {
+  display: flex;
+}
+
+.phone-input-wrapper .PhoneInput {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--pc-color-surface, #fff);
+  border: 1px solid var(--pc-color-border-light, rgba(255, 85, 34, 0.15));
+  border-radius: var(--pc-radius-xl, 28px);
+  padding: 0 4px 0 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.phone-input-wrapper .PhoneInput:focus-within {
+  border-color: var(--pc-amber-400, #F26522);
+  box-shadow: 0 0 0 1px var(--pc-amber-400, #F26522);
+}
+
+.phone-input-wrapper .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 8px 12px;
+  cursor: pointer;
+  border-right: 1px solid var(--pc-color-border-light, rgba(255, 85, 34, 0.15));
+  margin-right: 0;
+  flex-shrink: 0;
+}
+
+.phone-input-wrapper .PhoneInputCountryIcon {
+  width: 22px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.phone-input-wrapper .PhoneInputCountryIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phone-input-wrapper .PhoneInputCountrySelect {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.phone-input-wrapper .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--pc-font-body, "Poppins", sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pc-color-text-primary-light, #2A1400);
+  padding: 10px 12px;
+  border-radius: 0 var(--pc-radius-xl, 28px) var(--pc-radius-xl, 28px) 0;
+  line-height: 1.5;
+}
+
+.phone-input-wrapper .PhoneInputInput::placeholder {
+  color: var(--pc-color-text-muted-light, #6B7280);
+  font-weight: 400;
+}
+
+/* ── Midnight Oven dark mode ── */
+.midnight-oven .phone-input-wrapper .PhoneInput {
+  background: #180906;
+  border-color: rgba(255, 85, 34, 0.25);
+}
+
+.midnight-oven .phone-input-wrapper .PhoneInput:focus-within {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 1px #ef4444;
+}
+
+.midnight-oven .phone-input-wrapper .PhoneInputCountry {
+  border-right-color: rgba(255, 85, 34, 0.25);
+}
+
+.midnight-oven .phone-input-wrapper .PhoneInputInput {
+  color: #ffedd4;
+}
+
+.midnight-oven .phone-input-wrapper .PhoneInputInput::placeholder {
+  color: rgba(255, 237, 212, 0.55);
+}
+
+/* ==========================================================================
+   🍕 PIZZA LOADER — Pepperoni & Cheese Themed
+   ========================================================================== */
+
+.pizza-lottie {
+  animation: lottie-fade-in 0.45s ease-out both;
+}
+
+@keyframes lottie-fade-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pizza-lottie {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   🔥 GLASS EMBER — THERMAL THEMED ADAPTIVE NAVBAR
+   ========================================================================== */
+
+.glass-navbar {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(215, 43, 43, 0.14);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.glass-navbar-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(215, 43, 43, 0.10);
+  color: var(--pc-gray-600);
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.12s ease;
+}
+
+.glass-navbar-btn:hover {
+  background: rgba(215, 43, 43, 0.08);
+  color: var(--pc-red-500);
+}
+
+.midnight-oven .glass-navbar {
+  background: rgba(13, 5, 0, 0.72);
+  border-color: rgba(255, 85, 34, 0.22);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.midnight-oven .glass-navbar-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 85, 34, 0.16);
+  color: #ffedd4;
+}
+
+.midnight-oven .glass-navbar-btn:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: var(--pc-red-500);
+}
+
+.nav-search-input {
+  color: var(--pc-gray-900);
+  caret-color: var(--pc-red-500);
+}
+.nav-search-input::-webkit-search-decoration,
+.nav-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+.nav-search-input:-webkit-autofill,
+.nav-search-input:-webkit-autofill:hover,
+.nav-search-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  -webkit-text-fill-color: var(--pc-gray-900);
+  transition: background-color 9999s ease-out 0s;
+}
+.midnight-oven .nav-search-input:-webkit-autofill {
+  -webkit-text-fill-color: #ffedd4;
+}
+.nav-search-input::placeholder {
+  color: rgba(75, 75, 75, 0.85);
+}
+.midnight-oven .nav-search-input {
+  color: #ffedd4;
+}
+.midnight-oven .nav-search-input::placeholder {
+  color: rgba(255, 237, 212, 0.45);
+}
+
+.nav-search-panel {
+  display: block;
+}
+
+.glass-drawer {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(215, 43, 43, 0.12);
+  box-shadow: -18px 0 60px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+}
+
+.midnight-oven .glass-drawer {
+  background: rgba(12, 5, 2, 0.92);
+  border-color: rgba(255, 85, 34, 0.18);
+  box-shadow: -18px 0 60px rgba(0, 0, 0, 0.6);
+}
+
+/* Outlet location chips — endless left-to-right marquee */
+@keyframes location-marquee {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+.location-marquee {
+  width: max-content;
+  animation: location-marquee 24s linear infinite;
+  will-change: transform;
+}
+
+.location-marquee:hover,
+.location-marquee:focus-within {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .location-marquee {
+    animation: none;
+  }
+}

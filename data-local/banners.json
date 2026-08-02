@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "local_seed_1",
+    "title": "BOLD flavours. UNFORGETTABLE Moments.",
+    "subtitle": "Authentic Arabic & Italian flavours crafted with premium ingredients and passion.",
+    "badge": "Arabic & Italian Flavour",
+    "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
+    "buttonText": "Order Now",
+    "buttonLink": "#menu",
+    "isActive": true,
+    "stylePattern": "attached",
+    "type": "hero"
+  },
+  {
+    "_id": "local_seed_2",
+    "title": "THE ULTIMATE SHARING COMPANION",
+    "subtitle": "Bake your family gatherings with our customized sizing options. Big flavors, smart savings!",
+    "badge": "Buy More, Save More",
+    "image": "https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&w=1200&q=80",
+    "buttonText": "Configure Sizing",
+    "buttonLink": "#menu",
+    "isActive": true,
+    "stylePattern": "classic",
+    "type": "offer"
+  }
+]
