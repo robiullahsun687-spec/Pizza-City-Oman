@@ -1,5 +1,3 @@
-## Plan: `readme.txt`
-
 **Project:** Pizza City Oman — Full-Stack Ordering System  
 **Stack:** Express + MongoDB + React (Vite) + TypeScript + Tailwind CSS
 
