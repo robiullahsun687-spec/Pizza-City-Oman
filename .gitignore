@@ -6,3 +6,17 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Runtime data & logs
+data-local/
+error_log.txt*
+sheets-config.json
+
+# Local dev uploads (production uploads go to Cloudinary)
+public/uploads/
+
+# IDE / editor / agent config
+.idea/
+.vscode/
+.opencode/
+.agents/
