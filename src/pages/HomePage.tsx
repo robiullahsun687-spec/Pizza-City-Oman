@@ -219,23 +219,10 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
         <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(215,43,43,0.3), rgba(242,101,34,0.3), transparent)", marginBottom: 0 }} />
 
         {/* Inner wrapper with radial glow */}
-        <div style={{ background: "radial-gradient(ellipse at center, rgba(215,43,43,0.08) 0%, transparent 70%)", padding: "24px 16px" }}>
+        <div className="stats-teaser-pad" style={{ background: "radial-gradient(ellipse at center, rgba(215,43,43,0.08) 0%, transparent 70%)" }}>
 
-          {/* Outlet chips row — replaces redundant Order Now button */}
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              overflowX: "auto",
-              padding: "0 0 12px",
-              scrollbarWidth: "none",
-              marginBottom: 8,
-            }}
-          >
-          </div>
-
-          {/* 2×2 stats grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {/* Stats grid — single row on mobile, 2×2 on desktop */}
+          <div className="stats-grid" style={{ display: "grid" }}>
             {[
               { icon: Rocket, color: "var(--pc-amber-400)", number: "30", suffix: "Min", label: "Delivery Guarantee" },
               { icon: MapPin, color: "var(--pc-amber-400)", number: "6",  suffix: "",    label: "Outlets Across Oman" },
@@ -244,11 +231,11 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
             ].map(({ icon: IconComponent, number, suffix, label }) => (
               <div
                 key={label}
+                className="stats-card"
                 style={{
                   background: "rgba(57, 2, 2, 0.05)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   borderRadius: 18,
-                  padding: "18px 12px",
                   textAlign: "center",
                   display: "flex",
                   flexDirection: "column",
@@ -256,22 +243,22 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                 }}
               >
                 {/* Icon */}
-                <IconComponent size={26} style={{ color: IconComponent === ChefHat ? "var(--pc-red-500)" : "var(--pc-amber-400)", marginBottom: 8 }} aria-hidden="true" />
+                <IconComponent className="stats-card-icon" size={26} style={{ color: IconComponent === ChefHat ? "var(--pc-red-500)" : "var(--pc-amber-400)" }} aria-hidden="true" />
 
                 {/* Number + suffix */}
                 <span style={{ display: "inline-flex", alignItems: "baseline", gap: 1 }}>
-                  <span style={{ fontFamily: "var(--pc-font-display)", fontWeight: 700, fontSize: 36, color: "#FFFFFF", lineHeight: 1 }}>
+                  <span className="stats-number" style={{ fontFamily: "var(--pc-font-display)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1 }}>
                     {number}
                   </span>
                   {suffix && (
-                    <span style={{ fontFamily: "var(--pc-font-display)", fontWeight: 700, fontSize: 22, color: "var(--pc-amber-400)", lineHeight: 1 }}>
+                    <span className="stats-suffix" style={{ fontFamily: "var(--pc-font-display)", fontWeight: 700, color: "var(--pc-amber-400)", lineHeight: 1 }}>
                       {suffix}
                     </span>
                   )}
                 </span>
 
                 {/* Label — FIXED: was rgba(255,255,255,0.40) = 2.8:1 ❌ → 0.65 = 8.1:1 ✅ */}
-                <p style={{ fontFamily: "var(--pc-font-sans)", fontWeight: 500, fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.65)", marginTop: 6 }}>
+                <p className="stats-label" style={{ fontFamily: "var(--pc-font-sans)", fontWeight: 500, textTransform: "uppercase", color: "rgba(255,255,255,0.65)" }}>
                   {label}
                 </p>
               </div>
@@ -280,8 +267,8 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
 
           {/* Outlet location chips — endless left-to-right marquee */}
           <div
+            className="stats-marquee"
             style={{
-              marginTop: 16,
               overflow: "hidden",
               display: "flex",
               justifyContent: "center",
@@ -325,9 +312,8 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
 
           {/* Bottom micro strip */}
           <div
+            className="stats-strip"
             style={{
-              marginTop: 16,
-              padding: "12px 0",
               borderTop: "1px solid rgba(255,255,255,0.06)",
               display: "flex",
               justifyContent: "space-between",

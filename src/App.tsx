@@ -57,6 +57,8 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("home");
   const [navHidden, setNavHidden] = useState(false);
+  // Navbar adopts the full-width category-bar look when it's over the menu section
+  const isBarAttached = activeSection === "menu";
   const prevScrollY = useRef(0);
 
   // Global Theme Selection
@@ -400,8 +402,8 @@ export default function App() {
 {/* Navbar — Glass Ember Floating Pill */}
 <nav
         id="navbar"
-        className={`fixed left-1/2 z-40 h-11 md:h-16 w-[calc(100%-1.5rem)] max-w-5xl rounded-full glass-navbar transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform ${navHidden ? "-translate-x-1/2 -translate-y-[130px]" : "-translate-x-1/2"}`}
-        style={{ top: "max(0.75rem, env(safe-area-inset-top, 0px))" }}
+        className={`fixed left-0 right-0 z-40 mx-auto h-11 md:h-16 ${isBarAttached ? "w-full max-w-none mx-0" : "w-[calc(100%-1.5rem)] max-w-5xl"} rounded-full glass-navbar transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform ${isBarAttached ? "navbar--attached" : ""} ${navHidden ? "-translate-y-[130px]" : ""}`}
+        style={{ top: isBarAttached ? "0px" : "max(0.75rem, env(safe-area-inset-top, 0px))" }}
       >
         {navSearchOpen && (
           <div className="fixed inset-0 -z-10 bg-black/50 backdrop-blur-sm" onClick={() => closeNavSearch()} />

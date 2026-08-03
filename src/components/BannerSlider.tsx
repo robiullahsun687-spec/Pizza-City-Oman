@@ -86,11 +86,11 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
   const isFullImage = currentBanner?.stylePattern === "fullImage";
   const isModern = currentBanner?.stylePattern === "modern";
   const sliderHeightClass = isFullImage 
-    ? "h-[180px] xs:h-[240px] sm:h-[300px] md:h-[400px] lg:h-[480px] xl:h-[550px]"
+    ? "h-[250px] xs:h-[300px] sm:h-[300px] md:h-[400px] lg:h-[480px] xl:h-[550px]"
     : "h-[460px] xs:h-[480px] sm:h-[500px] md:h-[480px] lg:h-[520px] xl:h-[550px]";
 
   return (
-    <div className="relative w-full max-w-7x1 mx-full rounded-[28px] sm:rounded-[0px] md:rounded-[0px] overflow-hidden group shadow-2xl bg-[var(--pc-gray-900)] border border-[#F26522]/15">
+    <div className="relative w-full max-w-7x1 mx-full rounded-[10px] sm:rounded-[0px] md:rounded-[0px] overflow-hidden group shadow-2xl bg-[var(--pc-gray-900)] border border-[#F26522]/15">
       
       {/* Slides Area */}
       <div className={`relative ${sliderHeightClass} w-full select-none overflow-hidden transition-all duration-300`}>

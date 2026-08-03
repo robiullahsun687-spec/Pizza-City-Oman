@@ -161,7 +161,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   return (
     <div className="container mx-auto px-2 md:px-8 pb-2 space-y-8 animate-fadeIn overflow-x-clip">
       {/* Sticky Filter Bar */}
-      <div className={`sticky z-[35] -mx-2 md:-mx-8 px-4 md:px-8 py-1.5 bg-[var(--menu-bg)]/95 backdrop-blur-md border-b border-white/10 ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"}`}>
+      <div className={`sticky z-[35] -mx-2 md:-mx-8 px-4 md:px-8 py-1.5 ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"}`}>
           <div ref={railRef} className="flex gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth overscroll-contain scroll-px-2">
           {FILTERS.map((cat) => {
             const isActiveChip = menuFilter === "all" ? activeTab === cat.id : menuFilter === cat.id;
