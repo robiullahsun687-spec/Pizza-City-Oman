@@ -55,6 +55,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
 
   // Refs so the rail can auto-center whichever chip is active
   const filterRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const railRef = useRef<HTMLDivElement>(null);
 
   // Scroll spy — automatically tracks the category in view (grouped "all" view)
   useEffect(() => {
@@ -94,13 +95,19 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     return () => observer.disconnect();
   }, [menuFilter, menuItems]);
 
-  // Auto-center the active chip so it always stays visible (best UX on mobile + desktop)
+  // Auto-center the active chip horizontally within the rail only — never
+  // scrolls the page vertically (prevents the window jumping to the menu on load).
   useEffect(() => {
     const key = menuFilter === "all" ? activeTab : menuFilter;
     const el = filterRefs.current[key];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-    }
+    const rail = railRef.current;
+    if (!el || !rail) return;
+    const railRect = rail.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    rail.scrollTo({
+      left: rail.scrollLeft + (elRect.left - railRect.left) - (railRect.width / 2) + (elRect.width / 2),
+      behavior: "smooth",
+    });
   }, [menuFilter, activeTab]);
 
   const scrollToCategory = (catId: string) => {
@@ -155,7 +162,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     <div className="container mx-auto px-2 md:px-8 pb-2 space-y-8 animate-fadeIn overflow-x-clip">
       {/* Sticky Filter Bar */}
       <div className={`sticky z-[35] -mx-2 md:-mx-8 px-4 md:px-8 py-1.5 bg-[var(--menu-bg)]/95 backdrop-blur-md border-b border-white/10 ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"}`}>
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth overscroll-contain scroll-px-2">
+          <div ref={railRef} className="flex gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth overscroll-contain scroll-px-2">
           {FILTERS.map((cat) => {
             const isActiveChip = menuFilter === "all" ? activeTab === cat.id : menuFilter === cat.id;
             const Icon = cat.icon;

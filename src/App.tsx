@@ -260,6 +260,15 @@ export default function App() {
     }
   }, [currentPath, location.hash]);
 
+  // Scroll to top on load (after splash) and on route change — unless a hash
+  // target is present, in which case the hash handler above takes over.
+  useEffect(() => {
+    if (isAppLoading) return;
+    if (!window.location.hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [isAppLoading, currentPath]);
+
   // Redirect legacy routes to anchor links
   useEffect(() => {
     const pathMap: Record<string, string> = {
