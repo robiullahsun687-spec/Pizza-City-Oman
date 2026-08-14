@@ -55,35 +55,6 @@ export default function App() {
   const isAdminRoute = currentPath === "/admin";
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // SEO: keep the public homepage indexable and keep the staff portal out of search.
-  useEffect(() => {
-    const canonicalHref = "https://pizzacityoman.com/";
-    const robotsContent = isAdminRoute ? "noindex, nofollow" : "index, follow";
-
-    let robotsMeta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
-    if (!robotsMeta) {
-      robotsMeta = document.createElement("meta");
-      robotsMeta.name = "robots";
-      document.head.appendChild(robotsMeta);
-    }
-    robotsMeta.content = robotsContent;
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
-    }
-    canonical.href = canonicalHref;
-
-    if (isAdminRoute) {
-      document.title = "Staff Portal | Pizza City Oman";
-    } else {
-      document.title = "Pizza City Oman — Authentic Wood-Fired Pizza | Order Online";
-    }
-  }, [isAdminRoute]);
-
   const [activeSection, setActiveSection] = useState<string>("home");
   const [navHidden, setNavHidden] = useState(false);
   // Navbar adopts the full-width category-bar look when it's over the menu section
@@ -633,10 +604,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={
             <div className="flex flex-col gap-0 md:gap-16">
-              <section id="home" aria-labelledby="site-title">
-                <h1 id="site-title" className="sr-only">
-                  Pizza City — Authentic Wood-Fired Pizza in Oman
-                </h1>
+              <section id="home">
                 <HomePage banners={banners} isLoadingBanners={isLoadingBanners} setActiveTab={(tab) => scrollToSection(tab === 'loc' ? 'locations' : tab)} displayToast={displayToast} onOpenOutletSelector={() => setIsOutletSelectorOpen(true)} />
               </section>
               <section id="menu" className="scroll-mt-24 mt-12 md:mt-0">
@@ -870,5 +838,4 @@ export default function App() {
     </>
   );
 }
-
 
