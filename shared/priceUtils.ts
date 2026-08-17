@@ -9,16 +9,18 @@ export interface MenuItemSize {
 
 export function getDefaultSizes(category: string): MenuItemSize[] {
   if (category === "pizza") {
-    return [
-      { name: "Small", label: 'Small (8")', multiplier: 0.8, inch: 8, slices: 4 },
-      { name: "Medium", label: 'Medium (11")', multiplier: 1.0, inch: 11, slices: 6 },
-      { name: "Large", label: 'Large (14")', multiplier: 1.35, inch: 14, slices: 8 },
-    ];
-  }
   return [
-    { name: "Regular", label: "Regular", multiplier: 1.0 },
-    { name: "Large", label: "Large", multiplier: 1.2 },
+    { name: "Small", label: 'Small (8")', multiplier: 0.6875, inch: 8, slices: 4 },
+    { name: "Medium", label: 'Medium (11")', multiplier: 1.0, inch: 11, slices: 6 },
+    { name: "Large", label: 'Large (14")', multiplier: 1.3125, inch: 14, slices: 8 },
   ];
+}
+
+return [
+  { name: "Regular", label: "Regular", multiplier: 1.0 },
+  { name: "Large", label: "Large", multiplier: 1.2 },
+];
+
 }
 
 export function getEffectiveBasePrice(menuPrice: number, discountPrice?: number): number {
