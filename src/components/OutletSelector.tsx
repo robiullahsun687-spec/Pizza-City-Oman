@@ -121,6 +121,15 @@ export default function OutletSelector({
   const [step, setStep] = useState<"checkout" | "outlet">("checkout"); // checkout info first, then choose outlet
   const [showSizeChartInCart, setShowSizeChartInCart] = useState(true);
 
+  // Order success state — shows confirmation and allows navigation to tracker
+  const [orderSuccess, setOrderSuccess] = useState<{
+    orderId: string;
+    shortId: string;
+    whatsappUrl: string;
+    outletName: string;
+    total: number;
+  } | null>(null);
+
   // Promo code states
   const [promoCodeInput, setPromoCodeInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<any | null>(null);
@@ -272,8 +281,6 @@ export default function OutletSelector({
         }
       }
 
-      onShowToast(`Order Placed! Opening WhatsApp for ${outletName}...`);
-      
       // ⚡ Broadcast and dispatch new order event for live sync
       try {
         const bc = new BroadcastChannel("pizza_city_menu_channel");
@@ -284,29 +291,19 @@ export default function OutletSelector({
       }
       window.dispatchEvent(new CustomEvent("pizza_city_new_order_placed", { detail: data.order }));
 
-      // Delay slightly and open WhatsApp pre-filled text in new window
-      setTimeout(() => {
-        if (data.whatsappUrl) {
-          window.open(data.whatsappUrl, "_blank");
-        }
-        onClearCart();
-        // Reset states
-        setCustomerName("");
-        setCustomerPhone("");
-        setCustomerEmail("");
-        setCustomerNotes("");
-        setPromoCodeInput("");
-        setAppliedPromo(null);
-        setPromoError("");
-        setSelectedOutlet(null);
-        setStep("checkout");
-        onClose();
-        
-        // Switch view if callback is specified
-        if (data.order && data.order._id && onOrderSuccess) {
-          onOrderSuccess(data.order._id);
-        }
-      }, 1000);
+      const shortId = data.order._id.toString().slice(-6).toUpperCase();
+      const successTotal = data.order.total ?? finalAmount;
+
+      // Show persistent success UI instead of auto-closing + popup-blocked window.open
+      setOrderSuccess({
+        orderId: data.order._id,
+        shortId,
+        whatsappUrl: data.whatsappUrl || "",
+        outletName,
+        total: successTotal,
+      });
+
+      onShowToast(`🎉 Order ${shortId} placed successfully!`);
     } catch (err: any) {
       console.error(err);
       onShowToast("Error placing order: " + err.message);
@@ -314,6 +311,60 @@ export default function OutletSelector({
       setIsSubmitting(false);
     }
   };
+
+  const resetForm = () => {
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail("");
+    setCustomerNotes("");
+    setPromoCodeInput("");
+    setAppliedPromo(null);
+    setPromoError("");
+    setSelectedOutlet(null);
+    setStep("checkout");
+  };
+
+  const handleCloseSuccess = () => {
+    const successId = orderSuccess?.orderId;
+    onClearCart();
+    resetForm();
+    setOrderSuccess(null);
+    onClose();
+    if (successId && onOrderSuccess) {
+      // still navigate to tracker even if user just closes
+      // onOrderSuccess will be handled by the primary Track button;
+      // we don't auto-navigate on generic close to avoid surprising the user
+    }
+  };
+
+  const handleTrackOrder = () => {
+    if (!orderSuccess) return;
+    const { orderId, whatsappUrl } = orderSuccess;
+    // Open WhatsApp as well if available (user expectation from previous flow)
+    // Keep it user-initiated to avoid popup blocker
+    if (whatsappUrl) {
+      window.open(whatsappUrl, "_blank");
+    }
+    onClearCart();
+    resetForm();
+    const capturedId = orderId;
+    setOrderSuccess(null);
+    onClose();
+    if (onOrderSuccess) onOrderSuccess(capturedId);
+  };
+
+  const handleOpenWhatsapp = () => {
+    if (orderSuccess?.whatsappUrl) {
+      window.open(orderSuccess.whatsappUrl, "_blank");
+    }
+  };
+
+  // Reset success view when modal is reopened
+  useEffect(() => {
+    if (!isOpen) {
+      setOrderSuccess(null);
+    }
+  }, [isOpen]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
@@ -328,40 +379,130 @@ export default function OutletSelector({
       >
         {/* Header */}
         <div className="p-5 border-b border-gray-100 flex flex-col gap-4 bg-white">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2.5">
-                {step === "checkout" ? (
-                  <ShoppingCart size={24} className="text-[var(--pc-color-primary)]" aria-hidden="true" />
-                ) : (
-                  <MapPin size={24} className="text-[var(--pc-color-primary)]" aria-hidden="true" />
-                )}
-                <h3 className="font-display text-3xl tracking-wide text-[var(--pc-color-text-primary-light)]">
-                  {step === "checkout" ? "Complete Your Order" : "Select Outlet"}
-                </h3>
+          {orderSuccess ? (
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                    <CheckCircle size={20} className="text-white" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-display text-3xl tracking-wide text-[var(--pc-color-text-primary-light)]">
+                    Order Confirmed!
+                  </h3>
+                </div>
+                <p className="text-xs font-sans font-semibold text-[var(--pc-color-text-secondary-light)] mt-1">
+                  Your delicious order is now baking — track it live
+                </p>
               </div>
-              <p className="text-xs font-sans font-semibold text-[var(--pc-color-text-secondary-light)] mt-1">
-                {step === "checkout"
-                  ? "Enter your details to generate your order & invoice"
-                  : "Choose which Pizza City branch should prepare your order"}
-              </p>
+              <button
+                onClick={handleCloseSuccess}
+                className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-[var(--pc-color-text-muted-light)] flex items-center justify-center transition-colors"
+                aria-label="Close confirmation"
+              >
+                <X size={18} />
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-[var(--pc-color-text-muted-light)] flex items-center justify-center transition-colors"
-              aria-label="Close cart"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          <StepProgress step={step} />
+          ) : (
+            <>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2.5">
+                    {step === "checkout" ? (
+                      <ShoppingCart size={24} className="text-[var(--pc-color-primary)]" aria-hidden="true" />
+                    ) : (
+                      <MapPin size={24} className="text-[var(--pc-color-primary)]" aria-hidden="true" />
+                    )}
+                    <h3 className="font-display text-3xl tracking-wide text-[var(--pc-color-text-primary-light)]">
+                      {step === "checkout" ? "Complete Your Order" : "Select Outlet"}
+                    </h3>
+                  </div>
+                  <p className="text-xs font-sans font-semibold text-[var(--pc-color-text-secondary-light)] mt-1">
+                    {step === "checkout"
+                      ? "Enter your details to generate your order & invoice"
+                      : "Choose which Pizza City branch should prepare your order"}
+                  </p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-[var(--pc-color-text-muted-light)] flex items-center justify-center transition-colors"
+                  aria-label="Close cart"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <StepProgress step={step} />
+            </>
+          )}
         </div>
 
         {/* Modal content area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          
-          {cart.length === 0 ? (
+          {orderSuccess ? (
+            <div className="flex flex-col items-center text-center space-y-5 py-2">
+              <div className="w-20 h-20 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center shadow-sm">
+                <CheckCircle size={42} className="text-green-600" aria-hidden="true" />
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-display text-2xl text-[var(--pc-color-text-primary-light)]">Thank you, {customerName || "Pizza Lover"}!</h4>
+                <p className="text-sm text-[var(--pc-color-text-secondary-light)] leading-relaxed max-w-sm">
+                  Your order has been saved to Pizza City <span className="font-bold text-[var(--pc-color-text-primary-light)]">{orderSuccess.outletName}</span> and is now pending confirmation.
+                </p>
+              </div>
+
+              <div className="w-full bg-gradient-to-br from-[var(--pc-color-primary)]/10 to-[var(--pc-color-cta)]/10 border border-[var(--pc-color-border-light)] rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-[var(--pc-color-text-secondary-light)]">Order Reference</span>
+                  <span className="text-[10px] font-bold bg-white border border-gray-200 px-2.5 py-1 rounded-full text-[var(--pc-color-text-primary-light)]">Last 6 — <span className="font-mono text-[var(--pc-color-primary)]">{orderSuccess.shortId}</span></span>
+                </div>
+                <div className="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm border border-gray-100">
+                  <div className="text-left">
+                    <p className="text-[10px] font-black uppercase text-[var(--pc-color-text-muted-light)]">Full Order ID</p>
+                    <p className="font-mono text-xs font-bold text-[var(--pc-color-text-primary-light)] break-all">{orderSuccess.orderId}</p>
+                  </div>
+                  <button
+                    onClick={() => { navigator.clipboard?.writeText(orderSuccess.orderId); onShowToast("Order ID copied to clipboard"); }}
+                    className="ml-3 text-xs font-bold text-[var(--pc-color-primary)] hover:underline shrink-0"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-[var(--pc-color-text-secondary-light)]">Total Paid</span>
+                  <span className="font-black text-[var(--pc-color-primary)]">OMR {orderSuccess.total.toFixed(3)}</span>
+                </div>
+              </div>
+
+              <div className="w-full space-y-3">
+                <button
+                  onClick={handleTrackOrder}
+                  className="cart-btn cart-btn-primary w-full py-3.5 text-sm"
+                >
+                  <MapPin size={16} aria-hidden="true" />
+                  Track My Order Live
+                </button>
+                {orderSuccess.whatsappUrl && (
+                  <button
+                    onClick={handleOpenWhatsapp}
+                    className="cart-btn cart-btn-secondary w-full py-3 text-sm"
+                  >
+                    <MessageSquare size={16} aria-hidden="true" />
+                    Open WhatsApp Invoice
+                  </button>
+                )}
+                <button
+                  onClick={handleCloseSuccess}
+                  className="w-full py-2.5 text-sm font-bold text-[var(--pc-color-text-secondary-light)] hover:text-[var(--pc-color-text-primary-light)] transition-colors"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+
+              <p className="text-[11px] text-[var(--pc-color-text-muted-light)] leading-relaxed">
+                Keep your reference <span className="font-mono font-bold">{orderSuccess.shortId}</span> — use it on the tracker to monitor baking & delivery in real-time.
+              </p>
+            </div>
+          ) : cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-8 space-y-8 h-full">
               <div className="space-y-3 max-w-sm mx-auto">
                 <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-[var(--pc-color-border-light)] shadow-sm">

@@ -99,6 +99,9 @@ export default function App() {
   // Global Cart (persisted to localStorage)
   const [cart, setCart] = useState<CartEntry[]>(loadCartFromStorage);
   const [isOutletSelectorOpen, setIsOutletSelectorOpen] = useState(false);
+  const [lastPlacedOrderId, setLastPlacedOrderId] = useState<string>(() => {
+    try { return localStorage.getItem("pizza_city_last_placed_order_id") || ""; } catch { return ""; }
+  });
 
   const [selectedConfigureItem, setSelectedConfigureItem] = useState<MenuItem | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("Medium");
@@ -366,6 +369,14 @@ export default function App() {
     }
   };
 
+  const handleOrderSuccess = (orderId: string) => {
+    setLastPlacedOrderId(orderId);
+    try { localStorage.setItem("pizza_city_last_placed_order_id", orderId); } catch {}
+    displayToast(`✅ Order ${orderId.slice(-6).toUpperCase()} confirmed! Tracking now...`);
+    // Give modal closing animation a moment, then scroll to tracker
+    setTimeout(() => scrollToSection("track"), 250);
+  };
+
   const NavItem = ({ sectionId, label, isActive }: { sectionId: string, label: string, isActive: boolean }) => (
     <li className="relative">
       {isActive && (
@@ -627,7 +638,7 @@ export default function App() {
                 <MenuPage menuItems={menuItems} isLoadingMenu={isLoadingMenu} menuFilter={menuFilter} setMenuFilter={setMenuFilter} addToCart={addToCart} searchQuery={siteSearch} onSearchChange={setSiteSearch} navHidden={navHidden} displayToast={displayToast} />
               </section>
               <section id="track" className="scroll-mt-24 mt-12 md:mt-0">
-                <TrackOrderPage trackOrderId="" displayToast={displayToast} isDarkMode={isDarkMode} />
+                <TrackOrderPage trackOrderId={lastPlacedOrderId} displayToast={displayToast} isDarkMode={isDarkMode} />
               </section>
               <section id="locations" className="scroll-mt-24 mt-12 md:mt-0">
                 <LocationsPage branches={branches} />
@@ -721,6 +732,7 @@ export default function App() {
           scrollToSection("menu");
         }}
         onAddToCart={addToCart}
+        onOrderSuccess={handleOrderSuccess}
       />
       
       <AnimatePresence>
