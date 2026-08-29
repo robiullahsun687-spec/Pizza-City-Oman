@@ -1376,25 +1376,63 @@ app.get("/api/orders/track/:id", async (req, res) => {
   if (!id) {
     return res.status(400).json({ error: "Order reference number or ID is required" });
   }
+  const cleanId = id.trim();
+  if (!cleanId) {
+    return res.status(400).json({ error: "Order reference number or ID is required" });
+  }
 
   try {
-    let order;
+    let order: any;
     if (useMongoDB) {
-      if (mongoose.Types.ObjectId.isValid(id)) {
-        order = await MongoOrder.findById(id);
-      } else {
-        order = await MongoOrder.findOne({ _id: id });
+      // 1) Full ObjectId lookup — only if valid 24-hex ObjectId
+      if (mongoose.Types.ObjectId.isValid(cleanId)) {
+        try {
+          order = await MongoOrder.findById(cleanId);
+        } catch {
+          // ignore CastError, will try suffix search below
+        }
       }
 
-      // Suffix search for 6-char local IDs / sliced IDs
-      if (!order && id.length === 6) {
-        const recentOrders = await MongoOrder.find().sort({ timestamp: -1 }).limit(100);
-        order = recentOrders.find(o => o._id.toString().slice(-6) === id);
+      // 2) Suffix search for 6-char codes — case-insensitive, most-recent first
+      //    Previous logic did findOne({_id: id}) BEFORE suffix check, which throws
+      //    CastError for 6-char strings and prevents suffix search from ever running.
+      //    Also limited to last 100 orders and was case-sensitive + returned oldest match on collision.
+      if (!order && cleanId.length === 6) {
+        const normalized = cleanId.toLowerCase();
+        try {
+          // Efficient DB-side suffix match using $regexMatch on stringified _id
+          // Sort by timestamp desc to return most recent order if suffix collides
+          order = await MongoOrder.findOne({
+            $expr: {
+              $regexMatch: {
+                input: { $toString: "$_id" },
+                regex: normalized + "$",
+                options: "i",
+              },
+            },
+          }).sort({ timestamp: -1 } as any);
+        } catch {
+          // Fallback if $regexMatch/$toString not supported by Mongo version
+        }
+        if (!order) {
+          // Fallback scan — 500 recent orders, case-insensitive, most recent wins
+          const recentOrders = await MongoOrder.find().sort({ timestamp: -1 }).limit(500);
+          order = recentOrders.find((o) => o._id.toString().slice(-6).toLowerCase() === normalized);
+        }
       }
     } else {
-      order = inMemOrders.find(
-        (o) => o._id === id || (id.length === 6 && o._id.slice(-6) === id)
-      );
+      const normalized = cleanId.toLowerCase();
+      // Exact match case-insensitive
+      order = inMemOrders.find((o) => o._id.toLowerCase() === normalized);
+      // Suffix match — reverse scan for most recent, case-insensitive
+      if (!order && cleanId.length === 6) {
+        for (let i = inMemOrders.length - 1; i >= 0; i--) {
+          if (inMemOrders[i]._id.slice(-6).toLowerCase() === normalized) {
+            order = inMemOrders[i];
+            break;
+          }
+        }
+      }
     }
 
     if (!order) {
