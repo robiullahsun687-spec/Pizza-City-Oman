@@ -104,7 +104,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
     <div className="pb-3">
       {/* Dynamic Web Banners Hero Gallery */}
       {/* Mobile: full-bleed behind dark translucent navbar; Desktop: contained with rounded corners */}
-      <div className="bg-[var(--pc-gray-900)] pt-20 md:pt-0 md:bg-transparent md:container md:mx-auto md:px-0 md:pt-auto">
+      <div className="pt-14 md:pt-10 md:container md:mx-auto md:px-0 md:pt-auto">
         <div className="w-full md:rounded-3xl overflow-hidden">
           <BannerSlider 
             banners={banners.filter(b => b.type === "hero" || b.type === "all" || !b.type)}
@@ -225,7 +225,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
           <div className="stats-grid" style={{ display: "grid" }}>
             {[
               { icon: Rocket, color: "var(--pc-amber-400)", number: "30", suffix: "Min", label: "Delivery Guarantee" },
-              { icon: MapPin, color: "var(--pc-amber-400)", number: "6",  suffix: "",    label: "Outlets Across Oman" },
+              { icon: MapPin, color: "var(--pc-amber-400)", number: "9",  suffix: "",    label: "Outlets Across Oman" },
               { icon: Star,   color: "var(--pc-amber-400)", number: "150", suffix: "+",  label: "5-Star Reviews" },
               { icon: ChefHat,color: "var(--pc-red-500)",    number: "30", suffix: "+",   label: "Menu Items" },
             ].map(({ icon: IconComponent, number, suffix, label }) => (
@@ -275,7 +275,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
             }}
           >
             {(() => {
-              const chips = ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja", "Al Khoud", "Baraka","Mabella"];
+              const chips = ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja", "Al Khoud", "Baraka","Mabela","Ibri"];
               const render = (ariaHidden: boolean) =>
                 chips.map((chip) => (
                   <span

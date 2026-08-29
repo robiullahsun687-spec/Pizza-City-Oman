@@ -1,22 +1,57 @@
 import React from "react";
-import { Phone } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Phone, MapPin, Clock, Truck, ShoppingBag, Navigation } from "lucide-react";
 import { Branch } from "../types";
 
+/* ─────────────────── Helpers ─────────────────── */
+
+/** Normalize Oman phone numbers to "+968 XXXX XXXX" */
+function formatOmanPhone(raw: string): { display: string; tel: string } {
+  const digits = raw.replace(/\D/g, "");
+  const full = digits.startsWith("968") ? digits : `968${digits}`;
+  const local = full.slice(3);
+  const display = `+968 ${local.slice(0, 4)} ${local.slice(4)}`;
+  const tel = `+${full}`;
+  return { display, tel };
+}
+
+/** Cloudinary URL with responsive width and auto-format */
+function cloudinaryUrl(imageUrl?: string, width = 400): string | undefined {
+  if (!imageUrl) return undefined;
+  if (imageUrl.includes("res.cloudinary.com")) {
+    return imageUrl.replace(
+      /\/upload\/(.*?)\//,
+      `/upload/w_${width},q_auto,f_auto/`
+    );
+  }
+  return imageUrl;
+}
+
+/** URL-safe slug */
+function toSlug(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
+
+/* ─────────────────── Fallback data ─────────────────── */
+const FALLBACK_BRANCHES: Branch[] = [
+  { _id: "nizwa", name: "Nizwa", phone: "+968 96928714", whatsapp: "+968 96928714", address: "Near Nizwa Souq, Nizwa City Center, Nizwa, Oman", map: "https://maps.app.goo.gl/y6cnhd1N6XvHcpGR7", geo: "Nizwa", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/ihtck4pfz24g0xapusku" },
+  { _id: "samail", name: "Samail", phone: "+968 96928716", whatsapp: "+968 96928716", address: "Main Shopping High Street Plaza, Samail, Oman", map: "https://maps.google.com/maps?q=Samail,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Samail", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/cj2hccfpwabeealwgtqg" },
+  { _id: "sur", name: "Sur", phone: "+968 96928717", whatsapp: "+968 96928717", address: "Al-Muraj Street Commercial Corridor, Sur, Oman", map: "https://maps.google.com/maps?q=Sur,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Sur", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/ggqugkucybe9ckt0tub1" },
+  { _id: "quriyat", name: "Quriyat", phone: "+968 96928719", whatsapp: "+968 96928719", address: "Coastal Expressway High Road, Quriyat, Oman", map: "https://maps.google.com/maps?q=Quriyat,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Quriyat", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/bfuygklmwmdridzknxo9" },
+  { _id: "fanja", name: "Fanja", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Fanja, Oman", map: "https://maps.google.com/maps?q=Fanja,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Fanja", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/ihtck4pfz24g0xapusku" },
+  { _id: "alkhoud", name: "Al Khoud", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Al Khoud, Oman", map: "https://maps.app.goo.gl/uLHNwrGK2kaRFULdA", geo: "Al Khoud", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true },
+];
+
+/* ─────────────────── Props ─────────────────── */
 interface LocationsPageProps {
   branches: Branch[];
 }
 
+/* ─────────────────── Component ─────────────────── */
 export default function LocationsPage({ branches }: LocationsPageProps) {
   const displayBranches = (branches && branches.length > 0)
     ? branches.filter(b => b.isActive !== false)
-    : [
-        { _id: "nizwa", name: "Nizwa Outlet", phone: "+968 96928714", map: "https://maps.app.goo.gl/y6cnhd1N6XvHcpGR7", address: "Near Nizwa Souq, Nizwa City Center, Nizwa, Oman", geo: "Nizwa", hours: "Daily 11 AM – 11 PM", delivery: true },
-        { _id: "samail", name: "Samail Outlet", phone: "+968 96928716", map: "https://maps.google.com/maps?q=Samail,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", address: "Main Shopping High Street Plaza, Samail, Oman", geo: "Samail", hours: "Daily 11 AM – 11 PM", delivery: true },
-        { _id: "sur", name: "Sur Outlet", phone: "+968 96928717", map: "https://maps.google.com/maps?q=Sur,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", address: "Al-Muraj Street Commercial Corridor, Sur, Oman", geo: "Sur", hours: "Daily 11 AM – 11 PM", delivery: true },
-        { _id: "quriyat", name: "Quriyat Outlet", phone: "+968 96928719", map: "https://maps.google.com/maps?q=Quriyat,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", address: "Coastal Expressway High Road, Quriyat, Oman", geo: "Quriyat", hours: "Daily 11 AM – 11 PM", delivery: true },
-        { _id: "fanja", name: "Fanja Outlet", phone: "+968 96749772", map: "https://maps.google.com/maps?q=Fanja,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", address: "Main Highway Intersection Plaza Road, Fanja, Oman", geo: "Fanja", hours: "Daily 11 AM – 11 PM", delivery: true },
-        { _id: "Al Khoud", name: "Al Khoud Outlet", phone: "+968 96749772", map: "https://maps.app.goo.gl/uLHNwrGK2kaRFULdA", address: "Main Highway Intersection Plaza Road, Fanja, Oman", geo: "Al Khoud", hours: "Daily 11 AM – 11 PM", delivery: true },
-      ];
+    : FALLBACK_BRANCHES.filter(b => b.isActive !== false);
 
   return (
     <div className="container mx-auto px-4 md:px-8 pb-16 space-y-8 animate-fadeIn">
@@ -32,6 +67,9 @@ export default function LocationsPage({ branches }: LocationsPageProps) {
       {/* Location item grids cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {displayBranches.map((outlet: any) => {
+          const slug = toSlug(outlet.name);
+          const phone = formatOmanPhone(outlet.phone || "");
+          const heroImage = cloudinaryUrl(outlet.image, 400);
           const embedMapSrc = outlet.map && outlet.map.includes("output=embed")
             ? outlet.map
             : `https://maps.google.com/maps?q=${encodeURIComponent(outlet.name + ", " + outlet.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
@@ -40,61 +78,84 @@ export default function LocationsPage({ branches }: LocationsPageProps) {
             : `https://maps.google.com/?q=${encodeURIComponent(outlet.geo || outlet.name || "Oman")}`;
 
           return (
-            <div key={outlet._id || outlet.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between">
+            <div key={outlet._id || outlet.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md hover:border-[var(--pc-amber-400)]/30 transition-all duration-300">
               
-              {/* Map or Image Header */}
-              <div className="w-full h-44 bg-[var(--pc-gray-200)] relative">
-                <iframe 
-                  src={embedMapSrc}
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={false} 
-                  loading="lazy"
-                  className="opacity-90 hover:opacity-100 transition-opacity"
-                ></iframe>
-              </div>
+              {/* Map or Image Header — links to detail page */}
+              <Link to={`/locations/${slug}`} className="block w-full h-44 bg-[var(--pc-gray-200)] relative overflow-hidden">
+                {heroImage ? (
+                  <img
+                    src={heroImage}
+                    alt={`Pizza City ${outlet.name} outlet`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                ) : (
+                  <iframe 
+                    src={embedMapSrc}
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen={false} 
+                    loading="lazy"
+                    title={`Map of Pizza City ${outlet.name}`}
+                    className="opacity-90 hover:opacity-100 transition-opacity pointer-events-none"
+                  ></iframe>
+                )}
+
+                {/* Active status badge */}
+                <div className="absolute top-3 left-3">
+                  <span className="inline-flex items-center gap-1 bg-white/95 backdrop-blur-sm text-green-700 text-[10px] font-black px-2 py-1 rounded-full shadow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Open
+                  </span>
+                </div>
+
+                {/* Delivery badge */}
+                <div className="absolute top-3 right-3">
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-full shadow-sm backdrop-blur-sm ${
+                    outlet.delivery !== false
+                      ? "bg-green-50/95 text-green-700"
+                      : "bg-amber-50/95 text-amber-700"
+                  }`}>
+                    {outlet.delivery !== false ? <Truck size={10} /> : <ShoppingBag size={10} />}
+                    {outlet.delivery !== false ? "Delivery" : "Pickup"}
+                  </span>
+                </div>
+              </Link>
 
               {/* Content panel */}
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4 text-left">
                 <div className="space-y-2">
                   <div className="flex items-center gap-1.5 text-xs text-green-700 font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]"></span>
+                    <Clock size={12} className="text-[var(--pc-amber-400)]" />
                     {outlet.hours || "Open Now · Daily 11 AM – 11 PM"}
                   </div>
                   
-                  <h4 className="font-playfair font-black text-lg text-[var(--pc-gray-700)] leading-tight">{outlet.name}</h4>
+                  <Link to={`/locations/${slug}`} className="hover:text-[var(--pc-red-500)] transition-colors">
+                    <h4 className="font-playfair font-black text-lg text-[var(--pc-gray-700)] leading-tight">{outlet.name}</h4>
+                  </Link>
                   
-                  <p className="text-xs text-[var(--pc-gray-500)] leading-relaxed">
-                    📍 {outlet.address}
+                  <p className="text-xs text-[var(--pc-gray-500)] leading-relaxed flex items-start gap-1">
+                    <MapPin size={12} className="text-[var(--pc-amber-400)] shrink-0 mt-0.5" />
+                    {outlet.address}
                   </p>
                 </div>
 
                 <div className="space-y-2 pt-3 border-t border-gray-100">
-                  {/* Dial telephone helper */}
+                  {/* Dial telephone helper — formatted Oman number */}
                   <div className="flex items-center justify-between text-xs text-[var(--pc-gray-600)]">
                     <span className="font-semibold flex items-center gap-1">
                       <Phone size={13} className="text-[var(--pc-amber-400)]" />
                       Dial Staff line:
                     </span>
-                    <span className="font-mono font-bold">{outlet.phone}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    {/* FIXED: was text-gray-400 (#9CA3AF) = 2.4:1 ❌ → text-gray-600 = 7.0:1 ✅ */}
-                    <span className="text-gray-600 font-bold">Delivery Status:</span>
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded ${
-                      outlet.delivery !== false 
-                        ? "bg-green-100 text-green-700" 
-                        : "bg-amber-100 text-amber-700"
-                    }`}>
-                      {outlet.delivery !== false ? "🛵 Delivery Active" : "🛍️ Pickup Only"}
-                    </span>
+                    <a href={`tel:${phone.tel}`} className="font-mono font-bold hover:text-[var(--pc-red-500)] transition-colors">
+                      {phone.display}
+                    </a>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1.5">
                     <a 
-                      href={`tel:${outlet.phone.replace(/\s+/g, "")}`}
+                      href={`tel:${phone.tel}`}
                       className="py-2 bg-gray-50 hover:bg-gray-100 text-[var(--pc-gray-600)] font-bold text-center text-xs rounded-xl border border-gray-100 active:scale-95 transition-all block"
                     >
                       📞 Call Branch

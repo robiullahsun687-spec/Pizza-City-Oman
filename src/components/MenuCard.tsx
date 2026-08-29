@@ -8,13 +8,16 @@ interface MenuCardProps {
   onOrder: (item: MenuItem) => void;
   badge?: string;
   index?: number;
+  displayToast?: (msg: string) => void;
 }
 
-export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardProps) {
+export default function MenuCard({ item, onOrder, badge, index = 0, displayToast }: MenuCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
+
+  const isUnavailable = item.available === false;
 
   useEffect(() => {
     const el = descRef.current;
@@ -46,6 +49,14 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
     return () => observer.disconnect();
   }, []);
 
+  const notifyUnavailable = () => {
+    if (displayToast) {
+      displayToast("The Menu item is not available.");
+    } else if (typeof window !== "undefined") {
+      alert("The Menu item is not available.");
+    }
+  };
+
   const handleRipple = (e: React.MouseEvent<HTMLButtonElement>) => {
     const button = e.currentTarget;
     const circle = document.createElement("span");
@@ -69,12 +80,26 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
 
   const handleOrder = (e: React.MouseEvent<HTMLButtonElement>) => {
     handleRipple(e);
+    if (isUnavailable) {
+      notifyUnavailable();
+      return;
+    }
     onOrder(item);
   };
 
   const handleQuickAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+    if (isUnavailable) {
+      notifyUnavailable();
+      return;
+    }
     onOrder(item);
+  };
+
+  const handleCardClick = () => {
+    if (isUnavailable) {
+      notifyUnavailable();
+    }
   };
 
   const badgeLabel = badge ? (badge.startsWith("🔥") ? badge : `🔥 ${badge}`) : null;
@@ -84,24 +109,41 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
   return (
     <article
       ref={cardRef}
-      className="menu-card fade-up flex flex-col p-0 shadow-lg shadow-black/40 border border-white/[0.06] rounded-2xl hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 ease-out select-none overflow-hidden"
+      onClick={handleCardClick}
+      className={`menu-card fade-up flex flex-col p-0 shadow-lg border rounded-2xl transition-all duration-300 ease-out select-none overflow-hidden ${
+        isUnavailable
+          ? "opacity-55 grayscale-[35%] bg-neutral-900/90 border-red-500/20 cursor-not-allowed"
+          : "shadow-black/40 border-white/[0.06] hover:border-amber-500/30 hover:shadow-xl hover:shadow-amber-500/5 cursor-pointer"
+      }`}
       style={{ transitionDelay: `${index * 80}ms` }}
     >
       {/* Image Container with Quick-Add */}
       <div className="relative overflow-hidden group">
-        {badgeLabel && (
+        {isUnavailable ? (
+          <div className="absolute top-3 left-3 z-10">
+            <span className="bg-red-600/95 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-lg inline-flex items-center gap-1 leading-none border border-red-400/30">
+              🚫 Out of Stock
+            </span>
+          </div>
+        ) : badgeLabel ? (
           <div className="absolute top-3 left-3 z-10">
             <span className="bg-gradient-to-r from-amber-500 to-amber-400 text-black text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-lg inline-flex items-center gap-1 leading-none">
               {badgeLabel}
             </span>
           </div>
-        )}
+        ) : null}
+        
         <button
           onClick={handleQuickAdd}
           type="button"
-          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/25 text-white flex items-center justify-center transition-all shadow-lg active:scale-90 opacity-100 md:opacity-0 md:group-hover:opacity-100"
-          aria-label={`Quick add ${item.name} to cart`}
-          title={`Quick add ${item.name}`}
+          disabled={isUnavailable}
+          className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow-lg active:scale-90 ${
+            isUnavailable
+              ? "bg-red-950/60 text-gray-400 border border-red-500/20 cursor-not-allowed opacity-80"
+              : "bg-white/10 hover:bg-white/25 text-white opacity-100 md:opacity-0 md:group-hover:opacity-100"
+          }`}
+          aria-label={isUnavailable ? `${item.name} is not available` : `Quick add ${item.name} to cart`}
+          title={isUnavailable ? `${item.name} is not available` : `Quick add ${item.name}`}
         >
           <Plus size={18} />
         </button>
@@ -109,7 +151,7 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
           <img
             src={item.image || "https://via.placeholder.com/400x300?text=No+Image"}
             alt={item.name}
-            className="w-full aspect-[4/3] object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            className={`w-full aspect-[4/3] object-cover transition-transform duration-500 ease-out ${isUnavailable ? "" : "group-hover:scale-105"}`}
             referrerPolicy="no-referrer"
             loading="lazy"
           />
@@ -118,15 +160,15 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
 
       {/* Card Body */}
       <div className="flex flex-col p-4 pt-3.5 flex-1">
-        <h2 className="font-playfair font-bold text-xl tracking-wide text-white leading-tight">
+        <h2 className={`font-playfair font-bold text-xl tracking-wide leading-tight ${isUnavailable ? "text-gray-400" : "text-white"}`}>
           {item.name}
         </h2>
 
         <p
           ref={descRef}
-          className={`text-xs text-gray-400 mt-1 leading-snug whitespace-pre-line ${
-            expanded ? "" : "line-clamp-2"
-          }`}
+          className={`text-xs mt-1 leading-snug whitespace-pre-line ${
+            isUnavailable ? "text-gray-500" : "text-gray-400"
+          } ${expanded ? "" : "line-clamp-2"}`}
         >
           {item.description || "A delicious handcrafted item from Pizza City."}
         </p>
@@ -134,7 +176,7 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
         {canExpand && (
           <button
             type="button"
-            onClick={() => setExpanded((v) => !v)}
+            onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
             className="mt-1 text-[11px] font-semibold text-amber-400/80 hover:text-amber-400 transition-colors cursor-pointer self-start"
           >
             {expanded ? "See less" : "See more"}
@@ -147,7 +189,9 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
             <span
               key={s.name}
               className={`inline-flex items-center justify-center w-6 h-5 rounded text-[9px] font-black uppercase tracking-wide border ${
-                i === Math.floor((item.sizes || getDefaultSizes(item.category)).length / 2)
+                isUnavailable
+                  ? "bg-white/5 text-gray-600 border-white/5"
+                  : i === Math.floor((item.sizes || getDefaultSizes(item.category)).length / 2)
                   ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
                   : "bg-white/5 text-gray-400 border-white/10"
               }`}
@@ -160,10 +204,10 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
 
         <div className="flex items-center justify-between mt-auto pt-3.5">
           <div className="flex items-baseline gap-2">
-            <span className="font-body text-lg font-bold text-amber-400">
+            <span className={`font-body text-lg font-bold ${isUnavailable ? "text-gray-500 line-through" : "text-amber-400"}`}>
               OMR {effectivePrice.toFixed(2)}
             </span>
-            {item.discountPrice !== undefined && item.discountPrice > 0 && item.discountPrice < item.price && (
+            {!isUnavailable && item.discountPrice !== undefined && item.discountPrice > 0 && item.discountPrice < item.price && (
               <span className="font-body text-[11px] text-gray-500 line-through">
                 OMR {item.price.toFixed(2)}
               </span>
@@ -171,11 +215,16 @@ export default function MenuCard({ item, onOrder, badge, index = 0 }: MenuCardPr
           </div>
           <button
             onClick={handleOrder}
+            disabled={isUnavailable}
             data-ripple
-            className="menu-btn menu-btn-primary px-4 py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider cursor-pointer gap-1.5"
-            aria-label={`Order ${item.name}`}
+            className={`px-4 py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider gap-1.5 transition-all ${
+              isUnavailable
+                ? "bg-gray-800/80 text-gray-400 border border-gray-700/50 cursor-not-allowed rounded-full opacity-80"
+                : "menu-btn menu-btn-primary cursor-pointer"
+            }`}
+            aria-label={isUnavailable ? `${item.name} is not available` : `Order ${item.name}`}
           >
-            Order Now
+            {isUnavailable ? "Not Available" : "Order Now"}
           </button>
         </div>
       </div>

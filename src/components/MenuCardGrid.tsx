@@ -13,6 +13,7 @@ interface MenuCardGridProps {
   limit?: number;
   showHeader?: boolean;
   isLoading?: boolean;
+  displayToast?: (msg: string) => void;
 }
 
 function SkeletonCard() {
@@ -52,6 +53,7 @@ export default function MenuCardGrid({
   limit,
   showHeader = true,
   isLoading = false,
+  displayToast,
 }: MenuCardGridProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -138,6 +140,7 @@ export default function MenuCardGrid({
                   onOrder={onOrder}
                   badge={resolveBadge(item, index)}
                   index={index}
+                  displayToast={displayToast}
                 />
               </React.Fragment>
             ))}

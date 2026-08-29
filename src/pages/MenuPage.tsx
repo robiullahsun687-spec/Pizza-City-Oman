@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Search, Flame, ChefHat, Wine, Cookie, Sparkles, Star } from "lucide-react";
+import { Search, Flame, ChefHat, Wine, Cookie, Sparkles, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuItem } from "../types";
 import MenuCardGrid from "../components/MenuCardGrid";
 
@@ -12,16 +12,55 @@ interface MenuPageProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   navHidden: boolean;
+  displayToast?: (msg: string) => void;
 }
 
 const FILTERS = [
-  
   { id: "all", label: "All Categories", short: "All", icon: Sparkles },
   { id: "featured", label: "Featured", short: "Featured", icon: Star },
+  { id: "Combos", label: "Combo", short: "Combo", icon: Star },
   { id: "pizza", label: "Pizzas", short: "Pizzas", icon: Flame },
   { id: "sides", label: "Sides & Appetizers", short: "Sides", icon: ChefHat },
   { id: "drinks", label: "Cold Drinks", short: "Drinks", icon: Wine },
   { id: "dessert", label: "Desserts", short: "Desserts", icon: Cookie },
+];
+
+const VISUAL_CATEGORIES = [
+  {
+    id: "all",
+    label: "All Items",
+    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "featured",
+    label: "Featured",
+    image: "https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "Combos",
+    label: "combo",
+    image: "https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "pizza",
+    label: "Pizzas",
+    image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "sides",
+    label: "Sides & Appetizers",
+    image: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "drinks",
+    label: "Cold Drinks",
+    image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: "dessert",
+    label: "Desserts",
+    image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=400&q=80",
+  },
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -35,12 +74,47 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const CATEGORY_ORDER = ["featured", "combo", "pizza", "sides", "drinks", "dessert"];
 
-export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenuFilter, addToCart, searchQuery, onSearchChange, navHidden }: MenuPageProps) {
+export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenuFilter, addToCart, searchQuery, onSearchChange, navHidden, displayToast }: MenuPageProps) {
   const [activeTab, setActiveTab] = useState(menuFilter);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const visualSliderRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
     setActiveTab(menuFilter);
   }, [menuFilter]);
+
+  // Show sticky filter bar only when scrolling down into menu items
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = document.getElementById("menu-anchor-top") || document.getElementById("menu");
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= 120) {
+        setShowStickyBar(true);
+      } else {
+        setShowStickyBar(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const checkVisualScroll = () => {
+    const el = visualSliderRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+  };
+
+  const scrollVisualSlider = (dir: 1 | -1) => {
+    const el = visualSliderRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * 240, behavior: "smooth" });
+  };
 
   // Search filter — matches name, description (ingredients), and category
   const searchFilteredItems = useMemo(() => {
@@ -95,8 +169,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     return () => observer.disconnect();
   }, [menuFilter, menuItems]);
 
-  // Auto-center the active chip horizontally within the rail only — never
-  // scrolls the page vertically (prevents the window jumping to the menu on load).
+  // Auto-center the active chip horizontally within the rail only
   useEffect(() => {
     const key = menuFilter === "all" ? activeTab : menuFilter;
     const el = filterRefs.current[key];
@@ -111,31 +184,38 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   }, [menuFilter, activeTab]);
 
   const scrollToCategory = (catId: string) => {
-    if (catId === "all") {
-      setMenuFilter("all");
-      document.getElementById("menu")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    setMenuFilter(catId);
-    const el = document.getElementById(`menu-section-${catId}`) || document.getElementById("menu");
-    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setShowStickyBar(true);
+    setMenuFilter("all");
+    setTimeout(() => {
+      if (catId === "all") {
+        const target = document.getElementById("menu-anchor-top") || document.getElementById("menu");
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      const el = document.getElementById(`menu-section-${catId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        document.getElementById("menu")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 30);
   };
 
-  // Group items by category for the "all" view
+  // Group items by category for the "all" view (including unavailable items)
   const filteredItems = menuFilter === "all"
     ? searchFilteredItems
     : menuFilter === "featured"
-    ? searchFilteredItems.filter((it) => it.pinnedFeatured)
-    : searchFilteredItems.filter((it) => it.category === menuFilter);
+      ? searchFilteredItems.filter((it) => it.pinnedFeatured)
+      : searchFilteredItems.filter((it) => it.category === menuFilter);
 
-  const featuredItems = searchFilteredItems.filter(it => it.pinnedFeatured && it.available !== false);
+  const featuredItems = searchFilteredItems.filter(it => it.pinnedFeatured);
 
   const grouped = [
     ...(featuredItems.length > 0 ? [{ id: "featured", label: CATEGORY_LABELS["featured"] || "Featured Items & Combos", items: featuredItems }] : []),
     ...CATEGORY_ORDER.filter(cat => cat !== "featured").map(cat => ({
       id: cat,
       label: CATEGORY_LABELS[cat] || cat,
-      items: searchFilteredItems.filter(it => it.category === cat && it.available !== false),
+      items: searchFilteredItems.filter(it => it.category === cat),
     })).filter(g => g.items.length > 0),
   ];
 
@@ -159,42 +239,121 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   };
 
   return (
-    <div className="container mx-auto px-2 md:px-8 pb-2 space-y-8 animate-fadeIn overflow-x-clip">
-      {/* Sticky Filter Bar */}
-      <div className={`sticky z-[35] -mx-2 md:-mx-8 px-4 md:px-8 py-1.5 ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"}`}>
-          <div ref={railRef} className="flex gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth overscroll-contain scroll-px-2">
+    <div className="container mx-auto px-2 md:px-8 pb-2 animate-fadeIn overflow-x-clip">
+      {/* Sticky Filter Bar — hidden until user scrolls down into menu items */}
+      <div
+        className={`sticky z-[35] -mx-2 md:-mx-8 transition-all duration-300 ease-out ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"
+          } ${showStickyBar
+            ? "px-3 md:px-8 py-2 opacity-100 pointer-events-auto translate-y-0 max-h-24 mb-3"
+            : "px-0 py-0 opacity-0 pointer-events-none -translate-y-4 max-h-0 overflow-hidden border-none shadow-none mb-0"
+          }`}
+      >
+        <div ref={railRef} className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth overscroll-contain py-1 px-1">
           {FILTERS.map((cat) => {
             const isActiveChip = menuFilter === "all" ? activeTab === cat.id : menuFilter === cat.id;
             const Icon = cat.icon;
             const count = cat.id === "all"
               ? menuItems.filter(it => it.available !== false).length
               : cat.id === "featured"
-              ? menuItems.filter(it => (it as any).pinnedFeatured && it.available !== false).length
-              : menuItems.filter(it => it.category === cat.id && it.available !== false).length;
+                ? menuItems.filter(it => (it as any).pinnedFeatured && it.available !== false).length
+                : menuItems.filter(it => it.category === cat.id && it.available !== false).length;
             return (
               <button
                 key={cat.id}
                 ref={(el) => { filterRefs.current[cat.id] = el; }}
                 onClick={() => scrollToCategory(cat.id)}
                 aria-current={isActiveChip ? "true" : undefined}
-                className={`min-h-[40px] md:min-h-0 py-2 px-3.5 md:px-5 font-bold text-sm rounded-full border transition-all flex items-center gap-1.5 md:gap-2 shrink-0 whitespace-nowrap snap-center cursor-pointer ${
-                  isActiveChip
-                    ? "bg-gradient-to-r from-[var(--menu-red)] to-[var(--menu-amber)] text-white border-transparent shadow-lg shadow-[var(--menu-red)]/30"
-                    : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"
-                }`}
+                className={`min-h-[42px] py-2 px-3.5 md:px-5 font-extrabold text-xs sm:text-sm rounded-2xl border transition-all duration-200 flex items-center gap-2 shrink-0 whitespace-nowrap snap-center cursor-pointer ${isActiveChip
+                    ? "bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] text-white border-transparent shadow-md shadow-[var(--pc-red-500)]/30 scale-[1.02]"
+                    : "bg-gray-100 text-gray-800 border-gray-200/90 hover:bg-gray-200/90 hover:text-black dark:bg-white/10 dark:text-gray-200 dark:border-white/10 dark:hover:bg-white/20 dark:hover:text-white"
+                  }`}
               >
-                <Icon size={16} className={isActiveChip ? "text-white" : "text-amber-400/70"} />
-                <span className="md:hidden">{cat.short}</span>
-                <span className="hidden md:inline">{cat.label}</span>
-                <span className={`hidden sm:inline-flex text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  isActiveChip ? "bg-white/20 text-white" : "bg-white/10 text-gray-400"
-                }`}>
+                <div className={`p-1 rounded-xl flex items-center justify-center ${isActiveChip ? "bg-white/20 text-white" : "bg-white text-[var(--pc-red-500)] dark:bg-white/10 dark:text-amber-400 shadow-2xs"}`}>
+                  <Icon size={15} />
+                </div>
+                <span>{cat.label}</span>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${isActiveChip ? "bg-white/25 text-white" : "bg-gray-200 text-gray-700 dark:bg-white/15 dark:text-gray-300"
+                  }`}>
                   {count}
                 </span>
               </button>
             );
           })}
         </div>
+      </div>
+
+      {/* Static Visual Category Cards Slider (Screenshot Style) */}
+      <div className="relative my-2 sm:my-3 group/vslider">
+        {/* Minimal medium left-aligned header */}
+        <h3 className="text-left font-medium text-sm sm:text-base tracking-wide text-gray-700 dark:text-gray-300 mb-2.5">
+          Your favourite cuisines
+        </h3>
+        {canScrollLeft && (
+          <button
+            onClick={() => scrollVisualSlider(-1)}
+            className="absolute -left-2 top-[40%] -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white dark:bg-gray-800 text-gray-800 dark:text-white shadow-xl border border-gray-100 dark:border-white/10 flex items-center justify-center hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        )}
+
+        <div
+          ref={visualSliderRef}
+          onScroll={checkVisualScroll}
+          className="flex gap-3 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 px-1"
+        >
+          {VISUAL_CATEGORIES.map((cat) => {
+            const isSelected = menuFilter === cat.id;
+            const catItem = menuItems.find(
+              (it) => (cat.id === "all" ? true : cat.id === "featured" ? it.pinnedFeatured : it.category === cat.id) && it.image
+            );
+            const bgImg = catItem?.image || cat.image;
+
+            return (
+              <button
+                key={cat.id}
+                onClick={() => scrollToCategory(cat.id)}
+                className="flex flex-col items-center shrink-0 snap-start group/card cursor-pointer focus:outline-none"
+              >
+                <div
+                  className={`w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl sm:rounded-3xl p-1 sm:p-1.5 transition-all duration-300 overflow-hidden relative ${isSelected
+                      ? "bg-gradient-to-tr from-[var(--pc-red-500)] to-[var(--pc-amber-400)] shadow-lg shadow-[var(--pc-red-500)]/30 scale-105"
+                      : "bg-gray-100 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 hover:bg-gray-200/60 dark:hover:bg-white/10 hover:scale-[1.03]"
+                    }`}
+                >
+                  <div className="w-full h-full rounded-[12px] sm:rounded-[20px] overflow-hidden bg-gray-200 dark:bg-gray-800">
+                    <img
+                      src={bgImg}
+                      alt={cat.label}
+                      className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-500 ease-out"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+
+                <span
+                  className={`mt-1.5 sm:mt-2 text-[11px] sm:text-xs md:text-sm font-black tracking-wide transition-colors ${isSelected
+                      ? "text-[var(--pc-red-500)] dark:text-[var(--pc-amber-400)]"
+                      : "text-gray-700 dark:text-gray-300 group-hover/card:text-[var(--pc-red-500)] dark:group-hover/card:text-amber-400"
+                    }`}
+                >
+                  {cat.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {canScrollRight && (
+          <button
+            onClick={() => scrollVisualSlider(1)}
+            className="absolute -right-2 top-[40%] -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-gray-800 text-gray-800 dark:text-white shadow-xl border border-gray-100 dark:border-white/10 flex items-center justify-center hover:scale-110 active:scale-95 transition-all cursor-pointer"
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={18} />
+          </button>
+        )}
       </div>
 
       {isLoadingMenu ? (
@@ -215,7 +374,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         /* Grouped view: all categories with scroll spy anchors */
         <section className="menu-section font-body">
           <div className="menu-section__inner">
-            <div id="menu-anchor-top" className="text-center space-y-3 mb-12">
+            <div id="menu-anchor-top" className="text-center space-y-2 mb-6 md:mb-8 pt-1">
               <div className="flex items-center justify-center gap-3">
                 <span className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/50" />
                 <span
@@ -226,10 +385,10 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
                 </span>
                 <span className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/50" />
               </div>
-              <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-white tracking-wide leading-tight">
+              <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl tracking-wide leading-tight">
                 Our Gourmet Menu
               </h2>
-              <p className="text-sm max-w-xl mx-auto font-body" style={{ color: "var(--menu-text-secondary)" }}>
+              <p className="text-xs sm:text-sm max-w-xl mx-auto font-body opacity-80" style={{ color: "var(--menu-text-secondary)" }}>
                 Hand-made recipes with premium components, wood-fired hot and delivered instantly.
               </p>
             </div>
@@ -258,6 +417,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
                   emptyMessage="No items found in this category."
                   limit={6}
                   isLoading={isLoadingMenu}
+                  displayToast={displayToast}
                 />
               </div>
             ))}
@@ -268,10 +428,10 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         <MenuCardGrid
           title={
             menuFilter === "featured" ? "⭐ Featured Items & Combos"
-            : menuFilter === "pizza" ? "Wood-Fired Pizzas"
-            : menuFilter === "sides" ? "Savoury Sides & Appetizers"
-            : menuFilter === "drinks" ? "Ice Cold Drinks & Revivers"
-            : "Heavenly Sweet Finishes"
+              : menuFilter === "pizza" ? "Wood-Fired Pizzas"
+                : menuFilter === "sides" ? "Savoury Sides & Appetizers"
+                  : menuFilter === "drinks" ? "Ice Cold Drinks & Revivers"
+                    : "Heavenly Sweet Finishes"
           }
           items={filteredItems}
           onOrder={addToCart}
@@ -282,6 +442,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
               : "No items found in this category. Try selecting a different filter."
           }
           isLoading={isLoadingMenu}
+          displayToast={displayToast}
         />
       )}
     </div>

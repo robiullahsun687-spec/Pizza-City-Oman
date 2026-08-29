@@ -2119,7 +2119,7 @@ app.post("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res)
       address,
       map: map || "",
       geo: geo || "",
-      hours: hours || "Daily 11 AM – 11 PM",
+      hours: hours || "Daily 11 AM – 1 AM",
       delivery: delivery !== false,
       isActive: isActive !== false,
       image: image || "",

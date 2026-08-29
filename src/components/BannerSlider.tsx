@@ -13,6 +13,12 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0); // -1 for left, 1 for right
 
+  // Touch gesture state for mobile swiping
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [touchEndY, setTouchEndY] = useState<number | null>(null);
+
   // Auto slide effect
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -30,6 +36,34 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
   const handleNext = () => {
     setDirection(1);
     setCurrentIndex((prev) => (prev === banners.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchEndY(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+    setTouchStartY(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+    setTouchEndY(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null || touchStartY === null || touchEndY === null) return;
+    const distanceX = touchStartX - touchEndX;
+    const distanceY = touchStartY - touchEndY;
+    const minSwipeDistance = 40;
+
+    // Trigger swipe if horizontal displacement exceeds vertical displacement & minimum threshold
+    if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > minSwipeDistance) {
+      if (distanceX > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
   };
 
   if (isLoading) {
@@ -86,11 +120,16 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
   const isFullImage = currentBanner?.stylePattern === "fullImage";
   const isModern = currentBanner?.stylePattern === "modern";
   const sliderHeightClass = isFullImage 
-    ? "h-[250px] xs:h-[300px] sm:h-[300px] md:h-[400px] lg:h-[480px] xl:h-[550px]"
+    ? "h-[220px] xs:h-[300px] sm:h-[300px] md:h-[400px] lg:h-[480px] xl:h-[550px]"
     : "h-[460px] xs:h-[480px] sm:h-[500px] md:h-[480px] lg:h-[520px] xl:h-[550px]";
 
   return (
-    <div className="relative w-full max-w-7x1 mx-full rounded-[10px] sm:rounded-[0px] md:rounded-[0px] overflow-hidden group shadow-2xl bg-[var(--pc-gray-900)] border border-[#F26522]/15">
+    <div 
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="relative w-full max-w-7x1 mx-full rounded-[10px] sm:rounded-[0px] md:rounded-[0px] overflow-hidden group shadow-2xl bg-neutral-900 dark:bg-[var(--pc-gray-900)] border border-[#F26522]/15 select-none touch-pan-y"
+    >
       
       {/* Slides Area */}
       <div className={`relative ${sliderHeightClass} w-full select-none overflow-hidden transition-all duration-300`}>
@@ -380,19 +419,21 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
         </AnimatePresence>
       </div>
 
-      {/* Slide Navigation Buttons (Always visible on mobile, hover on desktop) */}
+      {/* Slide Navigation Buttons (Hidden on mobile view, visible on desktop hover) */}
       {banners.length > 1 && (
         <>
           <button
             onClick={handlePrev}
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 sm:bg-black/40 hover:bg-black/70 border border-white/10 flex items-center justify-center text-white cursor-pointer opacity-70 sm:opacity-0 group-hover:opacity-100 transition-all z-20 backdrop-blur-xs ml-0"
+            aria-label="Previous banner slide"
+            className="hidden sm:flex absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 sm:bg-black/40 hover:bg-black/70 border border-white/10 items-center justify-center text-white cursor-pointer opacity-70 sm:opacity-0 group-hover:opacity-100 transition-all z-20 backdrop-blur-xs ml-0"
           >
             <ChevronLeft size={20} />
           </button>
           
           <button
             onClick={handleNext}
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 sm:bg-black/40 hover:bg-black/70 border border-white/10 flex items-center justify-center text-white cursor-pointer opacity-70 sm:opacity-0 group-hover:opacity-100 transition-all z-20 backdrop-blur-xs mr-0"
+            aria-label="Next banner slide"
+            className="hidden sm:flex absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 sm:bg-black/40 hover:bg-black/70 border border-white/10 items-center justify-center text-white cursor-pointer opacity-70 sm:opacity-0 group-hover:opacity-100 transition-all z-20 backdrop-blur-xs mr-0"
           >
             <ChevronRight size={20} />
           </button>

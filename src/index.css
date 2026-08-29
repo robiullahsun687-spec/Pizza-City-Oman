@@ -873,13 +873,20 @@ h4,
    when the navbar is hidden. */
 .menu-filter-bar,
 .menu-filter-bar--flush {
-  background: rgba(43, 17, 0, 0.82);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+.midnight-oven .menu-filter-bar,
+.midnight-oven .menu-filter-bar--flush {
+  background: rgba(20, 9, 4, 0.94);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 .menu-filter-bar {
-  top: 2.75rem;
+  top: 3.5rem;
   transition: top 0.3s ease;
 }
 .menu-filter-bar--flush {
@@ -1409,22 +1416,22 @@ textarea:focus-visible {
    ========================================================================== */
 
 .glass-navbar {
-  background: rgba(255, 255, 255, 0.62);
-  border: 1px solid rgba(215, 43, 43, 0.14);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.90);
+  border: 1px solid rgba(215, 43, 43, 0.16);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .glass-navbar-btn {
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(215, 43, 43, 0.10);
-  color: var(--pc-gray-600);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--pc-gray-700);
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.12s ease;
 }
 
 .glass-navbar-btn:hover {
-  background: rgba(215, 43, 43, 0.08);
+  background: rgba(215, 43, 43, 0.10);
   color: var(--pc-red-500);
 }
 
@@ -1613,4 +1620,32 @@ textarea:focus-visible {
     margin-top: 16px;
     padding: 12px 0;
   }
+}
+
+/* ==========================================================================
+   🔔 TOAST NOTIFICATION POPUP — Theme-Immune High Contrast
+   ========================================================================== */
+.toast-popup {
+  background-color: #120704 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 119, 51, 0.45) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75), 0 0 20px rgba(255, 85, 34, 0.25) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.toast-popup span,
+.toast-popup p {
+  color: #ffffff !important;
+}
+
+.midnight-oven .toast-popup {
+  background-color: #1c0a05 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 119, 51, 0.55) !important;
+}
+
+.midnight-oven .toast-popup span,
+.midnight-oven .toast-popup p {
+  color: #ffffff !important;
 }

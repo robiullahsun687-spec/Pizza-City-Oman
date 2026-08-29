@@ -18,6 +18,7 @@ import ContactPage from "./pages/ContactPage";
 import FaqPage from "./pages/FaqPage";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import AdminPage from "./pages/AdminPage";
+import LocationDetailPage from "./pages/LocationDetailPage";
 
 // Types & Utils
 import { MenuItem, CartEntry, HeroBanner, Branch } from "./types";
@@ -402,8 +403,13 @@ export default function App() {
 {/* Navbar — Glass Ember Floating Pill */}
 <nav
         id="navbar"
-        className={`fixed left-0 right-0 z-40 mx-auto h-11 md:h-16 ${isBarAttached ? "w-full max-w-none mx-0" : "w-[calc(100%-1.5rem)] max-w-5xl"} rounded-full glass-navbar transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform ${isBarAttached ? "navbar--attached" : ""} ${navHidden ? "-translate-y-[130px]" : ""}`}
-        style={{ top: isBarAttached ? "0px" : "max(0.75rem, env(safe-area-inset-top, 0px))" }}
+        className={`fixed left-0 right-0 z-40 h-14 md:h-16 ${
+          isBarAttached
+            ? "w-full max-w-none mx-0 rounded-none top-0 navbar--attached"
+            : "w-full mx-0 rounded-none top-0 md:w-[calc(100%-1.5rem)] md:max-w-5xl md:mx-auto md:rounded-full md:top-[max(0.75rem,env(safe-area-inset-top,0px))]"
+        } glass-navbar transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform ${
+          navHidden ? "-translate-y-[130px]" : ""
+        }`}
       >
         {navSearchOpen && (
           <div className="fixed inset-0 -z-10 bg-black/50 backdrop-blur-sm" onClick={() => closeNavSearch()} />
@@ -553,15 +559,25 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: "115%" }}
               transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              className="fixed right-3 top-3 bottom-3 z-50 w-[72%] max-w-[320px] min-w-[250px] md:hidden glass-drawer rounded-[24px] p-4 pt-24 flex flex-col gap-1 overflow-y-auto"
+              className="fixed right-3 top-3 bottom-3 z-50 w-[72%] max-w-[320px] min-w-[250px] md:hidden glass-drawer rounded-[24px] p-4 flex flex-col gap-1 overflow-y-auto"
             >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--pc-red-500)]/10 mb-1">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setDrawerOpen(false); scrollToSection("home"); }}>
+                  <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/dfZWWj1nq2KWjIwX/ei_1771693328794-removebg-preview-H1gq480p6x8lYS4E.png" alt="Pizza City" className="h-7 object-contain" />
+                </div>
+                <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-full glass-navbar-btn active:scale-90 transition-all flex items-center justify-center" aria-label="Close menu">
+                  <X size={18} />
+                </button>
+              </div>
+
               {/* Theme toggle */}
               <motion.button
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
                 onClick={() => { setIsDarkMode(!isDarkMode); displayToast(!isDarkMode ? "Midnight Oven dark mode enabled." : "Switched to light mode."); }}
-                className="flex items-center justify-between w-full py-3 px-4 rounded-2xl font-bold text-sm glass-navbar-btn"
+                className="flex items-center justify-between w-full py-3 px-4 rounded-2xl font-bold text-sm glass-navbar-btn mt-1"
               >
                 <span className="flex items-center gap-2.5">
                   {isDarkMode ? <Sun size={16} className="text-amber-400 fill-amber-400/20" /> : <Flame size={16} className="text-[var(--pc-amber-400)]" />}
@@ -607,8 +623,8 @@ export default function App() {
               <section id="home">
                 <HomePage banners={banners} isLoadingBanners={isLoadingBanners} setActiveTab={(tab) => scrollToSection(tab === 'loc' ? 'locations' : tab)} displayToast={displayToast} onOpenOutletSelector={() => setIsOutletSelectorOpen(true)} />
               </section>
-              <section id="menu" className="scroll-mt-24 mt-12 md:mt-0">
-                <MenuPage menuItems={menuItems} isLoadingMenu={isLoadingMenu} menuFilter={menuFilter} setMenuFilter={setMenuFilter} addToCart={addToCart} searchQuery={siteSearch} onSearchChange={setSiteSearch} navHidden={navHidden} />
+              <section id="menu" className="scroll-mt-24 mt-3 md:mt-0">
+                <MenuPage menuItems={menuItems} isLoadingMenu={isLoadingMenu} menuFilter={menuFilter} setMenuFilter={setMenuFilter} addToCart={addToCart} searchQuery={siteSearch} onSearchChange={setSiteSearch} navHidden={navHidden} displayToast={displayToast} />
               </section>
               <section id="track" className="scroll-mt-24 mt-12 md:mt-0">
                 <TrackOrderPage trackOrderId="" displayToast={displayToast} isDarkMode={isDarkMode} />
@@ -683,6 +699,7 @@ export default function App() {
               </footer>
             </div>
           } />
+          <Route path="/locations/:slug" element={<LocationDetailPage branches={branches} />} />
           <Route path="/admin" element={<AdminPage displayToast={displayToast} refreshMenu={refreshMenu} isDarkMode={isDarkMode} onToggleTheme={() => setIsDarkMode(!isDarkMode)} />} />
         </Routes>
       </div>
@@ -808,8 +825,15 @@ export default function App() {
 
       <AnimatePresence>
         {showToast && (
-          <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-[var(--pc-gray-700)] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gray-800">
-            <span className="text-sm font-bold tracking-wide">{toastMessage}</span>
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            onClick={() => setShowToast(false)}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] toast-popup px-6 py-3.5 rounded-full flex items-center gap-3 cursor-pointer select-none max-w-[90vw] text-center"
+          >
+            <div className="w-2.5 h-2.5 rounded-full bg-[var(--pc-amber-400)] animate-ping shrink-0" />
+            <span className="text-xs sm:text-sm font-extrabold tracking-wide text-white leading-snug">{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
