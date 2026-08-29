@@ -156,6 +156,13 @@ export default function OutletSelector({
     }
   }, [totalAmount, appliedPromo]);
 
+  // Reset success view when modal is closed/reopened — MUST be before early return (hooks rule)
+  useEffect(() => {
+    if (!isOpen) {
+      setOrderSuccess(null);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   // Group outlets based on search query
@@ -358,13 +365,6 @@ export default function OutletSelector({
       window.open(orderSuccess.whatsappUrl, "_blank");
     }
   };
-
-  // Reset success view when modal is reopened
-  useEffect(() => {
-    if (!isOpen) {
-      setOrderSuccess(null);
-    }
-  }, [isOpen]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
