@@ -265,14 +265,14 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
                 aria-current={isActiveChip ? "true" : undefined}
                 className={`min-h-[42px] py-2 px-3.5 md:px-5 font-extrabold text-xs sm:text-sm rounded-2xl border transition-all duration-200 flex items-center gap-2 shrink-0 whitespace-nowrap snap-center cursor-pointer ${isActiveChip
                     ? "bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] text-white border-transparent shadow-md shadow-[var(--pc-red-500)]/30 scale-[1.02]"
-                    : "bg-gray-100 text-gray-800 border-gray-200/90 hover:bg-gray-200/90 hover:text-black dark:bg-white/10 dark:text-gray-200 dark:border-white/10 dark:hover:bg-white/20 dark:hover:text-white"
+                    : "bg-white text-gray-900 border-gray-300 shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:text-black dark:bg-white/[0.14] dark:text-white dark:border-white/20 dark:hover:bg-white/20 dark:hover:text-white dark:shadow-md"
                   }`}
               >
-                <div className={`p-1 rounded-xl flex items-center justify-center ${isActiveChip ? "bg-white/20 text-white" : "bg-white text-[var(--pc-red-500)] dark:bg-white/10 dark:text-amber-400 shadow-2xs"}`}>
+                <div className={`p-1 rounded-xl flex items-center justify-center shadow-sm ${isActiveChip ? "bg-white/20 text-white" : "bg-[var(--pc-red-500)] text-white dark:bg-[var(--pc-amber-400)] dark:text-black"}`}>
                   <Icon size={15} />
                 </div>
                 <span>{cat.label}</span>
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${isActiveChip ? "bg-white/25 text-white" : "bg-gray-200 text-gray-700 dark:bg-white/15 dark:text-gray-300"
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border transition-colors ${isActiveChip ? "bg-white/25 text-white border-white/20" : "bg-gray-100 text-gray-700 border-gray-300 dark:bg-white/[0.14] dark:text-white dark:border-white/20"
                   }`}>
                   {count}
                 </span>

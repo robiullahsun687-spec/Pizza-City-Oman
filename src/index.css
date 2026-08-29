@@ -870,20 +870,24 @@ h4,
 
 /* Sticky category filter bar — unified full-width glass material.
    Offset sits at the navbar's bottom edge when visible, or flush to the top
-   when the navbar is hidden. */
+   when the navbar is hidden.
+   FIX: Increased opacity + solid shadow to fix low-contrast “hardly visible” chips.
+   Light bar now 0.98 opaque with warm border; chips are solid white (see MenuPage). */
 .menu-filter-bar,
 .menu-filter-bar--flush {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border-bottom: 1px solid rgba(215, 43, 43, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 .midnight-oven .menu-filter-bar,
 .midnight-oven .menu-filter-bar--flush {
-  background: rgba(20, 9, 4, 0.94);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  background: rgba(13, 5, 0, 0.96);
+  backdrop-filter: blur(24px) saturate(1.15);
+  -webkit-backdrop-filter: blur(24px) saturate(1.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 .menu-filter-bar {
   top: 3.5rem;
