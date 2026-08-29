@@ -301,7 +301,7 @@ export default function OutletSelector({
       const shortId = data.order._id.toString().slice(-6).toUpperCase();
       const successTotal = data.order.total ?? finalAmount;
 
-      // Show persistent success UI instead of auto-closing + popup-blocked window.open
+      // Show persistent success UI immediately (so user has order ref even if WhatsApp blocked)
       setOrderSuccess({
         orderId: data.order._id,
         shortId,
@@ -310,7 +310,17 @@ export default function OutletSelector({
         total: successTotal,
       });
 
-      onShowToast(`🎉 Order ${shortId} placed successfully!`);
+      onShowToast(`🎉 Order ${shortId} placed successfully! Opening WhatsApp...`);
+
+      // Auto redirect to WhatsApp — user request
+      if (data.whatsappUrl) {
+        try {
+          // Direct user-gesture continuation (after async fetch, still allowed in most browsers)
+          window.open(data.whatsappUrl, "_blank", "noopener,noreferrer");
+        } catch (e) {
+          console.warn("WhatsApp auto-open blocked, fallback button remains in success view", e);
+        }
+      }
     } catch (err: any) {
       console.error(err);
       onShowToast("Error placing order: " + err.message);
@@ -346,12 +356,8 @@ export default function OutletSelector({
 
   const handleTrackOrder = () => {
     if (!orderSuccess) return;
-    const { orderId, whatsappUrl } = orderSuccess;
-    // Open WhatsApp as well if available (user expectation from previous flow)
-    // Keep it user-initiated to avoid popup blocker
-    if (whatsappUrl) {
-      window.open(whatsappUrl, "_blank");
-    }
+    const { orderId } = orderSuccess;
+    // WhatsApp already auto-opened on order success; Track now just navigates
     onClearCart();
     resetForm();
     const capturedId = orderId;
