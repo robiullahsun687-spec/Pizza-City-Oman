@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Search, Flame, ChefHat, Wine, Cookie, Sparkles, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Flame, ChefHat, Wine, Cookie, Sparkles, Star, Layers, ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuItem } from "../types";
 import MenuCardGrid from "../components/MenuCardGrid";
 
@@ -18,7 +18,7 @@ interface MenuPageProps {
 const FILTERS = [
   { id: "all", label: "All Categories", short: "All", icon: Sparkles },
   { id: "featured", label: "Featured", short: "Featured", icon: Star },
-  { id: "Combos", label: "Combo", short: "Combo", icon: Star },
+  { id: "combo", label: "Combo", short: "Combo", icon: Layers },
   { id: "pizza", label: "Pizzas", short: "Pizzas", icon: Flame },
   { id: "sides", label: "Sides & Appetizers", short: "Sides", icon: ChefHat },
   { id: "drinks", label: "Cold Drinks", short: "Drinks", icon: Wine },
@@ -37,8 +37,8 @@ const VISUAL_CATEGORIES = [
     image: "https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&w=400&q=80",
   },
   {
-    id: "Combos",
-    label: "combo",
+    id: "combo",
+    label: "Combo",
     image: "https://images.unsplash.com/photo-1544982503-9f984c14501a?auto=format&fit=crop&w=400&q=80",
   },
   {
@@ -65,7 +65,7 @@ const VISUAL_CATEGORIES = [
 
 const CATEGORY_LABELS: Record<string, string> = {
   featured: "Featured Items & Combos",
-  pizza: "Wood-Fired Pizzas",
+  pizza: "Handcrafted Pizzas",
   sides: "Savoury Sides & Appetizers",
   drinks: "Ice Cold Drinks & Revivers",
   dessert: "Heavenly Sweet Finishes",
@@ -158,7 +158,8 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
           setActiveTab(tab);
         }
       },
-      { threshold: [0, 0.05, 0.1, 0.2, 0.3, 0.5] }
+      // Offset for sticky bar (bar ~64px + navbar) so spy doesn't flicker under it
+      { threshold: [0, 0.05, 0.1, 0.2, 0.3, 0.5], rootMargin: "-140px 0px -60% 0px" }
     );
 
     sectionIds.forEach(id => {
@@ -169,7 +170,21 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     return () => observer.disconnect();
   }, [menuFilter, menuItems]);
 
-  // Auto-center the active chip horizontally within the rail only
+  // Memoized per-category counts (was 7xN filter on every render)
+  const countsByCat = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const available = menuItems.filter(it => it.available !== false);
+    counts.all = available.length;
+    counts.featured = available.filter(it => (it as any).pinnedFeatured).length;
+    for (const c of CATEGORY_ORDER) {
+      if (c === "featured") continue;
+      counts[c] = available.filter(it => it.category === c).length;
+    }
+    return counts;
+  }, [menuItems]);
+
+  // Auto-center the active chip — skip when chip already fully visible
+  // so scroll-spy doesn't fight the user's own swipe (smooth -> no jank)
   useEffect(() => {
     const key = menuFilter === "all" ? activeTab : menuFilter;
     const el = filterRefs.current[key];
@@ -177,6 +192,8 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     if (!el || !rail) return;
     const railRect = rail.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
+    const fullyVisible = elRect.left >= railRect.left && elRect.right <= railRect.right;
+    if (fullyVisible) return;
     rail.scrollTo({
       left: rail.scrollLeft + (elRect.left - railRect.left) - (railRect.width / 2) + (elRect.width / 2),
       behavior: "smooth",
@@ -248,32 +265,27 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
             : "px-0 py-0 opacity-0 pointer-events-none -translate-y-4 max-h-0 overflow-hidden border-none shadow-none mb-0"
           }`}
       >
-        <div ref={railRef} className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth overscroll-contain py-1 px-1">
+        <div ref={railRef} className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-proximity scroll-smooth overscroll-contain py-1 px-1">
           {FILTERS.map((cat) => {
             const isActiveChip = menuFilter === "all" ? activeTab === cat.id : menuFilter === cat.id;
             const Icon = cat.icon;
-            const count = cat.id === "all"
-              ? menuItems.filter(it => it.available !== false).length
-              : cat.id === "featured"
-                ? menuItems.filter(it => (it as any).pinnedFeatured && it.available !== false).length
-                : menuItems.filter(it => it.category === cat.id && it.available !== false).length;
+            const count = countsByCat[cat.id] ?? 0;
             return (
               <button
                 key={cat.id}
                 ref={(el) => { filterRefs.current[cat.id] = el; }}
                 onClick={() => scrollToCategory(cat.id)}
-                aria-current={isActiveChip ? "true" : undefined}
-                className={`min-h-[42px] py-2 px-3.5 md:px-5 font-extrabold text-xs sm:text-sm rounded-2xl border transition-all duration-200 flex items-center gap-2 shrink-0 whitespace-nowrap snap-center cursor-pointer ${isActiveChip
-                    ? "bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] text-white border-transparent shadow-md shadow-[var(--pc-red-500)]/30 scale-[1.02]"
-                    : "bg-white text-gray-900 border-gray-300 shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:text-black dark:bg-white/[0.14] dark:text-white dark:border-white/20 dark:hover:bg-white/20 dark:hover:text-white dark:shadow-md"
-                  }`}
+                aria-current={isActiveChip ? true : undefined}
+                aria-pressed={isActiveChip}
+                title={cat.label}
+                className={`menu-chip${isActiveChip ? " menu-chip--active" : ""}`}
               >
-                <div className={`p-1 rounded-xl flex items-center justify-center shadow-sm ${isActiveChip ? "bg-white/20 text-white" : "bg-[var(--pc-red-500)] text-white dark:bg-[var(--pc-amber-400)] dark:text-black"}`}>
+                <span className="menu-chip__icon" aria-hidden="true">
                   <Icon size={15} />
-                </div>
-                <span>{cat.label}</span>
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border transition-colors ${isActiveChip ? "bg-white/25 text-white border-white/20" : "bg-gray-100 text-gray-700 border-gray-300 dark:bg-white/[0.14] dark:text-white dark:border-white/20"
-                  }`}>
+                </span>
+                <span className="hidden sm:inline">{cat.label}</span>
+                <span className="sm:hidden">{cat.short}</span>
+                <span className="menu-chip__count">
                   {count}
                 </span>
               </button>
@@ -301,7 +313,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         <div
           ref={visualSliderRef}
           onScroll={checkVisualScroll}
-          className="flex gap-3 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2 px-1"
+          className="flex gap-3 sm:gap-5 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-proximity py-2 px-1"
         >
           {VISUAL_CATEGORIES.map((cat) => {
             const isSelected = menuFilter === cat.id;
@@ -359,14 +371,14 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
       {isLoadingMenu ? (
         <MenuCardGrid title="" items={[]} onOrder={addToCart} isLoading={true} showHeader={false} />
       ) : hasSearch && menuFilter === "all" && grouped.length === 0 ? (
-        /* No search results */
-        <div className="text-center py-20 space-y-4">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto">
-            <Search size={28} className="text-gray-500" />
+        /* No search results — outside dark .menu-section, so use light-theme tokens */
+        <div className="menu-empty text-center py-20 space-y-4">
+          <div className="menu-empty__icon w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+            <Search size={28} />
           </div>
-          <p className="text-lg font-bold text-white">No items found</p>
-          <p className="text-sm max-w-xs mx-auto" style={{ color: "var(--menu-text-secondary)" }}>
-            No results for "<span className="text-amber-400/80 font-medium">{searchQuery}</span>".
+          <p className="menu-empty__title text-lg font-bold">No items found</p>
+          <p className="menu-empty__desc text-sm max-w-xs mx-auto">
+            No results for "<span className="font-medium">{searchQuery}</span>".
             Try searching by name, ingredient (mozzarella, chicken), or category (pizza, drinks).
           </p>
         </div>
@@ -389,7 +401,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
                 Our Gourmet Menu
               </h2>
               <p className="text-xs sm:text-sm max-w-xl mx-auto font-body opacity-80" style={{ color: "var(--menu-text-secondary)" }}>
-                Hand-made recipes with premium components, wood-fired hot and delivered instantly.
+                Hand-made recipes with premium components, oven-baked hot and delivered instantly.
               </p>
             </div>
 
@@ -428,7 +440,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         <MenuCardGrid
           title={
             menuFilter === "featured" ? "⭐ Featured Items & Combos"
-              : menuFilter === "pizza" ? "Wood-Fired Pizzas"
+              : menuFilter === "pizza" ? "Handcrafted Pizzas"
                 : menuFilter === "sides" ? "Savoury Sides & Appetizers"
                   : menuFilter === "drinks" ? "Ice Cold Drinks & Revivers"
                     : "Heavenly Sweet Finishes"

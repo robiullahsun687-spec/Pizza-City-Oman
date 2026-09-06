@@ -57,10 +57,10 @@ export default function MenuCardGrid({
 }: MenuCardGridProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Reset expanded state when category filter or items collection changes
+  // Reset expanded state only when category changes (not on every items.length change)
   useEffect(() => {
     setIsExpanded(false);
-  }, [title, items.length]);
+  }, [title]);
 
   const resolveBadge = (item: MenuItem, index: number): string | undefined => {
     if (typeof badge === "function") {

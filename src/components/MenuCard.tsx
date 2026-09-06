@@ -137,10 +137,10 @@ export default function MenuCard({ item, onOrder, badge, index = 0, displayToast
           onClick={handleQuickAdd}
           type="button"
           disabled={isUnavailable}
-          className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow-lg active:scale-90 ${
+          className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow-lg active:scale-90 focus:opacity-100 ${
             isUnavailable
               ? "bg-red-950/60 text-gray-400 border border-red-500/20 cursor-not-allowed opacity-80"
-              : "bg-white/10 hover:bg-white/25 text-white opacity-100 md:opacity-0 md:group-hover:opacity-100"
+              : "bg-black/40 hover:bg-black/60 text-white opacity-100 border border-white/20"
           }`}
           aria-label={isUnavailable ? `${item.name} is not available` : `Quick add ${item.name} to cart`}
           title={isUnavailable ? `${item.name} is not available` : `Quick add ${item.name}`}

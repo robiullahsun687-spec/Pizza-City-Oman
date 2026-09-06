@@ -859,35 +859,37 @@ h4,
   transform: translateY(0);
 }
 
-/* Menu section wrapper */
+/* Menu section wrapper — intentionally always dark (brand moment) */
 .menu-section {
   background: var(--menu-bg);
   color: #fff;
   padding: 6rem 1.5rem;
   border-radius: 40px;
   overflow: hidden;
+  /* Secondary text on dark bg: rgba cream 65% ≈ 7:1, replaces #6B7280 (2.9:1 fail) */
+  --menu-text-secondary: rgba(255, 237, 212, 0.65);
 }
 
-/* Sticky category filter bar — unified full-width glass material.
-   Offset sits at the navbar's bottom edge when visible, or flush to the top
-   when the navbar is hidden.
-   FIX: Increased opacity + solid shadow to fix low-contrast “hardly visible” chips.
-   Light bar now 0.98 opaque with warm border; chips are solid white (see MenuPage). */
+/* Sticky category filter bar — unified full-width material.
+   FIX V2: User reported still invisible (white on white). Switched to solid
+   cream (#FFF8F2) bar vs solid white chips with !text-[#1A0A00] and dark
+   #2A1400 chips in midnight-oven — guarantees 15:1+ contrast regardless
+   of backdrop support. Glass blur kept as progressive enhancement. */
 .menu-filter-bar,
 .menu-filter-bar--flush {
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  border-bottom: 1px solid rgba(215, 43, 43, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: #FFF8F2;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #E5D9D0;
+  box-shadow: 0 6px 24px rgba(42, 20, 0, 0.08), 0 2px 8px rgba(42, 20, 0, 0.06);
 }
 .midnight-oven .menu-filter-bar,
 .midnight-oven .menu-filter-bar--flush {
-  background: rgba(13, 5, 0, 0.96);
-  backdrop-filter: blur(24px) saturate(1.15);
-  -webkit-backdrop-filter: blur(24px) saturate(1.15);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+  background: #0D0500;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 .menu-filter-bar {
   top: 3.5rem;
@@ -905,6 +907,90 @@ h4,
     top: 0;
   }
 }
+
+/* --- Sticky category chips — solid elevated pills, no Tailwind !/dark: ---
+   V3 fix: Tailwind v4 ignores leading !text-* and dark: never fires
+   (theme uses .midnight-oven). Custom classes guarantee 15:1 contrast. */
+.menu-chip {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
+  scroll-snap-align: center;
+  cursor: pointer;
+  border-radius: 16px;
+  border: 1px solid #D8CFC6;
+  background: #FFFFFF;
+  color: #1A0A00;
+  box-shadow: 0 2px 8px rgba(42, 20, 0, 0.10), 0 1px 2px rgba(42, 20, 0, 0.08);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+@media (min-width: 768px) {
+  .menu-chip { padding: 8px 20px; font-size: 14px; }
+}
+.menu-chip:hover {
+  background: #FFF5EE;
+  border-color: #C9BBAE;
+}
+.menu-chip:active { transform: scale(0.98); }
+.menu-chip:focus-visible {
+  outline: 3px solid var(--pc-amber-500);
+  outline-offset: 2px;
+}
+.menu-chip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 12px;
+  background: #D72B2B;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+.menu-chip__count {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #E5D9D0;
+  background: #FFF0E6;
+  color: #7A1A00;
+}
+.menu-chip--active {
+  background: linear-gradient(90deg, var(--pc-red-500), var(--pc-amber-400));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(215, 43, 43, 0.30);
+  transform: scale(1.02);
+}
+.menu-chip--active .menu-chip__icon { background: rgba(255, 255, 255, 0.20); color: #fff; box-shadow: none; }
+.menu-chip--active .menu-chip__count { background: rgba(255, 255, 255, 0.25); border-color: rgba(255, 255, 255, 0.20); color: #fff; }
+
+/* Midnight-oven (dark) chip overrides — replaces dead dark: variants */
+.midnight-oven .menu-chip {
+  background: #2A1400;
+  border-color: rgba(255, 255, 255, 0.20);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+.midnight-oven .menu-chip:hover { background: #3A1A0A; }
+.midnight-oven .menu-chip__icon { background: var(--pc-amber-400); color: #000; }
+.midnight-oven .menu-chip__count { background: rgba(255, 255, 255, 0.20); border-color: rgba(255, 255, 255, 0.25); color: #fff; }
+.midnight-oven .menu-chip--active { background: linear-gradient(90deg, var(--pc-red-500), var(--pc-amber-400)); border-color: transparent; color: #fff; }
+
+/* Empty-search state — outside dark section, light-theme tokens */
+.menu-empty { color: var(--pc-color-text-primary-light); }
+.menu-empty__icon { background: var(--pc-gray-200); color: var(--pc-color-text-muted-light); border: 1px solid var(--pc-color-border-light); }
+.menu-empty__title { color: var(--pc-color-text-primary-light); }
+.menu-empty__desc { color: var(--pc-color-text-secondary-light); }
+.menu-empty__desc span { color: var(--pc-color-cta); }
 
 .menu-section__inner {
   max-width: 72rem;
