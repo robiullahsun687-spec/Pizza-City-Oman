@@ -37,6 +37,7 @@ import { Link } from "react-router-dom";
 import { Order, MenuItem, OUTLETS, OutletName, Branch } from "../types";
 import type { MenuItemSize } from "../lib/priceUtils";
 import { getDefaultSizes } from "../lib/priceUtils";
+import { getMenuItemAltText } from "../lib/altText";
 
 interface AdminDashboardProps {
   onShowToast: (msg: string) => void;
@@ -279,6 +280,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
   const [bannerSubtitle, setBannerSubtitle] = useState("");
   const [bannerBadge, setBannerBadge] = useState("");
   const [bannerImage, setBannerImage] = useState("");
+  const [bannerAltText, setBannerAltText] = useState("");
   const [bannerButtonText, setBannerButtonText] = useState("Order Now");
   const [bannerButtonLink, setBannerButtonLink] = useState("#menu");
   const [bannerIsActive, setBannerIsActive] = useState(true);
@@ -301,6 +303,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
   const [branchDelivery, setBranchDelivery] = useState(true);
   const [branchActive, setBranchActive] = useState(true);
   const [branchImage, setBranchImage] = useState("");
+  const [branchAltText, setBranchAltText] = useState("");
 
   // Modal State
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
@@ -314,6 +317,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
   const [fieldDesc, setFieldDesc] = useState("");
   const [fieldBadge, setFieldBadge] = useState("");
   const [fieldImage, setFieldImage] = useState("");
+  const [fieldAltText, setFieldAltText] = useState("");
   const [fieldAvailable, setFieldAvailable] = useState(true);
   const [fieldFeatured, setFieldFeatured] = useState(false);
   const [fieldPinnedFeatured, setFieldPinnedFeatured] = useState(false);
@@ -693,6 +697,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       setBranchDelivery(branch.delivery !== false);
       setBranchActive(branch.isActive !== false);
       setBranchImage(branch.image || "");
+      setBranchAltText(branch.altText || "");
     } else {
       setBranchName("");
       setBranchPhone("");
@@ -704,6 +709,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       setBranchDelivery(true);
       setBranchActive(true);
       setBranchImage("");
+      setBranchAltText("");
     }
     setIsBranchModalOpen(true);
   };
@@ -726,6 +732,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       delivery: branchDelivery,
       isActive: branchActive,
       image: branchImage.trim(),
+      altText: branchAltText.trim(),
     };
 
     try {
@@ -816,6 +823,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       setBannerSubtitle(banner.subtitle || "");
       setBannerBadge(banner.badge || "");
       setBannerImage(banner.image || "");
+      setBannerAltText(banner.altText || "");
       setBannerButtonText(banner.buttonText || "Order Now");
       setBannerButtonLink(banner.buttonLink || "#menu");
       setBannerIsActive(banner.isActive ?? true);
@@ -826,6 +834,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       setBannerSubtitle("");
       setBannerBadge("");
       setBannerImage("");
+      setBannerAltText("");
       setBannerButtonText("Order Now");
       setBannerButtonLink("#menu");
       setBannerIsActive(true);
@@ -847,6 +856,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       subtitle: bannerSubtitle.trim(),
       badge: bannerBadge.trim(),
       image: bannerImage.trim() || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
+      altText: bannerAltText.trim(),
       buttonText: bannerButtonText.trim(),
       buttonLink: bannerButtonLink.trim(),
       isActive: bannerIsActive,
@@ -1226,6 +1236,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       description: fieldDesc.trim(),
       badge: fieldBadge,
       image: fieldImage.trim() || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80",
+      altText: fieldAltText.trim(),
       available: fieldAvailable,
       featured: fieldFeatured,
       pinnedFeatured: fieldPinnedFeatured,
@@ -1357,6 +1368,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       setFieldDesc(item.description || "");
       setFieldBadge((item as any).badge || "");
       setFieldImage(item.image || "");
+      setFieldAltText(item.altText || "");
       setFieldAvailable(item.available !== false);
       setFieldFeatured(!!(item as any).featured);
       setFieldPinnedFeatured(!!(item as any).pinnedFeatured);
@@ -1371,6 +1383,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       setFieldDesc("");
       setFieldBadge("");
       setFieldImage("");
+      setFieldAltText("");
       setFieldAvailable(true);
       setFieldFeatured(false);
       setFieldPinnedFeatured(false);
@@ -2309,7 +2322,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                             <div className="relative aspect-video bg-gray-50 overflow-hidden">
                               <img 
                                 src={item.image || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80"} 
-                                alt={item.name}
+                                alt={getMenuItemAltText(item)}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
                               
@@ -3180,7 +3193,17 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                         token={token}
                         label="Recipe Image"
                       />
-                    </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-black tracking-wider text-[var(--pc-gray-500)] mb-2">Image Alt Text (SEO, optional)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Chicken BBQ Pizza with grilled chicken and mozzarella — Pizza City Oman"
+                          value={fieldAltText}
+                          onChange={(e) => setFieldAltText(e.target.value)}
+                          className="w-full bg-[var(--pc-gray-100)] border border-[var(--pc-red-500)]/20 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-[var(--pc-amber-400)]"
+                        />
+                      </div>
                   </div>
 
                   <div className="flex items-center gap-6 py-2">
@@ -3334,6 +3357,17 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                       onShowToast={onShowToast}
                       token={token}
                       label="Promotion Background Image"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-[var(--pc-gray-700)] uppercase tracking-wider block">Image Alt Text (SEO, optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Wood-fired pizza family offer at Pizza City Oman"
+                      value={bannerAltText}
+                      onChange={(e) => setBannerAltText(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-[var(--pc-gray-600)] focus:border-[var(--pc-amber-400)] focus:outline-none"
                     />
                   </div>
 
@@ -3645,6 +3679,17 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                       onShowToast={onShowToast}
                       token={token}
                       label="Branch Optional Image Cover"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-[var(--pc-gray-700)] uppercase tracking-wider block">Image Alt Text (SEO, optional)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Pizza City Nizwa outlet in Nizwa, Oman"
+                      value={branchAltText}
+                      onChange={(e) => setBranchAltText(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-[var(--pc-gray-600)] focus:border-[var(--pc-amber-400)] focus:outline-none"
                     />
                   </div>
 

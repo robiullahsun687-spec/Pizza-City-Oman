@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Search, Flame, ChefHat, Wine, Cookie, Sparkles, Star } from "lucide-react";
+import { Search, Flame, ChefHat, Wine, Cookie, Sparkles, Star, Layers } from "lucide-react";
 import { MenuItem } from "../types";
+import { useLocation, useNavigate } from "react-router-dom";
 import MenuCardGrid from "../components/MenuCardGrid";
+import MenuCategorySlider from "../components/MenuCategorySlider";
+import { getFeaturedItems, getCategoryItems } from "../lib/menuSelectors";
+import { itemSlug } from "../lib/itemSlug";
 
 interface MenuPageProps {
   menuItems: MenuItem[];
@@ -12,12 +16,13 @@ interface MenuPageProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   navHidden: boolean;
+  displayToast?: (msg: string) => void;
 }
 
 const FILTERS = [
-  
   { id: "all", label: "All Categories", short: "All", icon: Sparkles },
   { id: "featured", label: "Featured", short: "Featured", icon: Star },
+  { id: "combo", label: "Combo", short: "Combo", icon: Layers },
   { id: "pizza", label: "Pizzas", short: "Pizzas", icon: Flame },
   { id: "sides", label: "Sides & Appetizers", short: "Sides", icon: ChefHat },
   { id: "drinks", label: "Cold Drinks", short: "Drinks", icon: Wine },
@@ -26,7 +31,7 @@ const FILTERS = [
 
 const CATEGORY_LABELS: Record<string, string> = {
   featured: "Featured Items & Combos",
-  pizza: "Wood-Fired Pizzas",
+  pizza: "Handcrafted Pizzas",
   sides: "Savoury Sides & Appetizers",
   drinks: "Ice Cold Drinks & Revivers",
   dessert: "Heavenly Sweet Finishes",
@@ -35,12 +40,38 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const CATEGORY_ORDER = ["featured", "combo", "pizza", "sides", "drinks", "dessert"];
 
-export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenuFilter, addToCart, searchQuery, onSearchChange, navHidden }: MenuPageProps) {
+export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenuFilter, addToCart, searchQuery, onSearchChange, navHidden, displayToast }: MenuPageProps) {
   const [activeTab, setActiveTab] = useState(menuFilter);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Card tap → item quick-view (modal over menu, shareable URL)
+  const openQuickView = (item: MenuItem) => {
+    navigate(`/menu/${itemSlug(item)}`, { state: { backgroundLocation: location } });
+  };
 
   useEffect(() => {
     setActiveTab(menuFilter);
   }, [menuFilter]);
+
+  // Show sticky filter bar only when scrolling down into menu items
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = document.getElementById("menu-anchor-top") || document.getElementById("menu");
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= 120) {
+        setShowStickyBar(true);
+      } else {
+        setShowStickyBar(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Search filter — matches name, description (ingredients), and category
   const searchFilteredItems = useMemo(() => {
@@ -84,7 +115,8 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
           setActiveTab(tab);
         }
       },
-      { threshold: [0, 0.05, 0.1, 0.2, 0.3, 0.5] }
+      // Offset for sticky bar (bar ~64px + navbar) so spy doesn't flicker under it
+      { threshold: [0, 0.05, 0.1, 0.2, 0.3, 0.5], rootMargin: "-140px 0px -60% 0px" }
     );
 
     sectionIds.forEach(id => {
@@ -95,8 +127,21 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     return () => observer.disconnect();
   }, [menuFilter, menuItems]);
 
-  // Auto-center the active chip horizontally within the rail only — never
-  // scrolls the page vertically (prevents the window jumping to the menu on load).
+  // Memoized per-category counts (was 7xN filter on every render)
+  const countsByCat = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const available = menuItems.filter(it => it.available !== false);
+    counts.all = available.length;
+    counts.featured = getFeaturedItems(available).length;
+    for (const c of CATEGORY_ORDER) {
+      if (c === "featured") continue;
+      counts[c] = available.filter(it => it.category === c).length;
+    }
+    return counts;
+  }, [menuItems]);
+
+  // Auto-center the active chip — skip when chip already fully visible
+  // so scroll-spy doesn't fight the user's own swipe (smooth -> no jank)
   useEffect(() => {
     const key = menuFilter === "all" ? activeTab : menuFilter;
     const el = filterRefs.current[key];
@@ -104,6 +149,8 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     if (!el || !rail) return;
     const railRect = rail.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
+    const fullyVisible = elRect.left >= railRect.left && elRect.right <= railRect.right;
+    if (fullyVisible) return;
     rail.scrollTo({
       left: rail.scrollLeft + (elRect.left - railRect.left) - (railRect.width / 2) + (elRect.width / 2),
       behavior: "smooth",
@@ -111,31 +158,39 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   }, [menuFilter, activeTab]);
 
   const scrollToCategory = (catId: string) => {
-    if (catId === "all") {
-      setMenuFilter("all");
-      document.getElementById("menu")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    setMenuFilter(catId);
-    const el = document.getElementById(`menu-section-${catId}`) || document.getElementById("menu");
-    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setShowStickyBar(true);
+    setMenuFilter("all");
+    setTimeout(() => {
+      if (catId === "all") {
+        const target = document.getElementById("menu-anchor-top") || document.getElementById("menu");
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      const el = document.getElementById(`menu-section-${catId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        document.getElementById("menu")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 30);
   };
 
-  // Group items by category for the "all" view
+  // Group items by category for the "all" view (including unavailable items).
+  // Predicates live in lib/menuSelectors so the homepage can never drift.
   const filteredItems = menuFilter === "all"
     ? searchFilteredItems
     : menuFilter === "featured"
-    ? searchFilteredItems.filter((it) => it.pinnedFeatured)
-    : searchFilteredItems.filter((it) => it.category === menuFilter);
+      ? getFeaturedItems(searchFilteredItems)
+      : getCategoryItems(searchFilteredItems, menuFilter);
 
-  const featuredItems = searchFilteredItems.filter(it => it.pinnedFeatured && it.available !== false);
+  const featuredItems = getFeaturedItems(searchFilteredItems);
 
   const grouped = [
     ...(featuredItems.length > 0 ? [{ id: "featured", label: CATEGORY_LABELS["featured"] || "Featured Items & Combos", items: featuredItems }] : []),
     ...CATEGORY_ORDER.filter(cat => cat !== "featured").map(cat => ({
       id: cat,
       label: CATEGORY_LABELS[cat] || cat,
-      items: searchFilteredItems.filter(it => it.category === cat && it.available !== false),
+      items: getCategoryItems(searchFilteredItems, cat),
     })).filter(g => g.items.length > 0),
   ];
 
@@ -159,36 +214,36 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   };
 
   return (
-    <div className="container mx-auto px-2 md:px-8 pb-2 space-y-8 animate-fadeIn overflow-x-clip">
-      {/* Sticky Filter Bar */}
-      <div className={`sticky z-[35] -mx-2 md:-mx-8 px-4 md:px-8 py-1.5 ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"}`}>
-          <div ref={railRef} className="flex gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth overscroll-contain scroll-px-2">
+    <div className="container mx-auto px-2 md:px-8 pb-2 animate-fadeIn overflow-x-clip">
+      {/* Sticky Filter Bar — hidden until user scrolls down into menu items */}
+      <div
+        className={`sticky z-[35] -mx-2 md:-mx-8 transition-all duration-300 ease-out ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"
+          } ${showStickyBar
+            ? "px-3 md:px-8 py-2 opacity-100 pointer-events-auto translate-y-0 max-h-24 mb-3"
+            : "px-0 py-0 opacity-0 pointer-events-none -translate-y-4 max-h-0 overflow-hidden border-none shadow-none mb-0"
+          }`}
+      >
+        <div ref={railRef} className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-proximity scroll-smooth overscroll-contain py-1 px-1">
           {FILTERS.map((cat) => {
             const isActiveChip = menuFilter === "all" ? activeTab === cat.id : menuFilter === cat.id;
             const Icon = cat.icon;
-            const count = cat.id === "all"
-              ? menuItems.filter(it => it.available !== false).length
-              : cat.id === "featured"
-              ? menuItems.filter(it => (it as any).pinnedFeatured && it.available !== false).length
-              : menuItems.filter(it => it.category === cat.id && it.available !== false).length;
+            const count = countsByCat[cat.id] ?? 0;
             return (
               <button
                 key={cat.id}
                 ref={(el) => { filterRefs.current[cat.id] = el; }}
                 onClick={() => scrollToCategory(cat.id)}
-                aria-current={isActiveChip ? "true" : undefined}
-                className={`min-h-[40px] md:min-h-0 py-2 px-3.5 md:px-5 font-bold text-sm rounded-full border transition-all flex items-center gap-1.5 md:gap-2 shrink-0 whitespace-nowrap snap-center cursor-pointer ${
-                  isActiveChip
-                    ? "bg-gradient-to-r from-[var(--menu-red)] to-[var(--menu-amber)] text-white border-transparent shadow-lg shadow-[var(--menu-red)]/30"
-                    : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"
-                }`}
+                aria-current={isActiveChip ? true : undefined}
+                aria-pressed={isActiveChip}
+                title={cat.label}
+                className={`menu-chip${isActiveChip ? " menu-chip--active" : ""}`}
               >
-                <Icon size={16} className={isActiveChip ? "text-white" : "text-amber-400/70"} />
-                <span className="md:hidden">{cat.short}</span>
-                <span className="hidden md:inline">{cat.label}</span>
-                <span className={`hidden sm:inline-flex text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  isActiveChip ? "bg-white/20 text-white" : "bg-white/10 text-gray-400"
-                }`}>
+                <span className="menu-chip__icon" aria-hidden="true">
+                  <Icon size={15} />
+                </span>
+                <span className="hidden sm:inline">{cat.label}</span>
+                <span className="sm:hidden">{cat.short}</span>
+                <span className="menu-chip__count">
                   {count}
                 </span>
               </button>
@@ -197,17 +252,20 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         </div>
       </div>
 
+      {/* Static Visual Category Cards Slider (Screenshot Style) */}
+      <MenuCategorySlider menuItems={menuItems} selectedId={menuFilter} onSelect={scrollToCategory} />
+
       {isLoadingMenu ? (
         <MenuCardGrid title="" items={[]} onOrder={addToCart} isLoading={true} showHeader={false} />
       ) : hasSearch && menuFilter === "all" && grouped.length === 0 ? (
-        /* No search results */
-        <div className="text-center py-20 space-y-4">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto">
-            <Search size={28} className="text-gray-500" />
+        /* No search results — outside dark .menu-section, so use light-theme tokens */
+        <div className="menu-empty text-center py-20 space-y-4">
+          <div className="menu-empty__icon w-16 h-16 rounded-full flex items-center justify-center mx-auto">
+            <Search size={28} />
           </div>
-          <p className="text-lg font-bold text-white">No items found</p>
-          <p className="text-sm max-w-xs mx-auto" style={{ color: "var(--menu-text-secondary)" }}>
-            No results for "<span className="text-amber-400/80 font-medium">{searchQuery}</span>".
+          <p className="menu-empty__title text-lg font-bold">No items found</p>
+          <p className="menu-empty__desc text-sm max-w-xs mx-auto">
+            No results for "<span className="font-medium">{searchQuery}</span>".
             Try searching by name, ingredient (mozzarella, chicken), or category (pizza, drinks).
           </p>
         </div>
@@ -215,7 +273,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         /* Grouped view: all categories with scroll spy anchors */
         <section className="menu-section font-body">
           <div className="menu-section__inner">
-            <div id="menu-anchor-top" className="text-center space-y-3 mb-12">
+            <div id="menu-anchor-top" className="text-center space-y-2 mb-6 md:mb-8 pt-1">
               <div className="flex items-center justify-center gap-3">
                 <span className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/50" />
                 <span
@@ -226,11 +284,11 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
                 </span>
                 <span className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/50" />
               </div>
-              <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-white tracking-wide leading-tight">
+              <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl tracking-wide leading-tight">
                 Our Gourmet Menu
               </h2>
-              <p className="text-sm max-w-xl mx-auto font-body" style={{ color: "var(--menu-text-secondary)" }}>
-                Hand-made recipes with premium components, wood-fired hot and delivered instantly.
+              <p className="text-xs sm:text-sm max-w-xl mx-auto font-body opacity-80" style={{ color: "var(--menu-text-secondary)" }}>
+                Hand-made recipes with premium components, oven-baked hot and delivered instantly.
               </p>
             </div>
 
@@ -258,6 +316,8 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
                   emptyMessage="No items found in this category."
                   limit={6}
                   isLoading={isLoadingMenu}
+                  displayToast={displayToast}
+                  onQuickView={openQuickView}
                 />
               </div>
             ))}
@@ -268,10 +328,10 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         <MenuCardGrid
           title={
             menuFilter === "featured" ? "⭐ Featured Items & Combos"
-            : menuFilter === "pizza" ? "Wood-Fired Pizzas"
-            : menuFilter === "sides" ? "Savoury Sides & Appetizers"
-            : menuFilter === "drinks" ? "Ice Cold Drinks & Revivers"
-            : "Heavenly Sweet Finishes"
+              : menuFilter === "pizza" ? "Handcrafted Pizzas"
+                : menuFilter === "sides" ? "Savoury Sides & Appetizers"
+                  : menuFilter === "drinks" ? "Ice Cold Drinks & Revivers"
+                    : "Heavenly Sweet Finishes"
           }
           items={filteredItems}
           onOrder={addToCart}
@@ -282,6 +342,8 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
               : "No items found in this category. Try selecting a different filter."
           }
           isLoading={isLoadingMenu}
+          displayToast={displayToast}
+          onQuickView={openQuickView}
         />
       )}
     </div>

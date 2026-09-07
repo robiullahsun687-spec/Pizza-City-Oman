@@ -13,6 +13,8 @@ interface MenuCardGridProps {
   limit?: number;
   showHeader?: boolean;
   isLoading?: boolean;
+  displayToast?: (msg: string) => void;
+  onQuickView?: (item: MenuItem) => void;
 }
 
 function SkeletonCard() {
@@ -52,13 +54,15 @@ export default function MenuCardGrid({
   limit,
   showHeader = true,
   isLoading = false,
+  displayToast,
+  onQuickView,
 }: MenuCardGridProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Reset expanded state when category filter or items collection changes
+  // Reset expanded state only when category changes (not on every items.length change)
   useEffect(() => {
     setIsExpanded(false);
-  }, [title, items.length]);
+  }, [title]);
 
   const resolveBadge = (item: MenuItem, index: number): string | undefined => {
     if (typeof badge === "function") {
@@ -138,6 +142,8 @@ export default function MenuCardGrid({
                   onOrder={onOrder}
                   badge={resolveBadge(item, index)}
                   index={index}
+                  displayToast={displayToast}
+                  onQuickView={onQuickView}
                 />
               </React.Fragment>
             ))}

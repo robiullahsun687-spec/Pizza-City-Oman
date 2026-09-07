@@ -76,7 +76,7 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
     setOrder(null);
 
     try {
-      const res = await fetch(`/api/orders/track/${idToTrack.trim()}`);
+      const res = await fetch(`/api/orders/track/${encodeURIComponent(idToTrack.trim())}`);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Order not found. Please verify the ID.");
@@ -85,7 +85,8 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
       const data = await res.json();
       if (data.success && data.order) {
         setOrder(data.order);
-        addToRecentOrders(idToTrack.trim());
+        // Store the full _id for reliable re-tracking (fixes 6-char input being stored as 6-char only)
+        addToRecentOrders(data.order._id);
       } else {
         throw new Error("Unable to read tracking data from server response.");
       }
@@ -281,7 +282,7 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
           Track Your Hot Slice
         </h2>
         <p className="text-xs text-[var(--pc-gray-500)] max-w-xl leading-relaxed">
-          Enter your 6-character order code or the full order ID from your WhatsApp message to monitor your gourmet wood-fired pizza assembly in real-time.
+          Enter your 6-character order code or the full order ID from your WhatsApp message to monitor your gourmet handcrafted pizza assembly in real-time.
         </p>
       </div>
 
@@ -435,8 +436,8 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
                     }}
                     className="flex items-center justify-between bg-orange-50/30 hover:bg-[var(--pc-gray-100)] border border-[var(--pc-red-500)]/5 rounded-xl p-3 text-xs cursor-pointer text-[var(--pc-gray-700)] font-bold group transition-all"
                   >
-                    <span className="font-mono text-gray-500 group-hover:text-[var(--pc-red-500)] transition-colors">
-                      {id.slice(-8)}
+                    <span className="font-mono text-gray-500 group-hover:text-[var(--pc-red-500)] transition-colors" title={id}>
+                      {id.length > 6 ? `...${id.slice(-6)}` : id}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-[9px] bg-red-50 text-[var(--pc-red-500)] border border-red-100 px-2 py-0.5 rounded-md font-black">

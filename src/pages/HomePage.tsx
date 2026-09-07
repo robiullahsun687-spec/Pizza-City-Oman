@@ -1,8 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ShoppingCart, MapPin, Rocket, Star, ChefHat, Leaf, MessageCircle, ChevronLeft, ChevronRight, BadgePercent } from "lucide-react";
 import BannerSlider from "../components/BannerSlider";
-import { HeroBanner } from "../types";
+import { useLocation, useNavigate } from "react-router-dom";
+import { itemSlug } from "../lib/itemSlug";
+import HomeCategorySection from "../components/home/HomeCategorySection";
+import MenuCategorySlider from "../components/MenuCategorySlider";
+import HomeReviews from "../components/home/HomeReviews";
+import HomeLocationChips from "../components/home/HomeLocationChips";
+import { HeroBanner, MenuItem, Branch } from "../types";
+import { getFeaturedItems, getCategoryItems } from "../lib/menuSelectors";
+import { getBannerAltText } from "../lib/altText";
 
 interface HomePageProps {
   banners: HeroBanner[];
@@ -10,6 +18,11 @@ interface HomePageProps {
   setActiveTab: (tab: "home" | "menu" | "track" | "loc" | "contact" | "faq" | "admin") => void;
   displayToast: (msg: string) => void;
   onOpenOutletSelector?: () => void;
+  menuItems?: MenuItem[];
+  isLoadingMenu?: boolean;
+  branches?: Branch[];
+  onAddToCart?: (item: MenuItem) => void;
+  setMenuFilter?: (f: string) => void;
 }
 
 const heroContainerVariants = {
@@ -28,8 +41,8 @@ const heroItemVariants = {
 const HERO_DETAILS = {
   crust: {
     title: "🌾 48-Hour Signature Sourdough",
-    description: "Our signature crust undergoes a slow cold fermentation for 48 hours for maximum bubble structure, crisp wood-fired leopard crown, and perfect light digestibility.",
-    stats: [{ label: "Crispiness Factor", value: 96 }, { label: "Fermentation Depth", value: 98 }, { label: "Wood-fired Char", value: 92 }],
+    description: "Our signature crust undergoes a slow cold fermentation for 48 hours for maximum bubble structure, crisp golden oven-baked crown, and perfect light digestibility.",
+    stats: [{ label: "Crispiness Factor", value: 96 }, { label: "Fermentation Depth", value: 98 }, { label: "Golden Oven Bake", value: 95 }],
     emoji: "🌾",
     colorClass: "text-[var(--pc-red-500)] bg-[var(--pc-red-500)]/5 border-[var(--pc-red-500)]/10"
   },
@@ -49,25 +62,57 @@ const HERO_DETAILS = {
   }
 };
 
-export default function HomePage({ banners, isLoadingBanners, setActiveTab, displayToast, onOpenOutletSelector }: HomePageProps) {
+export default function HomePage({ banners, isLoadingBanners, setActiveTab, displayToast, onOpenOutletSelector, menuItems = [], isLoadingMenu = false, branches = [], onAddToCart, setMenuFilter }: HomePageProps) {
   const [activeHeroTab, setActiveHeroTab] = useState<"crust" | "sauce" | "cheese">("crust");
   const [pizzaRotation, setPizzaRotation] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleAddToCart = onAddToCart || (() => setActiveTab("menu"));
+
+  // Card tap → item quick-view (modal over homepage, shareable URL)
+  const openQuickView = (item: MenuItem) => {
+    navigate(`/menu/${itemSlug(item)}`, { state: { backgroundLocation: location } });
+  };
+
+  // Category slider is linked with the menu page: pick a category -> open /menu filtered to it.
+  const handleCategorySelect = (catId: string) => {
+    if (setMenuFilter) setMenuFilter(catId);
+    navigate("/menu");
+  };
+
+  // Same predicates as the menu page (lib/menuSelectors) — including
+  // unavailable items, so homepage teasers can never mismatch /menu.
+  const itemsByCategory = useMemo(() => {
+    return {
+      featured: getFeaturedItems(menuItems).slice(0, 6),
+      combo: getCategoryItems(menuItems, "combo").slice(0, 6),
+      pizza: getCategoryItems(menuItems, "pizza").slice(0, 6),
+      sides: getCategoryItems(menuItems, "sides").slice(0, 6),
+      drinks: getCategoryItems(menuItems, "drinks").slice(0, 6),
+      dessert: getCategoryItems(menuItems, "dessert").slice(0, 6),
+    };
+  }, [menuItems]);
+
+  const showMenuTeasers = isLoadingMenu || menuItems.length > 0;
 
   const handleOfferClick = (offer: HeroBanner) => {
     if (offer.buttonLink) {
-      if (offer.buttonLink === "#menu") {
-        setActiveTab("menu");
+      // Legacy "#menu" / "#locations" banner links -> route navigation
+      if (offer.buttonLink.startsWith("#")) {
+        const key = offer.buttonLink.replace("#", "");
+        const map: Record<string, "home" | "menu" | "track" | "loc" | "contact" | "faq"> = {
+          home: "home", menu: "menu", track: "track", locations: "loc", loc: "loc", contact: "contact", faq: "faq",
+        };
+        setActiveTab(map[key] || "menu");
+        return;
+      }
+      if (offer.buttonLink.startsWith("http")) {
+        window.location.href = offer.buttonLink;
+      } else if (offer.buttonLink.startsWith("/")) {
+        window.location.href = offer.buttonLink;
       } else {
-        const el = document.querySelector(offer.buttonLink);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-        } else {
-          if (offer.buttonLink.startsWith("http")) {
-            window.location.href = offer.buttonLink;
-          } else {
-            setActiveTab("menu");
-          }
-        }
+        setActiveTab("menu");
       }
     } else {
       setActiveTab("menu");
@@ -102,9 +147,12 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
 
   return (
     <div className="pb-3">
+      {/* Primary Semantic H1 for Search Engines & Screen Readers */}
+      <h1 className="sr-only">Pizza City Oman — Handcrafted Oven-Baked Pizza, Sourdough Crust &amp; Online Delivery</h1>
+
       {/* Dynamic Web Banners Hero Gallery */}
       {/* Mobile: full-bleed behind dark translucent navbar; Desktop: contained with rounded corners */}
-      <div className="bg-[var(--pc-gray-900)] pt-20 md:pt-0 md:bg-transparent md:container md:mx-auto md:px-0 md:pt-auto">
+      <div className="pt-14 md:pt-10 md:container md:mx-auto md:px-0 md:pt-auto">
         <div className="w-full md:rounded-3xl overflow-hidden">
           <BannerSlider 
             banners={banners.filter(b => b.type === "hero" || b.type === "all" || !b.type)}
@@ -127,13 +175,13 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
           <motion.div variants={heroItemVariants} className="inline-flex items-center gap-2 text-xs font-black uppercase text-[var(--pc-amber-400)] bg-[var(--pc-amber-400)]/10 px-3.5 py-1.5 rounded-full">
             🍕 Handcrafted · Premium · Delivered Fast
           </motion.div>
-          <motion.h1 variants={heroItemVariants} className="font-playfair font-black text-4xl sm:text-5xl lg:text-6xl text-[var(--pc-gray-700)] leading-tight">
+          <motion.h2 variants={heroItemVariants} className="font-playfair font-black text-4xl sm:text-5xl lg:text-6xl text-[var(--pc-gray-700)] leading-tight">
             The Art of the <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] hover:brightness-110 transition-all duration-300">Perfect Slice</span> <br />
             Starts Here.
-          </motion.h1>
+          </motion.h2>
           <motion.p variants={heroItemVariants} className="text-[var(--pc-gray-500)] text-base md:text-lg leading-relaxed max-w-xl">
-            Authentic wood-fired pizzas, hand-kneaded signature sourdough bases, and premium Omani ingredients. Place an order directly onto the database with instant WhatsApp notification routing!
+            Handcrafted oven-baked pizzas, hand-kneaded signature sourdough bases, and premium Omani ingredients. Place an order directly onto the database with instant WhatsApp notification routing!
           </motion.p>
 
           <motion.div variants={heroItemVariants} className="bg-white rounded-3xl border border-[var(--pc-red-500)]/10 p-5 shadow-sm max-w-xl space-y-4">
@@ -207,7 +255,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
             <span className="text-2xl">🔥</span>
             <div>
               <p className="text-xs font-black text-[var(--pc-gray-700)]">Continuous Hot Oven</p>
-              <p className="text-[10px] text-[var(--pc-gray-500)]">Fresh &amp; stone-fired @ 450°C</p>
+              <p className="text-[10px] text-[var(--pc-gray-500)]">Fresh &amp; oven-baked hot</p>
             </div>
           </motion.div>
         </div>
@@ -225,7 +273,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
           <div className="stats-grid" style={{ display: "grid" }}>
             {[
               { icon: Rocket, color: "var(--pc-amber-400)", number: "30", suffix: "Min", label: "Delivery Guarantee" },
-              { icon: MapPin, color: "var(--pc-amber-400)", number: "6",  suffix: "",    label: "Outlets Across Oman" },
+              { icon: MapPin, color: "var(--pc-amber-400)", number: "9",  suffix: "",    label: "Outlets Across Oman" },
               { icon: Star,   color: "var(--pc-amber-400)", number: "150", suffix: "+",  label: "5-Star Reviews" },
               { icon: ChefHat,color: "var(--pc-red-500)",    number: "30", suffix: "+",   label: "Menu Items" },
             ].map(({ icon: IconComponent, number, suffix, label }) => (
@@ -275,7 +323,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
             }}
           >
             {(() => {
-              const chips = ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja", "Al Khoud", "Baraka","Mabella"];
+              const chips = ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja", "Al Khoud", "Baraka","Mabela","Ibri"];
               const render = (ariaHidden: boolean) =>
                 chips.map((chip) => (
                   <span
@@ -401,7 +449,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                   >
                     <img
                       src={offer.image}
-                      alt={offer.title}
+                      alt={getBannerAltText(offer)}
                       className="w-full h-full object-cover group-hover/card:scale-[1.03] transition-transform duration-500"
                       loading="lazy"
                       referrerPolicy="no-referrer"
@@ -413,6 +461,89 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
           </div>
         )}
       </section>
+
+      {/* Menu category slider — same section as the menu page, linked through to /menu */}
+      {showMenuTeasers && (
+        <div className="container mx-auto px-4 md:px-8 mt-8 md:mt-12">
+          <MenuCategorySlider
+            menuItems={menuItems}
+            selectedId="all"
+            onSelect={handleCategorySelect}
+          />
+        </div>
+      )}
+
+      {/* Menu by category — 6 items on desktop (2 full rows), 3 on mobile + View All (plain /menu) */}
+      {showMenuTeasers && (
+        <>
+          <HomeCategorySection
+            id="home-cat-featured"
+            title="Featured Items & Combos"
+            subtitle="Our most-loved picks — limited-time favourites."
+            items={itemsByCategory.featured}
+            isLoading={isLoadingMenu}
+            onOrder={handleAddToCart}
+            onQuickView={openQuickView}
+            displayToast={displayToast}
+          />
+          <HomeCategorySection
+            id="home-cat-combo"
+            title="Combo Deals"
+            subtitle="More food, smarter OMR value for groups."
+            items={itemsByCategory.combo}
+            isLoading={isLoadingMenu}
+            onOrder={handleAddToCart}
+            onQuickView={openQuickView}
+            displayToast={displayToast}
+          />
+          <HomeCategorySection
+            id="home-cat-pizza"
+            title="Handcrafted Pizzas"
+            subtitle="48-hour sourdough, oven-baked hot."
+            items={itemsByCategory.pizza}
+            isLoading={isLoadingMenu}
+            onOrder={handleAddToCart}
+            onQuickView={openQuickView}
+            displayToast={displayToast}
+          />
+          <HomeCategorySection
+            id="home-cat-sides"
+            title="Savoury Sides & Appetizers"
+            subtitle="Garlic bread, wings and more to start."
+            items={itemsByCategory.sides}
+            isLoading={isLoadingMenu}
+            onOrder={handleAddToCart}
+            onQuickView={openQuickView}
+            displayToast={displayToast}
+          />
+          <HomeCategorySection
+            id="home-cat-drinks"
+            title="Ice Cold Drinks & Revivers"
+            subtitle="Chilled drinks to go with every slice."
+            items={itemsByCategory.drinks}
+            isLoading={isLoadingMenu}
+            onOrder={handleAddToCart}
+            onQuickView={openQuickView}
+            displayToast={displayToast}
+          />
+          <HomeCategorySection
+            id="home-cat-dessert"
+            title="Heavenly Sweet Finishes"
+            subtitle="Desserts to close the meal right."
+            items={itemsByCategory.dessert}
+            isLoading={isLoadingMenu}
+            onOrder={handleAddToCart}
+            onQuickView={openQuickView}
+            displayToast={displayToast}
+          />
+        </>
+      )}
+
+      {/* Demo Omani reviews */}
+      <HomeReviews id="home-reviews" />
+
+      {/* Location chips from branches API */}
+      <HomeLocationChips branches={branches} id="home-locations" />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, HelpCircle, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -15,6 +15,36 @@ export default function FaqPage() {
     { q: "Are all components of the pizza clean and fresh?", a: "Yes, 100%! We source premium whole-milk mozzarella and hand-stretch our dough daily. No frozen crusts or canned shortcuts are ever permitted." },
   ];
 
+  // Inject FAQPage Schema.org JSON-LD for rich snippet search results
+  useEffect(() => {
+    const existing = document.getElementById("faq-schema");
+    if (existing) existing.remove();
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: FAQS.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.a,
+        },
+      })),
+    };
+
+    const script = document.createElement("script");
+    script.id = "faq-schema";
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify(faqSchema);
+    document.head.appendChild(script);
+
+    return () => {
+      const el = document.getElementById("faq-schema");
+      if (el) el.remove();
+    };
+  }, []);
+
   const filteredFaqs = FAQS.filter(f => 
     f.q.toLowerCase().includes(faqSearchQuery.toLowerCase()) || 
     f.a.toLowerCase().includes(faqSearchQuery.toLowerCase())
@@ -24,7 +54,7 @@ export default function FaqPage() {
     <div className="container mx-auto px-4 md:px-8 pb-16 space-y-8 animate-fadeIn">
       <div className="text-center space-y-1.5 max-w-xl mx-auto py-6">
         <span className="text-xs font-bold text-[var(--pc-amber-400)] uppercase tracking-widest block font-sans">Support</span>
-        <h1 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Answers to Common Queries</h1>
+        <h2 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Answers to Common Queries</h2>
         <p className="text-xs text-[var(--pc-gray-500)] leading-relaxed">
           Search questions or look at the accordion blocks below to resolve your inquiries instantly.
         </p>

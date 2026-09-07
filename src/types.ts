@@ -7,6 +7,7 @@ export interface MenuItem {
   price: number;
   description: string;
   image: string;
+  altText?: string;
   available: boolean;
   discountPrice?: number;
   discountPercentage?: number;
@@ -69,6 +70,7 @@ export interface Branch {
   delivery?: boolean;
   isActive?: boolean;
   image?: string;
+  altText?: string;
 }
 
 export const OUTLETS = {
@@ -87,6 +89,7 @@ export interface HeroBanner {
   subtitle: string;
   badge: string;
   image: string;
+  altText?: string;
   buttonText: string;
   buttonLink: string;
   isActive: boolean;

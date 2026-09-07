@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, Link, Navigate, matchPath, useLocation, useNavigate } from "react-router-dom";
+import Seo from "./components/Seo";
+import { PAGE_SEO, SECTION_TO_PATH, SITE_URL } from "./lib/seo";
+import { LOGO_ALT, getMenuItemAltText } from "./lib/altText";
 import { 
   Menu as MenuIcon, X, ShoppingCart, MapPin, Lock, Sun, Flame, ShoppingBag, Search, ArrowLeft
 } from "lucide-react";
@@ -18,6 +21,12 @@ import ContactPage from "./pages/ContactPage";
 import FaqPage from "./pages/FaqPage";
 import TrackOrderPage from "./pages/TrackOrderPage";
 import AdminPage from "./pages/AdminPage";
+import LocationDetailPage from "./pages/LocationDetailPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import ItemDetailPage from "./pages/ItemDetailPage";
+import ItemDetailContent from "./components/ItemDetailContent";
+import { getItemDetailData, itemSlug } from "./lib/itemSlug";
 
 // Types & Utils
 import { MenuItem, CartEntry, HeroBanner, Branch } from "./types";
@@ -54,48 +63,38 @@ export default function App() {
   const currentPath = location.pathname;
   const isAdminRoute = currentPath === "/admin";
 
+  // Item quick-view: card taps push /menu/:slug with the previous location stashed,
+  // so the background page stays mounted behind the modal.
+  const backgroundLocation = (location.state as { backgroundLocation?: Location } | null)?.backgroundLocation;
+  const itemRouteMatch = matchPath("/menu/:slug", location.pathname);
+  const quickViewSlug = backgroundLocation ? itemRouteMatch?.params.slug : undefined;
+  // While the modal is open, nav/highlight follow the background page, not the item URL.
+  const navPath = backgroundLocation ? backgroundLocation.pathname : currentPath;
+
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // SEO: keep the public homepage indexable and keep the staff portal out of search.
-  useEffect(() => {
-    const canonicalHref = "https://pizzacityoman.com/";
-    const robotsContent = isAdminRoute ? "noindex, nofollow" : "index, follow";
-
-    let robotsMeta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
-    if (!robotsMeta) {
-      robotsMeta = document.createElement("meta");
-      robotsMeta.name = "robots";
-      document.head.appendChild(robotsMeta);
-    }
-    robotsMeta.content = robotsContent;
-
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
-    }
-    canonical.href = canonicalHref;
-
-    if (isAdminRoute) {
-      document.title = "Staff Portal | Pizza City Oman";
-    } else {
-      document.title = "Pizza City Oman — Authentic Wood-Fired Pizza | Order Online";
-    }
-  }, [isAdminRoute]);
-
-  const [activeSection, setActiveSection] = useState<string>("home");
   const [navHidden, setNavHidden] = useState(false);
-  // Navbar adopts the full-width category-bar look when it's over the menu section
-  const isBarAttached = activeSection === "menu";
+  // Navbar adopts the full-width category-bar look on the menu route
+  const isBarAttached = navPath === "/menu" || navPath.startsWith("/menu/");
   const prevScrollY = useRef(0);
+  // Skip the scroll-to-top effect once when opening/closing the quick-view modal
+  const skipScrollTopOnce = useRef(false);
+  // Active nav section is now derived from the route (multi-page SEO routing).
+  const activeSection =
+    navPath === "/" ? "home"
+    : navPath === "/menu" || navPath.startsWith("/menu/") ? "menu"
+    : navPath === "/track-order" || navPath === "/track" ? "track"
+    : navPath.startsWith("/locations") ? "locations"
+    : navPath === "/contact" ? "contact"
+    : navPath === "/faq" ? "faq"
+    : "home";
 
-  // Global Theme Selection
+  // Global Theme Selection — dark (midnight oven) is the default.
+  // Only explicit "light" opts out; first visit (null) and legacy values land on dark.
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
-      return localStorage.getItem("pizza_city_theme") === "midnight_oven";
+      return localStorage.getItem("pizza_city_theme") !== "light";
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -127,6 +126,9 @@ export default function App() {
   // Global Cart (persisted to localStorage)
   const [cart, setCart] = useState<CartEntry[]>(loadCartFromStorage);
   const [isOutletSelectorOpen, setIsOutletSelectorOpen] = useState(false);
+  const [lastPlacedOrderId, setLastPlacedOrderId] = useState<string>(() => {
+    try { return localStorage.getItem("pizza_city_last_placed_order_id") || ""; } catch { return ""; }
+  });
 
   const [selectedConfigureItem, setSelectedConfigureItem] = useState<MenuItem | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>("Medium");
@@ -172,7 +174,8 @@ export default function App() {
 
   const goToMenuResults = () => {
     closeNavSearch(false);
-    scrollToSection("menu");
+    setDrawerOpen(false);
+    if (currentPath !== "/menu") navigate("/menu");
   };
 
   const [toastMessage, setToastMessage] = useState("");
@@ -183,6 +186,37 @@ export default function App() {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
+
+  // Footer newsletter (validated, no dead form)
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = newsletterEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      displayToast("Please enter a valid email address.");
+      return;
+    }
+    try {
+      const stored = JSON.parse(localStorage.getItem("pizza_city_newsletter") || "[]");
+      const list = Array.isArray(stored) ? stored : [];
+      if (!list.includes(email)) {
+        list.push(email);
+        localStorage.setItem("pizza_city_newsletter", JSON.stringify(list));
+      }
+    } catch {
+      // storage unavailable — still confirm
+    }
+    setNewsletterEmail("");
+    displayToast("Shukran! You're on the list for exclusive offers.");
+  };
+
+  const toSlug = (name: string) =>
+    (name || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
+  const footerBranches = useMemo(() => {
+    const list = branches && branches.length > 0 ? branches : [];
+    return list.filter((b) => b.isActive !== false).slice(0, 6);
+  }, [branches]);
 
   const refreshMenu = async () => {
     try {
@@ -219,42 +253,22 @@ export default function App() {
     loadData();
   }, []);
 
-  // Smooth scroll logic
+  // Route-based navigation (multi-page SEO routing — replaces scrollToSection).
+  // Kept under the same name so existing callbacks (footer, drawers, banners)
+  // keep working while now producing real indexable URLs.
   const scrollToSection = (sectionId: string) => {
     setDrawerOpen(false);
-    if (currentPath !== "/") {
-      navigate(`/#${sectionId}`);
+    const target = SECTION_TO_PATH[sectionId] || "/";
+    if (currentPath !== target) {
+      navigate(target);
     } else {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
-        setActiveSection(sectionId);
-      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  // Scroll Spy to detect active section
+  // Hide-navbar-on-scroll (applies to all routes now, not just "/")
   useEffect(() => {
-    if (currentPath !== "/") return;
-
-    const sections = ["home", "menu", "track", "locations", "contact", "faq"];
-    
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 160; // offset for fixed header
-      
-      let currentSection = "home";
-      for (const section of sections) {
-        const el = document.getElementById(section);
-        if (el) {
-          const top = el.offsetTop;
-          if (scrollPosition >= top) {
-            currentSection = section;
-          }
-        }
-      }
-      setActiveSection(currentSection);
-
-      // Facebook-style hide-navbar-on-scroll — revealed on any upward scroll
       const y = window.scrollY;
       if (y > prevScrollY.current + 5 && y > 120 && !navSearchOpen && !drawerOpen) {
         setNavHidden(true);
@@ -263,55 +277,38 @@ export default function App() {
       }
       prevScrollY.current = y;
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [currentPath]);
+  }, [navSearchOpen, drawerOpen]);
 
-  // Handle hash scrolling on path changes / page load
+  // Backward compatibility: old hash links (/#menu, /#faq, ...) -> clean routes (/menu, /faq, ...)
   useEffect(() => {
-    if (currentPath === "/") {
-      const hash = window.location.hash;
-      if (hash) {
-        const id = hash.replace("#", "");
-        const timer = setTimeout(() => {
-          const element = document.getElementById(id);
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "start" });
-            setActiveSection(id);
-          }
-        }, 150);
-        return () => clearTimeout(timer);
-      } else {
-        // Default to home if no hash
-        setActiveSection("home");
-      }
+    const hash = (location.hash || window.location.hash || "").replace("#", "");
+    if (!hash) return;
+    const target = SECTION_TO_PATH[hash];
+    if (target && currentPath !== target) {
+      navigate(target, { replace: true });
     }
-  }, [currentPath, location.hash]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.hash, currentPath]);
 
-  // Scroll to top on load (after splash) and on route change — unless a hash
-  // target is present, in which case the hash handler above takes over.
+  // Scroll to top on route change (after splash).
+  // Skipped when opening/closing the item quick-view modal so the background keeps its scroll.
   useEffect(() => {
     if (isAppLoading) return;
-    if (!window.location.hash) {
-      window.scrollTo(0, 0);
+    if (skipScrollTopOnce.current) {
+      skipScrollTopOnce.current = false;
+      return;
     }
+    window.scrollTo(0, 0);
+    setNavHidden(false);
+    prevScrollY.current = 0;
   }, [isAppLoading, currentPath]);
 
-  // Redirect legacy routes to anchor links
+  // Legacy /track alias -> canonical /track-order
   useEffect(() => {
-    const pathMap: Record<string, string> = {
-      "/menu": "menu",
-      "/track": "track",
-      "/locations": "locations",
-      "/contact": "contact",
-      "/faq": "faq",
-    };
-    const targetSection = pathMap[currentPath];
-    if (targetSection) {
-      navigate(`/#${targetSection}`, { replace: true });
+    if (currentPath === "/track") {
+      navigate("/track-order", { replace: true });
     }
   }, [currentPath, navigate]);
 
@@ -349,6 +346,67 @@ export default function App() {
     setIsOutletSelectorOpen(true);
   };
 
+  // Direct add from item detail views (size/qty already chosen — same pricing math, no configure modal)
+  const addDirectToCart = (product: MenuItem, size: string, quantity: number) => {
+    const basePrice = (product.discountPrice && product.discountPrice < product.price)
+      ? product.discountPrice : product.price;
+    const itemSizes = product.sizes || getDefaultSizes(product.category);
+    const validSize = itemSizes.find((s) => s.name === size) ? size : itemSizes[0]?.name || "Medium";
+    const optimizedPrice = getOptimizedUnitPrice(basePrice, validSize, itemSizes, quantity);
+
+    setCart((prev) => {
+      const exists = prev.find((entry) => entry.item._id === product._id && entry.size === validSize);
+      if (exists) {
+        const newQty = exists.quantity + quantity;
+        const reOptimizedPrice = getOptimizedUnitPrice(basePrice, validSize, itemSizes, newQty);
+        return prev.map((entry) =>
+          entry.item._id === product._id && entry.size === validSize
+            ? { ...entry, quantity: newQty, unitPrice: reOptimizedPrice } : entry
+        );
+      }
+      return [...prev, { item: product, quantity, size: validSize, unitPrice: optimizedPrice }];
+    });
+
+    displayToast(`Added ${quantity}x ${product.name} to cart.`);
+    setIsOutletSelectorOpen(true);
+  };
+
+  // Item quick-view data + open/close (location plumbing lives near the top of the component)
+  const quickViewData = useMemo(
+    () => (quickViewSlug ? getItemDetailData(menuItems, quickViewSlug) : { item: null, related: [] }),
+    [quickViewSlug, menuItems]
+  );
+
+  const openQuickView = (product: MenuItem) => {
+    skipScrollTopOnce.current = true;
+    navigate(`/menu/${itemSlug(product)}`, { state: { backgroundLocation: location } });
+  };
+
+  const closeQuickView = () => {
+    skipScrollTopOnce.current = true;
+    if (backgroundLocation) {
+      navigate(backgroundLocation.pathname + backgroundLocation.search, { replace: true });
+    } else {
+      navigate("/menu");
+    }
+  };
+
+  // Lock body scroll + Escape-to-close while the quick-view modal is open
+  useEffect(() => {
+    if (!quickViewSlug) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeQuickView();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickViewSlug]);
+
   const updateCartItem = (index: number, newQty: number, newSize: string) => {
     if (newQty <= 0) {
       setCart((prev) => prev.filter((_, idx) => idx !== index));
@@ -373,6 +431,29 @@ export default function App() {
     );
   };
 
+  // Menu ItemList JSON-LD for the /menu route (names + images only — prices are size-dependent)
+  const menuItemListSchema = useMemo(() => {
+    const items = menuItems.filter((item) => item.available !== false);
+    if (items.length === 0) return undefined;
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Pizza City Oman Menu",
+      url: `${SITE_URL}/menu`,
+      numberOfItems: items.length,
+      itemListElement: items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "MenuItem",
+          name: item.name,
+          ...(item.description ? { description: item.description } : {}),
+          ...(item.image ? { image: item.image } : {}),
+        },
+      })),
+    };
+  }, [menuItems]);
+
   const cartTotalQty = cart.reduce((sum, entry) => sum + entry.quantity, 0);
   const cartTotalPrice = cart.reduce((sum, entry) => sum + entry.unitPrice * entry.quantity, 0);
 
@@ -394,23 +475,34 @@ export default function App() {
     }
   };
 
-  const NavItem = ({ sectionId, label, isActive }: { sectionId: string, label: string, isActive: boolean }) => (
-    <li className="relative">
-      {isActive && (
-        <motion.div
-          layoutId="nav-active-pill"
-          transition={{ type: "spring", stiffness: 380, damping: 30 }}
-          className="absolute inset-0 rounded-full bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] shadow-md shadow-[var(--pc-red-500)]/30"
-        />
-      )}
-      <button 
-        onClick={() => scrollToSection(sectionId)} 
-        className={`relative z-10 px-4 py-1.5 whitespace-nowrap transition-colors hover:text-[var(--pc-red-500)] font-extrabold text-sm cursor-pointer ${isActive ? "text-white" : "text-inherit"}`}
-      >
-        {label}
-      </button>
-    </li>
-  );
+  const handleOrderSuccess = (orderId: string) => {
+    setLastPlacedOrderId(orderId);
+    try { localStorage.setItem("pizza_city_last_placed_order_id", orderId); } catch {}
+    displayToast(`✅ Order ${orderId.slice(-6).toUpperCase()} confirmed! Tracking now...`);
+    // Give modal closing animation a moment, then go to the tracker page
+    setTimeout(() => navigate("/track-order"), 250);
+  };
+
+  const NavItem = ({ sectionId, label, isActive }: { sectionId: string, label: string, isActive: boolean }) => {
+    const to = SECTION_TO_PATH[sectionId] || "/";
+    return (
+      <li className="relative">
+        {isActive && (
+          <motion.div
+            layoutId="nav-active-pill"
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            className="absolute inset-0 rounded-full bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] shadow-md shadow-[var(--pc-red-500)]/30"
+          />
+        )}
+        <Link
+          to={to}
+          className={`relative z-10 px-4 py-1.5 whitespace-nowrap transition-colors hover:text-[var(--pc-red-500)] font-extrabold text-sm cursor-pointer inline-block ${isActive ? "text-white" : "text-inherit"}`}
+        >
+          {label}
+        </Link>
+      </li>
+    );
+  };
 
   const drawerItems = [
     { id: "home", label: "Home" },
@@ -431,8 +523,13 @@ export default function App() {
 {/* Navbar — Glass Ember Floating Pill */}
 <nav
         id="navbar"
-        className={`fixed left-0 right-0 z-40 mx-auto h-11 md:h-16 ${isBarAttached ? "w-full max-w-none mx-0" : "w-[calc(100%-1.5rem)] max-w-5xl"} rounded-full glass-navbar transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform ${isBarAttached ? "navbar--attached" : ""} ${navHidden ? "-translate-y-[130px]" : ""}`}
-        style={{ top: isBarAttached ? "0px" : "max(0.75rem, env(safe-area-inset-top, 0px))" }}
+        className={`fixed left-0 right-0 z-40 h-14 md:h-16 ${
+          isBarAttached
+            ? "w-full max-w-none mx-0 rounded-none top-0 navbar--attached"
+            : "w-full mx-0 rounded-none top-0 md:w-[calc(100%-1.5rem)] md:max-w-5xl md:mx-auto md:rounded-full md:top-[max(0.75rem,env(safe-area-inset-top,0px))]"
+        } glass-navbar transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform ${
+          navHidden ? "-translate-y-[130px]" : ""
+        }`}
       >
         {navSearchOpen && (
           <div className="fixed inset-0 -z-10 bg-black/50 backdrop-blur-sm" onClick={() => closeNavSearch()} />
@@ -525,16 +622,16 @@ export default function App() {
               className="flex items-center justify-between w-full h-full px-3 md:px-5 gap-2"
             >
               <div className="flex items-center cursor-pointer shrink min-w-0" onClick={() => scrollToSection("home")}>
-                <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/dfZWWj1nq2KWjIwX/ei_1771693328794-removebg-preview-H1gq480p6x8lYS4E.png" alt="Pizza City" className="h-7 min-[400px]:h-8 sm:h-9 md:h-11 object-contain shrink-0" />
+                <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/dfZWWj1nq2KWjIwX/ei_1771693328794-removebg-preview-H1gq480p6x8lYS4E.png" alt={LOGO_ALT} className="h-7 min-[400px]:h-8 sm:h-9 md:h-11 object-contain shrink-0" />
               </div>
 
               <ul className="hidden md:flex items-center gap-1 font-extrabold text-sm text-[var(--pc-gray-600)]">
-                <NavItem sectionId="home" label="Home" isActive={currentPath === "/" && activeSection === "home"} />
-                <NavItem sectionId="menu" label="Menu" isActive={currentPath === "/" && activeSection === "menu"} />
-                <NavItem sectionId="track" label="Track Order" isActive={currentPath === "/" && activeSection === "track"} />
-                <NavItem sectionId="locations" label="Locations" isActive={currentPath === "/" && activeSection === "locations"} />
-                <NavItem sectionId="contact" label="Contact" isActive={currentPath === "/" && activeSection === "contact"} />
-                <NavItem sectionId="faq" label="FAQs" isActive={currentPath === "/" && activeSection === "faq"} />
+                <NavItem sectionId="home" label="Home" isActive={activeSection === "home"} />
+                <NavItem sectionId="menu" label="Menu" isActive={activeSection === "menu"} />
+                <NavItem sectionId="track" label="Track Order" isActive={activeSection === "track"} />
+                <NavItem sectionId="locations" label="Locations" isActive={activeSection === "locations"} />
+                <NavItem sectionId="contact" label="Contact" isActive={activeSection === "contact"} />
+                <NavItem sectionId="faq" label="FAQs" isActive={activeSection === "faq"} />
               </ul>
 
               <div className="flex items-center gap-2 md:gap-2.5 shrink-0">
@@ -582,15 +679,25 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: "115%" }}
               transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              className="fixed right-3 top-3 bottom-3 z-50 w-[72%] max-w-[320px] min-w-[250px] md:hidden glass-drawer rounded-[24px] p-4 pt-24 flex flex-col gap-1 overflow-y-auto"
+              className="fixed right-3 top-3 bottom-3 z-50 w-[72%] max-w-[320px] min-w-[250px] md:hidden glass-drawer rounded-[24px] p-4 flex flex-col gap-1 overflow-y-auto"
             >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--pc-red-500)]/10 mb-1">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setDrawerOpen(false); scrollToSection("home"); }}>
+                  <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/dfZWWj1nq2KWjIwX/ei_1771693328794-removebg-preview-H1gq480p6x8lYS4E.png" alt={LOGO_ALT} className="h-7 object-contain" />
+                </div>
+                <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-full glass-navbar-btn active:scale-90 transition-all flex items-center justify-center" aria-label="Close menu">
+                  <X size={18} />
+                </button>
+              </div>
+
               {/* Theme toggle */}
               <motion.button
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
                 onClick={() => { setIsDarkMode(!isDarkMode); displayToast(!isDarkMode ? "Midnight Oven dark mode enabled." : "Switched to light mode."); }}
-                className="flex items-center justify-between w-full py-3 px-4 rounded-2xl font-bold text-sm glass-navbar-btn"
+                className="flex items-center justify-between w-full py-3 px-4 rounded-2xl font-bold text-sm glass-navbar-btn mt-1"
               >
                 <span className="flex items-center gap-2.5">
                   {isDarkMode ? <Sun size={16} className="text-amber-400 fill-amber-400/20" /> : <Flame size={16} className="text-[var(--pc-amber-400)]" />}
@@ -604,14 +711,17 @@ export default function App() {
               <div className="h-px bg-[var(--pc-red-500)]/10 my-1.5" />
 
               {drawerItems.map((item, i) => {
-                const isActive = currentPath === "/" && activeSection === item.id;
+                const isActive = activeSection === item.id;
                 return (
                   <motion.button
                     key={item.id}
                     initial={{ opacity: 0, x: 24 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 + i * 0.06 }}
-                    onClick={() => scrollToSection(item.id)}
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      navigate(SECTION_TO_PATH[item.id] || "/");
+                    }}
                     className={`py-3 px-4 font-bold rounded-2xl text-left transition-colors ${isActive ? "bg-[var(--pc-red-500)]/10 text-[var(--pc-red-500)]" : "text-[var(--pc-gray-600)] hover:bg-[var(--pc-red-500)]/5 hover:text-[var(--pc-red-500)]"}`}
                   >
                     {item.label}
@@ -628,95 +738,282 @@ export default function App() {
       </>
       )}
 
-      {/* Pages Router */}
+      {/* Pages Router — multi-page SEO routing: one URL per page.
+          When a quick-view modal is open, the background page stays mounted
+          (Routes render at backgroundLocation) and the item overlays it. */}
       <div className={`pt-0 ${isAdminRoute ? "" : "md:pt-24"} flex-1 ${cartTotalQty > 0 ? 'pb-20 md:pb-0' : ''}`}>
-        <Routes>
+        <Routes location={backgroundLocation || location}>
           <Route path="/" element={
-            <div className="flex flex-col gap-0 md:gap-16">
-              <section id="home" aria-labelledby="site-title">
-                <h1 id="site-title" className="sr-only">
-                  Pizza City — Authentic Wood-Fired Pizza in Oman
-                </h1>
-                <HomePage banners={banners} isLoadingBanners={isLoadingBanners} setActiveTab={(tab) => scrollToSection(tab === 'loc' ? 'locations' : tab)} displayToast={displayToast} onOpenOutletSelector={() => setIsOutletSelectorOpen(true)} />
-              </section>
-              <section id="menu" className="scroll-mt-24 mt-12 md:mt-0">
-                <MenuPage menuItems={menuItems} isLoadingMenu={isLoadingMenu} menuFilter={menuFilter} setMenuFilter={setMenuFilter} addToCart={addToCart} searchQuery={siteSearch} onSearchChange={setSiteSearch} navHidden={navHidden} />
-              </section>
-              <section id="track" className="scroll-mt-24 mt-12 md:mt-0">
-                <TrackOrderPage trackOrderId="" displayToast={displayToast} isDarkMode={isDarkMode} />
-              </section>
-              <section id="locations" className="scroll-mt-24 mt-12 md:mt-0">
+            <>
+              <Seo title={PAGE_SEO.home.title} description={PAGE_SEO.home.description} canonical={PAGE_SEO.home.canonical} />
+              <HomePage banners={banners} isLoadingBanners={isLoadingBanners} setActiveTab={(tab) => { const key = tab === 'loc' ? 'locations' : tab; navigate(SECTION_TO_PATH[key] || "/"); }} displayToast={displayToast} onOpenOutletSelector={() => setIsOutletSelectorOpen(true)} menuItems={menuItems} isLoadingMenu={isLoadingMenu} branches={branches} onAddToCart={addToCart} setMenuFilter={setMenuFilter} />
+            </>
+          } />
+          <Route path="/menu" element={
+            <>
+              <Seo title={PAGE_SEO.menu.title} description={PAGE_SEO.menu.description} canonical={PAGE_SEO.menu.canonical} schema={menuItemListSchema} schemaId="menu-itemlist-schema" />
+              <div className="mt-3 md:mt-0">
+                <MenuPage menuItems={menuItems} isLoadingMenu={isLoadingMenu} menuFilter={menuFilter} setMenuFilter={setMenuFilter} addToCart={addToCart} searchQuery={siteSearch} onSearchChange={setSiteSearch} navHidden={navHidden} displayToast={displayToast} />
+              </div>
+            </>
+          } />
+          <Route path="/track-order" element={
+            <>
+              <Seo title={PAGE_SEO.trackOrder.title} description={PAGE_SEO.trackOrder.description} canonical={PAGE_SEO.trackOrder.canonical} />
+              <div className="mt-12 md:mt-0">
+                <TrackOrderPage trackOrderId={lastPlacedOrderId} displayToast={displayToast} isDarkMode={isDarkMode} />
+              </div>
+            </>
+          } />
+          <Route path="/track" element={<Navigate to="/track-order" replace />} />
+          <Route path="/locations" element={
+            <>
+              <Seo title={PAGE_SEO.locations.title} description={PAGE_SEO.locations.description} canonical={PAGE_SEO.locations.canonical} />
+              <div className="mt-12 md:mt-0">
                 <LocationsPage branches={branches} />
-              </section>
-              <section id="contact" className="scroll-mt-24 mt-12 md:mt-0">
+              </div>
+            </>
+          } />
+          <Route path="/contact" element={
+            <>
+              <Seo title={PAGE_SEO.contact.title} description={PAGE_SEO.contact.description} canonical={PAGE_SEO.contact.canonical} />
+              <div className="mt-12 md:mt-0">
                 <ContactPage displayToast={displayToast} />
-              </section>
-              <section id="faq" className="scroll-mt-24 mt-12 md:mt-0 pb-16">
+              </div>
+            </>
+          } />
+          <Route path="/faq" element={
+            <>
+              <Seo title={PAGE_SEO.faq.title} description={PAGE_SEO.faq.description} canonical={PAGE_SEO.faq.canonical} />
+              <div className="mt-12 md:mt-0 pb-16">
                 <FaqPage />
-              </section>
-
-              {/* Restored Footer */}
-              <footer className="bg-[var(--pc-gray-700)] py-12 md:py-16 mt-8 rounded-t-[40px] shadow-2xl" style={{ color: "var(--pc-color-footer-text)" }}>
-                <div className="container mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-                  <div className="space-y-4">
-                    <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/dfZWWj1nq2KWjIwX/ei_1771693328794-removebg-preview-H1gq480p6x8lYS4E.png" alt="Pizza City" className="h-10 md:h-12 object-contain brightness-0 invert opacity-90" />
-                    <p className="text-sm leading-relaxed">Authentic wood-fired pizzas, hand-kneaded signature sourdough bases, and premium Omani ingredients.</p>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-playfair font-black text-lg mb-4">Quick Links</h4>
-                    <ul className="space-y-2 text-sm font-bold">
-                      <li><button onClick={() => scrollToSection("home")} className="hover:text-[var(--pc-amber-400)] transition-colors">Home</button></li>
-                      <li><button onClick={() => scrollToSection("menu")} className="hover:text-[var(--pc-amber-400)] transition-colors">Menu Catalog</button></li>
-                      <li><button onClick={() => scrollToSection("track")} className="hover:text-[var(--pc-amber-400)] transition-colors">Track Order</button></li>
-                      <li><button onClick={() => scrollToSection("locations")} className="hover:text-[var(--pc-amber-400)] transition-colors">Locations</button></li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-playfair font-black text-lg mb-4">Contact Info</h4>
-                    <ul className="space-y-2 text-sm font-bold">
-                      <li>Muscat, Oman</li>
-                      <li>Phone: +968 9692 8714</li>
-                      <li>Open Daily: 11 AM - 2 AM</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-playfair font-black text-lg mb-4">Newsletter</h4>
-                    <p className="text-sm mb-4">Subscribe for exclusive offers and secret menu drops.</p>
-                    <div className="flex bg-white/5 rounded-xl overflow-hidden p-1 focus-within:ring-2 ring-[var(--pc-amber-400)]/50 border border-white/10">
-                      <input type="email" placeholder="Your email address" className="bg-transparent border-none outline-none px-4 py-2 text-white text-sm w-full" />
-                      <button className="bg-[var(--pc-amber-400)] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[var(--pc-red-500)] transition-colors">Join</button>
-                    </div>
-                  </div>
-                </div>
-                <div className="container mx-auto px-4 md:px-8 mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-bold tracking-wider">
-                  <p>&copy; {new Date().getFullYear()} Pizza City Oman. All rights reserved.</p>
-                  <div className="flex gap-3">
-                    {SOCIAL_LINKS.map((social) => (
-                      <a
-                        key={social.id}
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={social.label}
-                        className="w-9 h-9 rounded-full bg-white flex items-center justify-center transition-all hover:bg-[var(--pc-amber-400)] hover:scale-110"
-                      >
-                        <img src={social.icon} alt={social.label} className="w-4.5 h-4.5" />
-                      </a>
-                    ))}
-                  </div>
-                  <div className="flex gap-4 items-center">
-                    <Link to="/admin" className="hover:text-white cursor-pointer flex items-center gap-1.5 transition-colors">
-                      <Lock size={12} /> Staff Portal
-                    </Link>
-                    <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-                    <span className="hover:text-white cursor-pointer">Terms of Service</span>
-                  </div>
-                </div>
-              </footer>
+              </div>
+            </>
+          } />
+          <Route path="/locations/:slug" element={<LocationDetailPage branches={branches} />} />
+          <Route path="/menu/:slug" element={
+            <div className="mt-3 md:mt-0">
+              <ItemDetailPage menuItems={menuItems} isLoadingMenu={isLoadingMenu} onAdd={addDirectToCart} onConfigure={addToCart} onQuickView={openQuickView} displayToast={displayToast} />
             </div>
           } />
-          <Route path="/admin" element={<AdminPage displayToast={displayToast} refreshMenu={refreshMenu} isDarkMode={isDarkMode} onToggleTheme={() => setIsDarkMode(!isDarkMode)} />} />
+          <Route path="/privacy" element={
+            <>
+              <Seo title={PAGE_SEO.privacy.title} description={PAGE_SEO.privacy.description} canonical={PAGE_SEO.privacy.canonical} />
+              <div className="mt-12 md:mt-0">
+                <PrivacyPage />
+              </div>
+            </>
+          } />
+          <Route path="/terms" element={
+            <>
+              <Seo title={PAGE_SEO.terms.title} description={PAGE_SEO.terms.description} canonical={PAGE_SEO.terms.canonical} />
+              <div className="mt-12 md:mt-0">
+                <TermsPage />
+              </div>
+            </>
+          } />
+          <Route path="/admin" element={
+            <>
+              <Seo title="Staff Portal | Pizza City Oman" description="Staff login for Pizza City Oman." canonical={`${SITE_URL}/admin`} noindex />
+              <AdminPage displayToast={displayToast} refreshMenu={refreshMenu} isDarkMode={isDarkMode} onToggleTheme={() => setIsDarkMode(!isDarkMode)} />
+            </>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+
+        {/* Item quick-view modal — overlay only; direct visits render the full page route instead */}
+        <AnimatePresence>
+          {quickViewSlug && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                exit={{ opacity: 0 }}
+                onClick={closeQuickView}
+                className="fixed inset-0 z-[55] bg-black"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                role="dialog"
+                aria-modal="true"
+                aria-label={quickViewData.item ? quickViewData.item.name : "Dish quick view"}
+                className="fixed inset-x-3 top-[4.5rem] bottom-4 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:top-24 md:bottom-8 md:w-[min(880px,calc(100%-3rem))] z-[56] rounded-3xl overflow-y-auto p-5 md:p-8 shadow-2xl"
+                style={{ background: "var(--pc-color-surface, #fff)" }}
+              >
+                <button
+                  type="button"
+                  onClick={closeQuickView}
+                  aria-label="Close quick view"
+                  className="sticky top-0 ml-auto mb-2 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors cursor-pointer z-10"
+                >
+                  <X size={16} />
+                </button>
+                {quickViewData.item ? (
+                  <ItemDetailContent
+                    item={quickViewData.item}
+                    related={quickViewData.related}
+                    onAdd={(it, size, qty) => {
+                      addDirectToCart(it, size, qty);
+                      closeQuickView();
+                    }}
+                    onConfigure={addToCart}
+                    onQuickView={(rel) => {
+                      skipScrollTopOnce.current = true;
+                      navigate(`/menu/${itemSlug(rel)}`, {
+                        replace: true,
+                        state: { backgroundLocation },
+                      });
+                    }}
+                    displayToast={displayToast}
+                  />
+                ) : !isLoadingMenu ? (
+                  <div className="text-center py-12 space-y-3">
+                    <span className="text-3xl block">🍕</span>
+                    <p className="font-bold text-sm">Dish not found</p>
+                    <button
+                      type="button"
+                      onClick={closeQuickView}
+                      className="px-6 py-2.5 rounded-full bg-[var(--pc-color-primary)] text-white text-sm font-bold cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                ) : (
+                  <div className="skeleton-card">
+                    <div className="skeleton-card__image skeleton" />
+                    <div className="skeleton-card__body">
+                      <div className="skeleton-card__title skeleton" />
+                      <div className="skeleton-card__desc skeleton" />
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Shared Footer (all public routes) */}
+        {!isAdminRoute && (
+        <footer className="bg-[var(--pc-gray-700)] py-12 md:py-16 mt-8 rounded-t-[40px] shadow-2xl" style={{ color: "var(--pc-color-footer-text)" }}>
+          <div className="container mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,fit=crop/dfZWWj1nq2KWjIwX/ei_1771693328794-removebg-preview-H1gq480p6x8lYS4E.png" alt={LOGO_ALT} className="h-10 md:h-12 object-contain brightness-0 invert opacity-90" />
+              <p className="text-sm leading-relaxed">Authentic handcrafted oven-baked pizzas, hand-kneaded signature sourdough bases, and premium Omani ingredients.</p>
+            </div>
+            <div>
+              <h4 className="text-white font-playfair font-black text-lg mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm font-bold">
+                <li><Link to="/" className="hover:text-[var(--pc-amber-400)] transition-colors">Home</Link></li>
+                <li><Link to="/menu" className="hover:text-[var(--pc-amber-400)] transition-colors">Menu Catalog</Link></li>
+                <li><Link to="/track-order" className="hover:text-[var(--pc-amber-400)] transition-colors">Track Order</Link></li>
+                <li><Link to="/locations" className="hover:text-[var(--pc-amber-400)] transition-colors">Locations</Link></li>
+                <li><Link to="/contact" className="hover:text-[var(--pc-amber-400)] transition-colors">Contact</Link></li>
+                <li><Link to="/faq" className="hover:text-[var(--pc-amber-400)] transition-colors">FAQs</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-playfair font-black text-lg mb-4">Contact Info</h4>
+              <ul className="space-y-2 text-sm font-bold">
+                <li>Muscat, Oman</li>
+                <li>
+                  <a href="tel:+96896928714" className="hover:text-[var(--pc-amber-400)] transition-colors">
+                    Phone: +968 9692 8714
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://wa.me/96896928714?text=Hi%20Pizza%20City!%20I%20want%20to%20order."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[var(--pc-amber-400)] transition-colors"
+                  >
+                    WhatsApp: Order directly
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:info@pizzacityoman.com" className="hover:text-[var(--pc-amber-400)] transition-colors">
+                    info@pizzacityoman.com
+                  </a>
+                </li>
+                <li>Open Daily: 11 AM - 2 AM</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-playfair font-black text-lg mb-4">Newsletter</h4>
+              <p className="text-sm mb-4">Subscribe for exclusive offers and secret menu drops.</p>
+              <form
+                onSubmit={handleNewsletterSubmit}
+                className="flex bg-white/5 rounded-xl overflow-hidden p-1 focus-within:ring-2 ring-[var(--pc-amber-400)]/50 border border-white/10"
+              >
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="Your email address"
+                  aria-label="Email address for newsletter"
+                  className="bg-transparent border-none outline-none px-4 py-2 text-white text-sm w-full placeholder:text-white/40"
+                />
+                <button
+                  type="submit"
+                  className="bg-[var(--pc-amber-400)] text-[#1A0A00] px-4 py-2 rounded-lg font-bold text-sm hover:brightness-110 active:scale-95 transition-all"
+                >
+                  Join
+                </button>
+              </form>
+            </div>
+          </div>
+          {footerBranches.length > 0 && (
+            <nav aria-label="Our outlets" className="container mx-auto px-4 md:px-8 mt-10 flex flex-wrap gap-2">
+              {footerBranches.map((b) => (
+                <Link
+                  key={b._id || b.name}
+                  to={`/locations/${toSlug(b.name)}`}
+                  className="text-xs font-bold px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-colors"
+                >
+                  Pizza in {b.name}
+                </Link>
+              ))}
+              <Link
+                to="/menu"
+                className="text-xs font-bold px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-colors"
+              >
+                Pizza Menu Oman — Prices in OMR
+              </Link>
+            </nav>
+          )}
+          <div className="container mx-auto px-4 md:px-8 mt-12 pt-8 border-t border-white/10 flex flex-col items-center gap-4 text-xs font-bold tracking-wider md:flex-row md:justify-between">
+            <p className="order-1">&copy; {new Date().getFullYear()} Pizza City Oman. All rights reserved.</p>
+            <div className="flex gap-3">
+              {SOCIAL_LINKS.map((social) => (
+                <a
+                  key={social.id}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={social.label}
+                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center transition-all hover:bg-[var(--pc-amber-400)] hover:scale-110"
+                >
+                  <img src={social.icon} alt={social.label} className="w-4.5 h-4.5" />
+                </a>
+              ))}
+            </div>
+            <div className="flex gap-4 items-center order-3">
+              <Link to="/admin" className="hover:text-white cursor-pointer flex items-center gap-1.5 transition-colors">
+                <Lock size={12} /> Staff Portal
+              </Link>
+              <Link to="/privacy" className="hover:text-white cursor-pointer transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms" className="hover:text-white cursor-pointer transition-colors">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
+        </footer>
+        )}
       </div>
 
       {/* Overlays & Modals */}
@@ -733,9 +1030,10 @@ export default function App() {
         menuItems={menuItems}
         onBrowseMenu={() => {
           setIsOutletSelectorOpen(false);
-          scrollToSection("menu");
+          navigate("/menu");
         }}
         onAddToCart={addToCart}
+        onOrderSuccess={handleOrderSuccess}
       />
       
       <AnimatePresence>
@@ -748,7 +1046,7 @@ export default function App() {
               <div className="flex items-center gap-3 mb-5">
                 <img
                   src={selectedConfigureItem.image || "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=400,fit=crop/dfZWWj1nq2KWjIwX/pizza-placeholder.jpg"}
-                  alt={selectedConfigureItem.name}
+                  alt={getMenuItemAltText(selectedConfigureItem)}
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
@@ -840,8 +1138,15 @@ export default function App() {
 
       <AnimatePresence>
         {showToast && (
-          <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-[var(--pc-gray-700)] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gray-800">
-            <span className="text-sm font-bold tracking-wide">{toastMessage}</span>
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            onClick={() => setShowToast(false)}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] toast-popup px-6 py-3.5 rounded-full flex items-center gap-3 cursor-pointer select-none max-w-[90vw] text-center"
+          >
+            <div className="w-2.5 h-2.5 rounded-full bg-[var(--pc-amber-400)] animate-ping shrink-0" />
+            <span className="text-xs sm:text-sm font-extrabold tracking-wide text-white leading-snug">{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -870,5 +1175,4 @@ export default function App() {
     </>
   );
 }
-
 

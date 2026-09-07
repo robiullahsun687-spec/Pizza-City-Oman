@@ -3,22 +3,23 @@
 
 <head>
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-EED7EX0E1N"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EED7EX0E1N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-  gtag('config', 'G-EED7EX0E1N');
-</script>
+    gtag('config', 'G-EED7EX0E1N');
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <title>Pizza City Oman — Authentic Wood-Fired Pizza | Order Online</title>
+  <title>Pizza City Oman — Handcrafted Oven-Baked Pizza | Order Online</title>
 
   <meta
     name="description"
-    content="Pizza City Oman serves authentic wood-fired pizzas, savoury sides, drinks and desserts. Explore the menu and order online via WhatsApp."
+    content="Pizza City Oman serves authentic handcrafted oven-baked pizzas, savoury sides, drinks and desserts. Explore the menu and order online via WhatsApp."
   />
 
   <meta name="robots" content="index, follow" />
@@ -54,33 +55,97 @@
 
 
   <!-- Fonts -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Pizza City Oman — Handcrafted Oven-Baked Pizza" />
+  <meta
+    property="og:description"
+    content="Authentic handcrafted oven-baked pizzas with 48-hour fermented dough. Order via WhatsApp — served hot in 30 minutes."
+  />
+  <meta property="og:url" content="https://pizzacityoman.com/" />
+  <meta property="og:site_name" content="Pizza City Oman" />
+
+  <meta property="og:image" content="https://pizzacityoman.com/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Pizza City Oman logo" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://pizzacityoman.com/og-image.png" />
+  <meta
+    name="twitter:title"
+    content="Pizza City Oman — Handcrafted Oven-Baked Pizza"
+  />
+  <meta
+    name="twitter:description"
+    content="Handcrafted oven-baked pizzas. Order online with WhatsApp checkout."
+  />
+
+  <!-- Font Preconnect hints for Core Web Vitals optimization -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
     rel="stylesheet"
   />
 
   <!-- Website structured data -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#b91c1c" />
+
+  <!-- Website identity / site-name structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Pizza City Oman",
+    "alternateName": "بيتزا سيتي عمان",
     "url": "https://pizzacityoman.com/"
   }
   </script>
 
   <!-- Restaurant structured data -->
-  <script type="application/ld+json">
+  <script type="application/ld+json" id="restaurant-schema">
   {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-    "name": "Pizza City",
+    "@id": "https://pizzacityoman.com/#restaurant",
+    "name": "Pizza City Oman",
+    "alternateName": "بيتزا سيتي عمان",
     "url": "https://pizzacityoman.com/",
-    "telephone": "+968 9692 8714",
-    "servesCuisine": "Pizza"
+    "logo": "https://pizzacityoman.com/logo-512.png",
+    "image": "https://pizzacityoman.com/og-image.png",
+    "description": "Authentic handcrafted oven-baked pizzas with 48-hour fermented sourdough bases, Italian toppings, and fast delivery across Oman.",
+    "telephone": "+96896928714",
+    "servesCuisine": ["Pizza", "Italian", "Fast Food", "Halal"],
+    "priceRange": "OMR 2 - OMR 7",
+    "currenciesAccepted": "OMR",
+    "paymentAccepted": "Cash, Credit Card, Bank Transfer",
+    "hasMenu": "https://pizzacityoman.com/menu",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "OM",
+      "addressRegion": "Muscat",
+      "addressLocality": "Muscat"
+    },
+    "potentialAction": {
+      "@type": "OrderAction",
+      "target": {
+        "@type": "EntryPoint",
+          "urlTemplate": "https://pizzacityoman.com/menu",
+        "inLanguage": ["en", "ar"],
+        "actionPlatform": ["http://schema.org/DesktopWebPlatform", "http://schema.org/MobileWebPlatform"]
+      },
+      "deliveryMethod": "http://purl.org/goodrelations/v1#DeliveryModeDirectDispatch"
+    }
   }
   </script>
-
 </head>
 
 <body>
