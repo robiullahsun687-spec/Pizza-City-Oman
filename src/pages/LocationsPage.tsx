@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Phone, MapPin, Clock, Truck, ShoppingBag, Navigation } from "lucide-react";
 import { Branch } from "../types";
+import { getBranchAltText } from "../lib/altText";
 
 /* ─────────────────── Helpers ─────────────────── */
 
@@ -58,7 +59,7 @@ export default function LocationsPage({ branches }: LocationsPageProps) {
       {/* Hero section */}
       <div className="text-center space-y-1.5 max-w-xl mx-auto py-6">
         <span className="text-xs font-bold text-[var(--pc-amber-400)] uppercase tracking-widest block">Available Outlets</span>
-        <h1 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Our Pizza City Network</h1>
+        <h2 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Our Pizza City Network</h2>
         <p className="text-xs text-[var(--pc-gray-500)] leading-relaxed">
           Come dine-in, collect order pick-ups, or select hot delivery directly to your home coordinates.
         </p>
@@ -85,7 +86,7 @@ export default function LocationsPage({ branches }: LocationsPageProps) {
                 {heroImage ? (
                   <img
                     src={heroImage}
-                    alt={`Pizza City ${outlet.name} outlet`}
+                    alt={getBranchAltText(outlet)}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />

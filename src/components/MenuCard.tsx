@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { MenuItem } from "../types";
 import { getDefaultSizes } from "../lib/priceUtils";
+import { getMenuItemAltText } from "../lib/altText";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -9,9 +10,11 @@ interface MenuCardProps {
   badge?: string;
   index?: number;
   displayToast?: (msg: string) => void;
+  /** Card body/image tap → item quick-view page. Buttons are unaffected. */
+  onQuickView?: (item: MenuItem) => void;
 }
 
-export default function MenuCard({ item, onOrder, badge, index = 0, displayToast }: MenuCardProps) {
+export default function MenuCard({ item, onOrder, badge, index = 0, displayToast, onQuickView }: MenuCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -79,6 +82,7 @@ export default function MenuCard({ item, onOrder, badge, index = 0, displayToast
   };
 
   const handleOrder = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     handleRipple(e);
     if (isUnavailable) {
       notifyUnavailable();
@@ -99,7 +103,9 @@ export default function MenuCard({ item, onOrder, badge, index = 0, displayToast
   const handleCardClick = () => {
     if (isUnavailable) {
       notifyUnavailable();
+      return;
     }
+    onQuickView?.(item);
   };
 
   const badgeLabel = badge ? (badge.startsWith("🔥") ? badge : `🔥 ${badge}`) : null;
@@ -150,7 +156,7 @@ export default function MenuCard({ item, onOrder, badge, index = 0, displayToast
         <div className="overflow-hidden">
           <img
             src={item.image || "https://via.placeholder.com/400x300?text=No+Image"}
-            alt={item.name}
+            alt={getMenuItemAltText(item)}
             className={`w-full aspect-[4/3] object-cover transition-transform duration-500 ease-out ${isUnavailable ? "" : "group-hover:scale-105"}`}
             referrerPolicy="no-referrer"
             loading="lazy"

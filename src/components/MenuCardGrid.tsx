@@ -14,6 +14,7 @@ interface MenuCardGridProps {
   showHeader?: boolean;
   isLoading?: boolean;
   displayToast?: (msg: string) => void;
+  onQuickView?: (item: MenuItem) => void;
 }
 
 function SkeletonCard() {
@@ -54,6 +55,7 @@ export default function MenuCardGrid({
   showHeader = true,
   isLoading = false,
   displayToast,
+  onQuickView,
 }: MenuCardGridProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -141,6 +143,7 @@ export default function MenuCardGrid({
                   badge={resolveBadge(item, index)}
                   index={index}
                   displayToast={displayToast}
+                  onQuickView={onQuickView}
                 />
               </React.Fragment>
             ))}

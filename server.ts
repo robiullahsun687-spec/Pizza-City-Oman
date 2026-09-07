@@ -63,11 +63,11 @@ app.use(helmet({
   contentSecurityPolicy: isProduction ? {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
       imgSrc: ["'self'", "https:", "data:"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://wa.me"],
+      connectSrc: ["'self'", "https://wa.me", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
     }
   } : false,
   crossOriginEmbedderPolicy: false // Allows external images to load without issues
@@ -400,6 +400,7 @@ const MenuItemSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   description: { type: String, default: "" },
   image: { type: String, default: "" },
+  altText: { type: String, default: "" },
   available: { type: Boolean, default: true },
   subCategory: { type: String, default: "" },
   badge: { type: String, default: "" },
@@ -456,6 +457,7 @@ const BannerSchema = new mongoose.Schema({
   subtitle: { type: String, default: "" },
   badge: { type: String, default: "" },
   image: { type: String, default: "" },
+  altText: { type: String, default: "" },
   buttonText: { type: String, default: "Order Now" },
   buttonLink: { type: String, default: "#menu" },
   isActive: { type: Boolean, default: true },
@@ -476,6 +478,7 @@ const BranchSchema = new mongoose.Schema({
   delivery: { type: Boolean, default: true },
   isActive: { type: Boolean, default: true },
   image: { type: String, default: "" },
+  altText: { type: String, default: "" },
 });
 
 const MongoBranch = mongoose.model("Branch", BranchSchema);
@@ -1813,7 +1816,7 @@ app.patch("/admin/api/banners/:id/toggle", verifyToken, requireSuperAdmin, async
 
 // POST /admin/api/banners — add a new banner (Requires basic auth)
 app.post("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) => {
-  const { title, subtitle, badge, image, buttonText, buttonLink, isActive, stylePattern, type } = req.body;
+  const { title, subtitle, badge, image, altText, buttonText, buttonLink, isActive, stylePattern, type } = req.body;
   if (!title) {
     return res.status(400).json({ error: "Banner title is required." });
   }
@@ -1826,6 +1829,7 @@ app.post("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) 
         subtitle: subtitle || "",
         badge: badge || "",
         image: image || "",
+        altText: altText || "",
         buttonText: buttonText || "Order Now",
         buttonLink: buttonLink || "#menu",
         isActive: isActive !== false,
@@ -1841,6 +1845,7 @@ app.post("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) 
         subtitle: subtitle || "",
         badge: badge || "",
         image: image || "",
+        altText: altText || "",
         buttonText: buttonText || "Order Now",
         buttonLink: buttonLink || "#menu",
         isActive: isActive !== false,
@@ -1859,7 +1864,7 @@ app.post("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) 
 app.patch("/admin/api/banners/:id", verifyToken, requireSuperAdmin, async (req, res) => {
   const { id } = req.params;
 
-  const allowedBannerFields = ["title", "subtitle", "badge", "image", "buttonText", "buttonLink", "isActive", "stylePattern", "type"];
+  const allowedBannerFields = ["title", "subtitle", "badge", "image", "altText", "buttonText", "buttonLink", "isActive", "stylePattern", "type"];
   const updates: Record<string, any> = {};
   for (const key of allowedBannerFields) {
     if (req.body[key] !== undefined) {
@@ -1945,7 +1950,7 @@ app.patch("/admin/api/menu/:id/toggle", verifyToken, requireSuperAdmin, async (r
 
 // POST /admin/api/menu — add a new menu item to catalog (Requires basic auth)
 app.post("/admin/api/menu", verifyToken, requireSuperAdmin, async (req, res) => {
-  const { name, category, price, description, image, available, subCategory, badge, featured, discountPrice, discountPercentage, sizes, pinnedFeatured } = req.body;
+  const { name, category, price, description, image, altText, available, subCategory, badge, featured, discountPrice, discountPercentage, sizes, pinnedFeatured } = req.body;
 
   if (!name || price === undefined) {
     return res.status(400).json({ error: "Menu item name and price are required." });
@@ -1970,6 +1975,7 @@ app.post("/admin/api/menu", verifyToken, requireSuperAdmin, async (req, res) => 
       price: parsedPrice,
       description: description || "",
       image: image || "",
+      altText: altText || "",
       available: available !== false,
       subCategory: subCategory || "",
       badge: badge || "",
@@ -2000,7 +2006,7 @@ app.post("/admin/api/menu", verifyToken, requireSuperAdmin, async (req, res) => 
 app.patch("/admin/api/menu/:id", verifyToken, requireSuperAdmin, async (req, res) => {
   const { id } = req.params;
 
-  const allowedMenuFields = ["name", "category", "price", "description", "image", "available", "subCategory", "badge", "featured", "pinnedFeatured", "discountPrice", "discountPercentage", "sizes"];
+  const allowedMenuFields = ["name", "category", "price", "description", "image", "altText", "available", "subCategory", "badge", "featured", "pinnedFeatured", "discountPrice", "discountPercentage", "sizes"];
   const updates: Record<string, any> = {};
   for (const key of allowedMenuFields) {
     if (req.body[key] !== undefined) {
@@ -2143,7 +2149,7 @@ app.patch("/admin/api/branches/:id/toggle", verifyToken, requireSuperAdmin, asyn
 
 // POST /admin/api/branches — add a new branch (Requires basic auth)
 app.post("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res) => {
-  const { name, phone, whatsapp, address, map, geo, hours, delivery, isActive, image } = req.body;
+  const { name, phone, whatsapp, address, map, geo, hours, delivery, isActive, image, altText } = req.body;
   if (!name || !phone || !whatsapp || !address) {
     return res.status(400).json({ error: "Branch name, phone, whatsapp, and address are required." });
   }
@@ -2161,6 +2167,7 @@ app.post("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res)
       delivery: delivery !== false,
       isActive: isActive !== false,
       image: image || "",
+      altText: altText || "",
     };
 
     if (useMongoDB) {
@@ -2181,7 +2188,7 @@ app.post("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res)
 app.patch("/admin/api/branches/:id", verifyToken, requireSuperAdmin, async (req, res) => {
   const { id } = req.params;
 
-  const allowedBranchFields = ["name", "phone", "whatsapp", "address", "map", "geo", "hours", "delivery", "isActive", "image"];
+  const allowedBranchFields = ["name", "phone", "whatsapp", "address", "map", "geo", "hours", "delivery", "isActive", "image", "altText"];
   const updates: Record<string, any> = {};
   for (const key of allowedBranchFields) {
     if (req.body[key] !== undefined) {
@@ -2380,6 +2387,450 @@ app.patch("/api/orders/:id/status", verifyToken, async (req, res) => {
 });
 
 // ==========================================
+// DYNAMIC SEO: SITEMAP & OUTLET METADATA PRE-RENDERING
+// ==========================================
+
+function toSlug(name: string): string {
+  return (name || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
+
+/** Shareable menu-item slug — mirrors src/lib/itemSlug.ts (keep the two in sync). */
+function toItemSlug(name: string, id: unknown): string {
+  const base = toSlug(name) || "item";
+  const suffix = String(id ?? "").slice(-6).toLowerCase().replace(/[^a-z0-9]/g, "");
+  return suffix ? `${base}-${suffix}` : base;
+}
+
+function findMenuItemBySlug(items: any[], slug: string): any | null {
+  if (!slug) return null;
+  const clean = slug.toLowerCase();
+  return (
+    items.find((it) => toItemSlug(it.name, it._id) === clean) ||
+    items.find((it) => toSlug(it.name) === clean) ||
+    items.find((it) => String(it._id || "").toLowerCase() === clean) ||
+    null
+  );
+}
+
+// Dynamic real-time sitemap reflecting all active outlets from DB
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    let branchesList: any[] = [];
+    if (useMongoDB) {
+      branchesList = await MongoBranch.find({ isActive: { $ne: false } }).lean();
+    } else {
+      branchesList = inMemBranches.filter(b => b.isActive !== false);
+    }
+
+    if (!branchesList || branchesList.length === 0) {
+      branchesList = SEED_BRANCHES;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    const baseUrl = "https://pizzacityoman.com";
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/menu</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.9</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/locations</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/contact</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/faq</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+    xml += `  <url>\n    <loc>${baseUrl}/track-order</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.4</priority>\n  </url>\n`;
+
+    for (const b of branchesList) {
+      const slug = toSlug(b.name);
+      if (!slug) continue;
+      xml += `  <url>\n    <loc>${baseUrl}/locations/${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    }
+
+    try {
+      let menuList: any[] = [];
+      if (useMongoDB) {
+        menuList = await MongoMenuItem.find({ available: { $ne: false } }).lean();
+      } else {
+        menuList = inMemMenuItems.filter((m: any) => m.available !== false);
+      }
+      for (const m of menuList) {
+        if (!m || !m.name) continue;
+        const slug = toItemSlug(m.name, m._id);
+        xml += `  <url>\n    <loc>${baseUrl}/menu/${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+      }
+    } catch (menuErr) {
+      console.error("Error adding menu items to sitemap:", menuErr);
+    }
+
+    xml += `</urlset>`;
+
+    res.header("Content-Type", "application/xml; charset=utf-8");
+    res.header("Cache-Control", "public, max-age=1800");
+    return res.send(xml);
+  } catch (err: any) {
+    console.error("Error generating dynamic sitemap:", err);
+    return res.status(500).send("Error generating sitemap");
+  }
+});
+
+async function renderLocationPage(req: express.Request, res: express.Response, next: express.NextFunction, vite?: any) {
+  try {
+    const slug = (req.params.slug || "").toLowerCase();
+    let branchesList: any[] = [];
+    if (useMongoDB) {
+      branchesList = await MongoBranch.find().lean();
+    } else {
+      branchesList = inMemBranches;
+    }
+    if (!branchesList || branchesList.length === 0) {
+      branchesList = SEED_BRANCHES;
+    }
+
+    const branch = branchesList.find(b => toSlug(b.name) === slug || toSlug(b._id?.toString() || "") === slug);
+
+    const isProd = process.env.NODE_ENV === "production";
+    const indexPath = isProd 
+      ? path.join(process.cwd(), "dist", "index.html")
+      : path.join(process.cwd(), "index.html");
+
+    if (!fs.existsSync(indexPath)) {
+      return next();
+    }
+
+    let template = fs.readFileSync(indexPath, "utf-8");
+
+    if (vite) {
+      template = await vite.transformIndexHtml(req.originalUrl, template);
+    }
+
+    if (!branch) {
+      template = template.replace(
+        "<head>",
+        `<head>\n  <meta name="robots" content="noindex, nofollow" />\n  <title>Location Not Found — Pizza City Oman</title>`
+      );
+      return res.status(404).send(template);
+    }
+
+    const isActive = branch.isActive !== false;
+    const branchName = branch.name;
+    const branchGeo = branch.geo || branch.name;
+    const pageTitle = isActive
+      ? `Pizza City ${branchName} – Order Pizza Delivery in ${branchGeo}, Oman`
+      : `Pizza City ${branchName} – Temporarily Closed`;
+    const pageDesc = isActive
+      ? `Order fresh handcrafted oven-baked pizzas from Pizza City ${branchName} (${branch.address}). ${branch.delivery !== false ? "Fast delivery" : "Pick up"} available. Call ${branch.phone}. Open ${branch.hours || "Daily 11 AM – 11 PM"}.`
+      : `Pizza City ${branchName} in ${branchGeo}, Oman is currently closed.`;
+    const canonicalUrl = `https://pizzacityoman.com/locations/${slug}`;
+    const branchImg = branch.image || "https://pizzacityoman.com/og-image.png";
+
+    const restaurantSchema = {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "@id": canonicalUrl,
+      name: `Pizza City ${branchName}`,
+      telephone: branch.phone,
+      url: canonicalUrl,
+      image: branchImg,
+      hasMap: branch.map || undefined,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: branch.address,
+        addressLocality: branchGeo,
+        addressRegion: "Oman",
+        addressCountry: "OM",
+      },
+      servesCuisine: ["Pizza", "Italian", "Fast Food", "Halal"],
+      priceRange: "OMR 2 - OMR 7",
+      amenityFeature: {
+        "@type": "LocationFeatureSpecification",
+        name: "Food Delivery",
+        value: branch.delivery !== false
+      }
+    };
+
+    template = template.replace(/<title>.*?<\/title>/i, `<title>${pageTitle}</title>`);
+
+    if (template.includes('name="description"')) {
+      template = template.replace(
+        /<meta\s+name="description"\s+content=".*?"\s*\/?>/i,
+        `<meta name="description" content="${pageDesc}" />`
+      );
+    }
+
+    if (template.includes('rel="canonical"')) {
+      template = template.replace(
+        /<link\s+rel="canonical"\s+href=".*?"\s*\/?>/i,
+        `<link rel="canonical" href="${canonicalUrl}" />`
+      );
+    } else {
+      template = template.replace("</head>", `  <link rel="canonical" href="${canonicalUrl}" />\n</head>`);
+    }
+
+    if (!isActive) {
+      template = template.replace(
+        /<meta\s+name="robots"\s+content=".*?"\s*\/?>/i,
+        `<meta name="robots" content="noindex, nofollow" />`
+      );
+    }
+
+    template = template.replace(
+      /<meta\s+property="og:title"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:title" content="${pageTitle}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:description"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:description" content="${pageDesc}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:url"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:url" content="${canonicalUrl}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:image"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:image" content="${branchImg}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:title"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:title" content="${pageTitle}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:description"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:description" content="${pageDesc}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:image"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:image" content="${branchImg}" />`
+    );
+
+    const schemaScript = `\n  <script type="application/ld+json" id="location-schema">\n  ${JSON.stringify(restaurantSchema, null, 2)}\n  </script>\n`;
+    template = template.replace("</head>", `${schemaScript}</head>`);
+
+    return res.send(template);
+  } catch (err) {
+    console.error("Error rendering dynamic location meta:", err);
+    return next();
+  }
+}
+
+// Static per-page SEO metadata (multi-page SPA routing — SSR-injected for crawlers)
+const STATIC_SEO: Record<string, { title: string; description: string; canonical: string }> = {
+  "/menu": {
+    title: "Pizza Menu — Prices & Order Online | Pizza City Oman",
+    description: "Browse the full Pizza City Oman menu: handcrafted pizzas, combos, sides, drinks and desserts with prices in OMR. Order online via WhatsApp.",
+    canonical: "https://pizzacityoman.com/menu",
+  },
+  "/locations": {
+    title: "Our Locations — Nizwa, Samail, Sur, Quriyat, Fanja | Pizza City Oman",
+    description: "Find Pizza City Oman outlets near you: Nizwa, Samail, Sur, Quriyat, Fanja and Al Khoud. Addresses, phone numbers, hours and delivery info.",
+    canonical: "https://pizzacityoman.com/locations",
+  },
+  "/contact": {
+    title: "Contact Us — Phone, WhatsApp & Directions | Pizza City Oman",
+    description: "Contact Pizza City Oman: phone +968 9692 8714, WhatsApp ordering, email info@pizzacityoman.com. Open daily 11 AM – 2 AM in Muscat, Oman.",
+    canonical: "https://pizzacityoman.com/contact",
+  },
+  "/faq": {
+    title: "FAQs — Delivery, Ordering & Halal Info | Pizza City Oman",
+    description: "Pizza City Oman FAQs: delivery times, how to order, delivery areas, custom toppings, payment methods and freshness. Answers in seconds.",
+    canonical: "https://pizzacityoman.com/faq",
+  },
+  "/track-order": {
+    title: "Track Your Order | Pizza City Oman",
+    description: "Track your Pizza City Oman order live — enter your order ID to see preparation and delivery status.",
+    canonical: "https://pizzacityoman.com/track-order",
+  },
+  "/privacy": {
+    title: "Privacy Policy | Pizza City Oman",
+    description: "How Pizza City Oman collects and uses order and contact information, and how to request deletion.",
+    canonical: "https://pizzacityoman.com/privacy",
+  },
+  "/terms": {
+    title: "Terms of Service | Pizza City Oman",
+    description: "Ordering, pricing, delivery estimates and promo rules for Pizza City Oman online ordering.",
+    canonical: "https://pizzacityoman.com/terms",
+  },
+};
+
+async function renderStaticSeoPage(req: express.Request, res: express.Response, next: express.NextFunction, vite?: any) {
+  try {
+    const seo = STATIC_SEO[req.path];
+    if (!seo) return next();
+    const isProd = process.env.NODE_ENV === "production";
+    const indexPath = isProd
+      ? path.join(process.cwd(), "dist", "index.html")
+      : path.join(process.cwd(), "index.html");
+    if (!fs.existsSync(indexPath)) return next();
+    let template = fs.readFileSync(indexPath, "utf-8");
+    if (vite) {
+      template = await vite.transformIndexHtml(req.originalUrl, template);
+    }
+    template = template.replace(/<title>.*?<\/title>/i, `<title>${seo.title}</title>`);
+    if (template.includes('name="description"')) {
+      template = template.replace(
+        /<meta\s+name="description"\s+content=".*?"\s*\/?>/i,
+        `<meta name="description" content="${seo.description}" />`
+      );
+    }
+    if (template.includes('rel="canonical"')) {
+      template = template.replace(
+        /<link\s+rel="canonical"\s+href=".*?"\s*\/?>/i,
+        `<link rel="canonical" href="${seo.canonical}" />`
+      );
+    }
+    template = template.replace(
+      /<meta\s+property="og:title"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:title" content="${seo.title}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:description"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:description" content="${seo.description}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:url"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:url" content="${seo.canonical}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:title"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:title" content="${seo.title}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:description"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:description" content="${seo.description}" />`
+    );
+    return res.send(template);
+  } catch (err) {
+    console.error("Error rendering static SEO page:", err);
+    return next();
+  }
+}
+
+async function renderMenuItemPage(req: express.Request, res: express.Response, next: express.NextFunction, vite?: any) {
+  try {
+    const slug = (req.params.slug || "").toLowerCase();
+    let menuList: any[] = [];
+    if (useMongoDB) {
+      menuList = await MongoMenuItem.find().lean();
+    } else {
+      menuList = inMemMenuItems;
+    }
+    if (!menuList || menuList.length === 0) {
+      return next();
+    }
+
+    const item = findMenuItemBySlug(menuList, slug);
+
+    const isProd = process.env.NODE_ENV === "production";
+    const indexPath = isProd
+      ? path.join(process.cwd(), "dist", "index.html")
+      : path.join(process.cwd(), "index.html");
+
+    if (!fs.existsSync(indexPath)) {
+      return next();
+    }
+
+    let template = fs.readFileSync(indexPath, "utf-8");
+
+    if (vite) {
+      template = await vite.transformIndexHtml(req.originalUrl, template);
+    }
+
+    if (!item) {
+      template = template.replace(
+        "<head>",
+        `<head>\n  <meta name="robots" content="noindex, nofollow" />\n  <title>Dish Not Found — Pizza City Oman</title>`
+      );
+      return res.status(404).send(template);
+    }
+
+    const isAvailable = item.available !== false;
+    const cleanDesc = String(item.description || "").replace(/\s+/g, " ").trim().slice(0, 140);
+    const pageTitle = `${item.name} — Price & Order Online | Pizza City Oman`;
+    const pageDesc = cleanDesc
+      ? `${item.name}: ${cleanDesc} Order online from Pizza City Oman via WhatsApp.`
+      : `Order ${item.name} online from Pizza City Oman via WhatsApp.`;
+    const canonicalUrl = `https://pizzacityoman.com/menu/${toItemSlug(item.name, item._id)}`;
+    const itemImg = item.image || "https://pizzacityoman.com/og-image.png";
+
+    const menuItemSchema = {
+      "@context": "https://schema.org",
+      "@type": "MenuItem",
+      name: item.name,
+      description: cleanDesc || undefined,
+      image: itemImg,
+    };
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://pizzacityoman.com" },
+        { "@type": "ListItem", position: 2, name: "Menu", item: "https://pizzacityoman.com/menu" },
+        { "@type": "ListItem", position: 3, name: item.name },
+      ],
+    };
+
+    template = template.replace(/<title>.*?<\/title>/i, `<title>${pageTitle}</title>`);
+
+    if (template.includes('name="description"')) {
+      template = template.replace(
+        /<meta\s+name="description"\s+content=".*?"\s*\/?>/i,
+        `<meta name="description" content="${pageDesc}" />`
+      );
+    }
+
+    if (template.includes('rel="canonical"')) {
+      template = template.replace(
+        /<link\s+rel="canonical"\s+href=".*?"\s*\/?>/i,
+        `<link rel="canonical" href="${canonicalUrl}" />`
+      );
+    } else {
+      template = template.replace("</head>", `  <link rel="canonical" href="${canonicalUrl}" />\n</head>`);
+    }
+
+    if (!isAvailable) {
+      template = template.replace(
+        /<meta\s+name="robots"\s+content=".*?"\s*\/?>/i,
+        `<meta name="robots" content="noindex, nofollow" />`
+      );
+    }
+
+    template = template.replace(
+      /<meta\s+property="og:title"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:title" content="${pageTitle}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:description"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:description" content="${pageDesc}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:url"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:url" content="${canonicalUrl}" />`
+    );
+    template = template.replace(
+      /<meta\s+property="og:image"\s+content=".*?"\s*\/?>/i,
+      `<meta property="og:image" content="${itemImg}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:title"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:title" content="${pageTitle}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:description"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:description" content="${pageDesc}" />`
+    );
+    template = template.replace(
+      /<meta\s+name="twitter:image"\s+content=".*?"\s*\/?>/i,
+      `<meta name="twitter:image" content="${itemImg}" />`
+    );
+
+    const schemaScript = `\n  <script type="application/ld+json" id="menuitem-schema">\n  ${JSON.stringify([menuItemSchema, breadcrumbSchema])}\n  </script>\n`;
+    template = template.replace("</head>", `${schemaScript}</head>`);
+
+    return res.send(template);
+  } catch (err) {
+    console.error("Error rendering dynamic menu item meta:", err);
+    return next();
+  }
+}
+
+// ==========================================
 // VITE AND STATIC CONTENT ROUTING
 // ==========================================
 
@@ -2390,12 +2841,28 @@ async function start() {
       server: { middlewareMode: true },
       appType: "spa",
     });
+    // Intercept dynamic location pages before fallback
+    app.get("/locations/:slug", (req, res, next) => renderLocationPage(req, res, next, vite));
+    app.get("/menu/:slug", (req, res, next) => renderMenuItemPage(req, res, next, vite));
+    for (const p of Object.keys(STATIC_SEO)) {
+      app.get(p, (req, res, next) => renderStaticSeoPage(req, res, next, vite));
+    }
+    // Legacy /track alias
+    app.get("/track", (req, res) => res.redirect(301, "/track-order"));
     app.use(vite.middlewares);
   } else {
     // Production serves compiled client bundle inside /dist
     const distPath = path.join(process.cwd(), "dist");
     // Serve static files with a strong cache-control header
     app.use(express.static(distPath, { maxAge: "1y", etag: true }));
+    // Intercept dynamic location pages before SPA catch-all
+    app.get("/locations/:slug", (req, res, next) => renderLocationPage(req, res, next));
+    app.get("/menu/:slug", (req, res, next) => renderMenuItemPage(req, res, next));
+    for (const p of Object.keys(STATIC_SEO)) {
+      app.get(p, (req, res, next) => renderStaticSeoPage(req, res, next));
+    }
+    // Legacy /track alias
+    app.get("/track", (req, res) => res.redirect(301, "/track-order"));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });

@@ -282,7 +282,7 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
           Track Your Hot Slice
         </h2>
         <p className="text-xs text-[var(--pc-gray-500)] max-w-xl leading-relaxed">
-          Enter your 6-character order code or the full order ID from your WhatsApp message to monitor your gourmet wood-fired pizza assembly in real-time.
+          Enter your 6-character order code or the full order ID from your WhatsApp message to monitor your gourmet handcrafted pizza assembly in real-time.
         </p>
       </div>
 

@@ -15,11 +15,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <title>Pizza City Oman — Authentic Wood-Fired Pizza | Order Online</title>
+  <title>Pizza City Oman — Handcrafted Oven-Baked Pizza | Order Online</title>
 
   <meta
     name="description"
-    content="Pizza City Oman serves authentic wood-fired pizzas, savoury sides, drinks and desserts. Explore the menu and order online via WhatsApp."
+    content="Pizza City Oman serves authentic handcrafted oven-baked pizzas, savoury sides, drinks and desserts. Explore the menu and order online via WhatsApp."
   />
 
   <meta name="robots" content="index, follow" />
@@ -27,10 +27,10 @@
   <link rel="canonical" href="https://pizzacityoman.com/" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Pizza City Oman — Authentic Wood-Fired Pizza" />
+  <meta property="og:title" content="Pizza City Oman — Handcrafted Oven-Baked Pizza" />
   <meta
     property="og:description"
-    content="Authentic Italian wood-fired pizzas with 48-hour sourdough bases. Order via WhatsApp — served hot in 30 minutes."
+    content="Authentic handcrafted oven-baked pizzas with 48-hour fermented dough. Order via WhatsApp — served hot in 30 minutes."
   />
   <meta property="og:url" content="https://pizzacityoman.com/" />
   <meta property="og:site_name" content="Pizza City Oman" />
@@ -44,11 +44,21 @@
   <meta name="twitter:image" content="https://pizzacityoman.com/og-image.png" />
   <meta
     name="twitter:title"
-    content="Pizza City Oman — Authentic Wood-Fired Pizza"
+    content="Pizza City Oman — Handcrafted Oven-Baked Pizza"
   />
   <meta
     name="twitter:description"
-    content="Handcrafted wood-fired pizzas. Order online with WhatsApp checkout."
+    content="Handcrafted oven-baked pizzas. Order online with WhatsApp checkout."
+  />
+
+  <!-- Font Preconnect hints for Core Web Vitals optimization -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+    rel="stylesheet"
   />
 
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -59,30 +69,51 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#b91c1c" />
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
-    rel="stylesheet"
-  />
-
   <!-- Website identity / site-name structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Pizza City Oman",
+    "alternateName": "بيتزا سيتي عمان",
     "url": "https://pizzacityoman.com/"
   }
   </script>
 
   <!-- Restaurant structured data -->
-  <script type="application/ld+json">
+  <script type="application/ld+json" id="restaurant-schema">
   {
     "@context": "https://schema.org",
     "@type": "Restaurant",
+    "@id": "https://pizzacityoman.com/#restaurant",
     "name": "Pizza City Oman",
+    "alternateName": "بيتزا سيتي عمان",
     "url": "https://pizzacityoman.com/",
     "logo": "https://pizzacityoman.com/logo-512.png",
-    "image": "https://pizzacityoman.com/og-image.png"
+    "image": "https://pizzacityoman.com/og-image.png",
+    "description": "Authentic handcrafted oven-baked pizzas with 48-hour fermented sourdough bases, Italian toppings, and fast delivery across Oman.",
+    "telephone": "+96896928714",
+    "servesCuisine": ["Pizza", "Italian", "Fast Food", "Halal"],
+    "priceRange": "OMR 2 - OMR 7",
+    "currenciesAccepted": "OMR",
+    "paymentAccepted": "Cash, Credit Card, Bank Transfer",
+    "hasMenu": "https://pizzacityoman.com/menu",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "OM",
+      "addressRegion": "Muscat",
+      "addressLocality": "Muscat"
+    },
+    "potentialAction": {
+      "@type": "OrderAction",
+      "target": {
+        "@type": "EntryPoint",
+          "urlTemplate": "https://pizzacityoman.com/menu",
+        "inLanguage": ["en", "ar"],
+        "actionPlatform": ["http://schema.org/DesktopWebPlatform", "http://schema.org/MobileWebPlatform"]
+      },
+      "deliveryMethod": "http://purl.org/goodrelations/v1#DeliveryModeDirectDispatch"
+    }
   }
   </script>
 </head>

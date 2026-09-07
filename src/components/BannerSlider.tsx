@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight, ArrowRight, Flame, Shield, Truck } from "lucide-react";
 import { HeroBanner } from "../types";
+import { getBannerAltText } from "../lib/altText";
 
 interface BannerSliderProps {
   onOrderNow: () => void;
@@ -155,7 +156,7 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
               >
                 <img
                   src={currentBanner.image}
-                  alt={currentBanner.title}
+                  alt={getBannerAltText(currentBanner)}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover/fullimage:scale-[1.015] transition-transform duration-700 ease-out"
                 />
@@ -170,7 +171,7 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                   <div className="absolute inset-0 overflow-hidden">
                     <img
                       src={currentBanner.image}
-                      alt={currentBanner.title}
+                      alt={getBannerAltText(currentBanner)}
                       referrerPolicy="no-referrer"
                       className={`w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ${isModern ? "opacity-60 sm:opacity-50" : "opacity-50 sm:opacity-40"}`}
                     />
@@ -286,7 +287,7 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                         >
                           <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-200/60 font-bold">
                             <Flame size={12} className="text-orange-400 animate-pulse sm:size-14" />
-                            <span className="hidden xs:inline sm:inline">Wood-fired Bake</span>
+                            <span className="hidden xs:inline sm:inline">Oven-Baked Fresh</span>
                           </div>
                           <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-200/60 font-bold">
                             <Shield size={12} className="text-amber-400 sm:size-14" />

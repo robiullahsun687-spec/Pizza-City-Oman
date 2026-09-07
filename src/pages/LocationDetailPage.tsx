@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Phone, MapPin, Clock, ArrowLeft, Truck, ShoppingBag, Navigation, ExternalLink } from "lucide-react";
 import { motion } from "motion/react";
 import { Branch } from "../types";
+import { getBranchAltText } from "../lib/altText";
 
 /* ─────────────────────── Fallback branch data ─────────────────────── */
 const FALLBACK_BRANCHES: Branch[] = [
@@ -11,9 +12,21 @@ const FALLBACK_BRANCHES: Branch[] = [
   { _id: "sur", name: "Sur", phone: "+968 96928717", whatsapp: "+968 96928717", address: "Al-Muraj Street Commercial Corridor, Sur, Oman", map: "https://maps.google.com/maps?q=Sur,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Sur", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/ggqugkucybe9ckt0tub1" },
   { _id: "quriyat", name: "Quriyat", phone: "+968 96928719", whatsapp: "+968 96928719", address: "Coastal Expressway High Road, Quriyat, Oman", map: "https://maps.google.com/maps?q=Quriyat,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Quriyat", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/bfuygklmwmdridzknxo9" },
   { _id: "fanja", name: "Fanja", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Fanja, Oman", map: "https://maps.google.com/maps?q=Fanja,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Fanja", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/ihtck4pfz24g0xapusku" },
+  { _id: "alkhoud", name: "Al Khoud", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Al Khoud, Oman", map: "https://maps.app.goo.gl/uLHNwrGK2kaRFULdA", geo: "Al Khoud", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true },
 ];
 
 /* ─────────────────── Helpers ─────────────────── */
+
+/** Approximate GPS Coordinates for Oman Wilayats to provide valid numeric GeoCoordinates in Schema.org */
+const WILAYAT_COORDINATES: Record<string, { latitude: number; longitude: number }> = {
+  nizwa: { latitude: 22.9333, longitude: 57.5333 },
+  samail: { latitude: 23.3000, longitude: 57.9500 },
+  sur: { latitude: 22.5667, longitude: 59.5289 },
+  quriyat: { latitude: 23.2625, longitude: 58.9189 },
+  fanja: { latitude: 23.4561, longitude: 58.1472 },
+  "al-khoud": { latitude: 23.6190, longitude: 58.1965 },
+  alkhoud: { latitude: 23.6190, longitude: 58.1965 },
+};
 
 /** Normalize Oman phone numbers to a clean "+968 XXXX XXXX" display and a tel: link */
 function formatOmanPhone(raw: string): { display: string; tel: string } {
@@ -120,6 +133,20 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
     descMeta.setAttribute("data-location-seo", "description");
     document.head.appendChild(descMeta);
 
+    // --- Canonical URL ---
+    const targetCanonical = `https://pizzacityoman.com/locations/${slug}`;
+    let canonicalEl = document.querySelector('link[rel="canonical"]');
+    if (canonicalEl) {
+      canonicalEl.setAttribute("href", targetCanonical);
+      canonicalEl.setAttribute("data-location-seo", "canonical");
+    } else {
+      canonicalEl = document.createElement("link");
+      canonicalEl.setAttribute("rel", "canonical");
+      canonicalEl.setAttribute("href", targetCanonical);
+      canonicalEl.setAttribute("data-location-seo", "canonical");
+      document.head.appendChild(canonicalEl);
+    }
+
     // --- Title ---
     document.title = isActive
       ? `Pizza City ${outlet.name} – Order Pizza Delivery in ${outlet.geo || outlet.name}, Oman`
@@ -129,6 +156,8 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
 
     // --- JSON-LD ---
     const phone = formatOmanPhone(outlet.phone);
+    const coords = WILAYAT_COORDINATES[slug || ""] || WILAYAT_COORDINATES[toSlug(outlet.geo || outlet.name)] || { latitude: 23.5880, longitude: 58.3829 };
+
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "Restaurant",
@@ -147,7 +176,8 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
       },
       geo: {
         "@type": "GeoCoordinates",
-        name: outlet.geo || outlet.name,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
       },
       openingHoursSpecification: parseHoursToSchema(outlet.hours),
       servesCuisine: ["Pizza", "Italian", "Fast Food"],
@@ -167,7 +197,9 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
 
     return () => {
       document.querySelectorAll("[data-location-seo]").forEach((el) => el.remove());
-      document.title = "Pizza City Oman";
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) canonical.setAttribute("href", "https://pizzacityoman.com/");
+      document.title = "Pizza City Oman — Handcrafted Oven-Baked Pizza | Order Online";
     };
   }, [outlet, slug]);
 
@@ -243,7 +275,7 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
           {heroImage ? (
             <img
               src={heroImage}
-              alt={`Pizza City ${outlet.name} outlet`}
+              alt={getBranchAltText(outlet)}
               className="w-full h-full object-cover"
               loading="eager"
             />
@@ -415,7 +447,7 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
                     {bImage ? (
                       <img
                         src={bImage}
-                        alt={`Pizza City ${b.name}`}
+                        alt={getBranchAltText(b)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />

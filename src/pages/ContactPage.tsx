@@ -25,7 +25,7 @@ export default function ContactPage({ displayToast }: ContactPageProps) {
     <div className="container mx-auto px-4 md:px-8 pb-16 space-y-8 animate-fadeIn">
       <div className="text-center space-y-1.5 max-w-xl mx-auto py-6">
         <span className="text-xs font-bold text-[var(--pc-amber-400)] uppercase tracking-widest block">Get in Touch</span>
-        <h1 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">We'd Love to Hear From You</h1>
+        <h2 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">We'd Love to Hear From You</h2>
         <p className="text-xs text-[var(--pc-gray-500)] leading-relaxed">
           Submit customer suggestions, menu feedbacks, bulk party bookings, or support questions.
         </p>

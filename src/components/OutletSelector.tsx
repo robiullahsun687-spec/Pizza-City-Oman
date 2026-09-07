@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { MenuItem, OUTLETS, OutletName, CartEntry, Branch } from "../types";
 import { getVolumeDiscountPercentage, getSizeAdjustedPrice, getDefaultSizes } from "../lib/priceUtils";
+import { getMenuItemAltText } from "../lib/altText";
 import type { MenuItemSize } from "../lib/priceUtils";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -515,7 +516,7 @@ export default function OutletSelector({
                   <ShoppingBag size={40} className="text-[var(--pc-color-primary)] opacity-60" aria-hidden="true" />
                 </div>
                 <h3 className="font-display text-3xl text-[var(--pc-color-text-primary-light)]">Your Cart is Hungry</h3>
-                <p className="text-sm font-sans text-[var(--pc-color-text-secondary-light)] leading-relaxed">Looks like you have not added any delicious wood-fired pizzas yet.</p>
+                <p className="text-sm font-sans text-[var(--pc-color-text-secondary-light)] leading-relaxed">Looks like you have not added any delicious handcrafted pizzas yet.</p>
               </div>
 
               {menuItems && menuItems.length > 0 && (
@@ -527,7 +528,7 @@ export default function OutletSelector({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {menuItems.filter(i => i.available !== false).slice(0, 4).map(item => (
                       <div key={item._id} className="cart-card flex items-center gap-3 p-3 text-left group">
-                        <img src={item.image || "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=400,fit=crop/dfZWWj1nq2KWjIwX/pizza-placeholder.jpg"} alt={item.name} className="w-16 h-16 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
+                        <img                           src={item.image || "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=400,fit=crop/dfZWWj1nq2KWjIwX/pizza-placeholder.jpg"} alt={getMenuItemAltText(item)} className="w-16 h-16 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-extrabold text-xs text-[var(--pc-color-text-primary-light)] truncate">{item.name}</h5>
                           <span className="font-body text-xs font-black text-[var(--pc-color-primary)]">OMR {item.discountPrice && item.discountPrice < item.price ? item.discountPrice.toFixed(2) : item.price.toFixed(2)}</span>
@@ -638,7 +639,7 @@ export default function OutletSelector({
                       <div className="flex gap-3">
                         <img
                           src={entry.item.image || "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=400,fit=crop/dfZWWj1nq2KWjIwX/pizza-placeholder.jpg"}
-                          alt={entry.item.name}
+                          alt={getMenuItemAltText(entry.item)}
                           className="w-11 h-11 rounded-lg object-cover flex-shrink-0"
                         />
                         <div className="flex-1 flex justify-between items-start gap-2 min-w-0">
