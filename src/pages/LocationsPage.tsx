@@ -33,16 +33,6 @@ function toSlug(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
-/* ─────────────────── Fallback data ─────────────────── */
-const FALLBACK_BRANCHES: Branch[] = [
-  { _id: "nizwa", name: "Nizwa", phone: "+968 96928714", whatsapp: "+968 96928714", address: "Near Nizwa Souq, Nizwa City Center, Nizwa, Oman", map: "https://maps.app.goo.gl/y6cnhd1N6XvHcpGR7", geo: "Nizwa", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/ihtck4pfz24g0xapusku" },
-  { _id: "samail", name: "Samail", phone: "+968 96928716", whatsapp: "+968 96928716", address: "Main Shopping High Street Plaza, Samail, Oman", map: "https://maps.google.com/maps?q=Samail,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Samail", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/cj2hccfpwabeealwgtqg" },
-  { _id: "sur", name: "Sur", phone: "+968 96928717", whatsapp: "+968 96928717", address: "Al-Muraj Street Commercial Corridor, Sur, Oman", map: "https://maps.google.com/maps?q=Sur,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Sur", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/ggqugkucybe9ckt0tub1" },
-  { _id: "quriyat", name: "Quriyat", phone: "+968 96928719", whatsapp: "+968 96928719", address: "Coastal Expressway High Road, Quriyat, Oman", map: "https://maps.google.com/maps?q=Quriyat,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Quriyat", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/bfuygklmwmdridzknxo9" },
-  { _id: "fanja", name: "Fanja", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Fanja, Oman", map: "https://maps.google.com/maps?q=Fanja,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Fanja", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_400,q_auto,f_auto/restaurant_banners/ihtck4pfz24g0xapusku" },
-  { _id: "alkhoud", name: "Al Khoud", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Al Khoud, Oman", map: "https://maps.app.goo.gl/uLHNwrGK2kaRFULdA", geo: "Al Khoud", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true },
-];
-
 /* ─────────────────── Props ─────────────────── */
 interface LocationsPageProps {
   branches: Branch[];
@@ -50,9 +40,8 @@ interface LocationsPageProps {
 
 /* ─────────────────── Component ─────────────────── */
 export default function LocationsPage({ branches }: LocationsPageProps) {
-  const displayBranches = (branches && branches.length > 0)
-    ? branches.filter(b => b.isActive !== false)
-    : FALLBACK_BRANCHES.filter(b => b.isActive !== false);
+  // Dynamic branches only — no static fallback (source of truth is /api/branches).
+  const displayBranches = (branches || []).filter(b => b.isActive !== false);
 
   return (
     <div className="container mx-auto px-4 md:px-8 pb-16 space-y-8 animate-fadeIn">
@@ -66,6 +55,11 @@ export default function LocationsPage({ branches }: LocationsPageProps) {
       </div>
 
       {/* Location item grids cards */}
+      {displayBranches.length === 0 ? (
+        <p className="text-center text-sm font-bold text-[var(--pc-gray-500)] py-12">
+          Outlet locations are loading. Please check back in a moment.
+        </p>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {displayBranches.map((outlet: any) => {
           const slug = toSlug(outlet.name);
@@ -176,6 +170,7 @@ export default function LocationsPage({ branches }: LocationsPageProps) {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

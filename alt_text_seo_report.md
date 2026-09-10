@@ -45,7 +45,7 @@ For restaurants and food delivery platforms, **image alt text is one of the high
 ### B. Topical Relevance & Contextual Keyword Signals
 - Search engine spiders (Googlebot, Bingbot) do not "look" at images the way humans do; they read HTML.
 - The `alt` attribute functions as contextual anchor text. When Google crawls a menu page, descriptive alt text like:
-  > `alt="Wood-fired Sea Food Pizza with fresh calamari, green pepper and homemade sauce - Pizza City Oman"`
+  > `alt="Hand-crafted Sea Food Pizza with fresh calamari, green pepper and homemade sauce - Pizza City Oman"`
   reinforces the topical authority of the entire page for pizza delivery in Oman without keyword stuffing in the visible UI.
 
 ### C. Multimodal AI Overviews & Visual Search (Google Lens, Gemini, Perplexity)
@@ -66,7 +66,7 @@ For restaurants and food delivery platforms, **image alt text is one of the high
 | Bad / Current | Better | Best (High-Impact SEO) |
 | :--- | :--- | :--- |
 | `alt="pizza"` | `alt="Chicken BBQ Pizza"` | `alt="Chicken BBQ Pizza with grilled chicken, mozzarella and smoky BBQ drizzle - Pizza City Oman"` |
-| `alt="Bold Flavours"` (Banner slogan) | `alt="Pizza banner"` | `alt="Handcrafted wood-fired artisan pizza with golden crust pull at Pizza City Oman"` |
+| `alt="Bold Flavours"` (Banner slogan) | `alt="Pizza banner"` | `alt="Hand-crafted artisan pizza with golden crust pull at Pizza City Oman"` |
 | `alt="Nizwa"` | `alt="Nizwa outlet"` | `alt="Pizza City Nizwa branch storefront near Nizwa Souq, Ad Dakhiliyah, Oman"` |
 
 ---
@@ -85,12 +85,12 @@ export function getMenuItemAltText(item: MenuItem): string {
   
   const cleanDesc = item.description ? item.description.replace(/\n/g, " ").trim() : "";
   const ingredientSnippet = cleanDesc ? ` topped with ${cleanDesc.toLowerCase()}` : "";
-  return `${item.name} - Authentic wood-fired ${item.category}${ingredientSnippet} | Pizza City Oman`;
+  return `${item.name} - Authentic hand-crafted ${item.category}${ingredientSnippet} | Pizza City Oman`;
 }
 
 export function getBannerAltText(banner: HeroBanner): string {
   if (banner.altText && banner.altText.trim()) return banner.altText;
-  return `${banner.title} - Wood-fired pizza special offers at Pizza City Oman`;
+  return `${banner.title} - Hand-crafted pizza special offers at Pizza City Oman`;
 }
 
 export function getBranchAltText(branch: Branch): string {

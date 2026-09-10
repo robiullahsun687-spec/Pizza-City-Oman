@@ -859,15 +859,23 @@ h4,
   transform: translateY(0);
 }
 
-/* Menu section wrapper — intentionally always dark (brand moment) */
+/* Menu section wrapper — intentionally always dark (brand moment).
+   Compact padding on mobile so the title sits close under the rail;
+   roomy 6rem restores on desktop. */
 .menu-section {
   background: var(--menu-bg);
   color: #fff;
-  padding: 6rem 1.5rem;
-  border-radius: 40px;
+  padding: 2.25rem 1rem 2.5rem;
+  border-radius: 28px;
   overflow: hidden;
   /* Secondary text on dark bg: rgba cream 65% ≈ 7:1, replaces #6B7280 (2.9:1 fail) */
   --menu-text-secondary: rgba(255, 237, 212, 0.65);
+}
+@media (min-width: 768px) {
+  .menu-section {
+    padding: 6rem 1.5rem;
+    border-radius: 40px;
+  }
 }
 
 /* Sticky category filter bar — unified full-width material.
@@ -991,6 +999,175 @@ h4,
 .menu-empty__title { color: var(--pc-color-text-primary-light); }
 .menu-empty__desc { color: var(--pc-color-text-secondary-light); }
 .menu-empty__desc span { color: var(--pc-color-cta); }
+
+/* ==========================================================================
+   🍕 CATEGORY DISCOVERY RAIL — playful 3D-cartoon tiles (transform/opacity only)
+   Compact mobile-first rail: ~3-4 tiles visible + 10-20% peek of the next.
+   ========================================================================== */
+
+.cat-rail-wrap { overflow-x: clip; }
+
+/* Category rail header — eyebrow + serif headline (mirrors menu-section titles) */
+.cat-rail__eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #F26522;
+}
+@media (min-width: 640px) { .cat-rail__eyebrow { font-size: 12px; } }
+.cat-rail__title {
+  font-family: var(--font-playfair);
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  color: #1A0A00;
+  margin-top: 2px;
+}
+@media (min-width: 640px) { .cat-rail__title { font-size: 32px; } }
+.cat-rail__rule {
+  display: block;
+  width: 32px;
+  height: 3px;
+  border-radius: 999px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, var(--pc-red-500), var(--pc-amber-400));
+}
+.midnight-oven .cat-rail__title { color: #FFF8F2; }
+.cat-rail {
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  scroll-padding-inline: 4px;
+}
+
+.cat-tile {
+  flex: 0 0 auto;
+  width: 76px;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  scroll-snap-align: start;
+  background: none;
+  border: none;
+  padding: 0;
+}
+@media (min-width: 640px) { .cat-tile { width: 112px; } }
+@media (min-width: 768px) { .cat-tile { width: 128px; } }
+
+.cat-tile__art {
+  width: 64px;
+  height: 64px;
+  padding: 7px;
+  border-radius: 22px;
+  display: block;
+  background: linear-gradient(145deg, #FFFFFF, #FFE9D6);
+  border: 1px solid #EBD9C8;
+  box-shadow: 0 4px 14px rgba(42, 20, 0, 0.10), 0 1px 3px rgba(42, 20, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+@media (min-width: 640px) { .cat-tile__art { width: 88px; height: 88px; border-radius: 26px; padding: 10px; } }
+@media (min-width: 768px) { .cat-tile__art { width: 96px; height: 96px; } }
+
+.cat-tile__label {
+  margin-top: 6px;
+  min-height: 28px;
+  max-width: 100%;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #2A1400;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (min-width: 640px) { .cat-tile__label { font-size: 12px; } }
+@media (min-width: 768px) { .cat-tile__label { font-size: 13px; } }
+
+.cat-tile__pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  margin-top: 4px;
+  background: var(--pc-amber-400);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Desktop hover: gentle lift + tilt + depth (no loops, transform-only) */
+@media (hover: hover) {
+  .cat-tile:hover .cat-tile__art {
+    transform: translateY(-3px) scale(1.05) rotate(-2deg);
+    box-shadow: 0 10px 24px rgba(242, 101, 34, 0.25), 0 2px 6px rgba(42, 20, 0, 0.10);
+    border-color: #F2C078;
+  }
+}
+/* Mobile tap feedback */
+.cat-tile:active .cat-tile__art { transform: scale(0.94); }
+.cat-tile:focus-visible { outline: 3px solid var(--pc-amber-500); outline-offset: 2px; border-radius: 22px; }
+
+/* Selected: gradient ring + glow + pip (never color alone) */
+.cat-tile--selected .cat-tile__art {
+  background: linear-gradient(145deg, #FFF8F2, #FFE3C2);
+  border-color: transparent;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--pc-amber-400), 0 8px 20px rgba(242, 101, 34, 0.35);
+}
+.cat-tile--selected .cat-tile__label { color: var(--pc-red-500); font-weight: 900; }
+.cat-tile--selected .cat-tile__pip { opacity: 1; transform: scale(1); }
+
+/* Midnight-oven variants */
+.midnight-oven .cat-tile__art {
+  background: linear-gradient(145deg, #2A1400, #1E0D08);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.midnight-oven .cat-tile__label { color: #ffedd4; }
+.midnight-oven .cat-tile--selected .cat-tile__label { color: var(--pc-amber-400); }
+@media (hover: hover) {
+  .midnight-oven .cat-tile:hover .cat-tile__art { border-color: rgba(242, 101, 34, 0.55); }
+}
+
+/* Edge fade cue — subtle scroll affordance, visibility toggled from scroll state */
+.edge-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.edge-fade.is-visible { opacity: 1; }
+.edge-fade--left { left: 0; background: linear-gradient(90deg, #FFF8F2, transparent); }
+.edge-fade--right { right: 0; background: linear-gradient(-90deg, #FFF8F2, transparent); }
+.menu-filter-rail-wrap .edge-fade--left { background: linear-gradient(90deg, #FFF8F2, transparent); }
+.menu-filter-rail-wrap .edge-fade--right { background: linear-gradient(-90deg, #FFF8F2, transparent); }
+.midnight-oven .cat-rail-wrap .edge-fade--left { background: linear-gradient(90deg, #250c08, transparent); }
+.midnight-oven .cat-rail-wrap .edge-fade--right { background: linear-gradient(-90deg, #250c08, transparent); }
+.midnight-oven .menu-filter-rail-wrap .edge-fade--left { background: linear-gradient(90deg, #0D0500, transparent); }
+.midnight-oven .menu-filter-rail-wrap .edge-fade--right { background: linear-gradient(-90deg, #0D0500, transparent); }
+
+/* Sticky active glow polish — orange/red treatment with halo */
+.menu-chip--active {
+  box-shadow: 0 4px 14px rgba(242, 101, 34, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.65);
+}
+.midnight-oven .menu-chip--active {
+  box-shadow: 0 4px 16px rgba(242, 101, 34, 0.5), 0 0 0 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Reduced motion: kill tile/chip animation, keep instant state change */
+@media (prefers-reduced-motion: reduce) {
+  .cat-tile__art, .cat-tile__pip, .cat-tile, .menu-chip, .edge-fade { transition: none !important; }
+  .cat-tile:hover .cat-tile__art, .cat-tile:active .cat-tile__art { transform: none; }
+}
 
 .menu-section__inner {
   max-width: 72rem;
@@ -1640,33 +1817,51 @@ textarea:focus-visible {
   }
 }
 
-/* Statistics teaser bar — single row + compact on mobile, roomy 2×2 on desktop */
+/* Statistics teaser bar — divider strip on mobile (airy, no boxes),
+   roomy 2×2 boxed cards on desktop */
 .stats-teaser-pad {
   padding: 16px 12px 18px;
 }
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  gap: 0;
 }
 .stats-card {
-  padding: 8px 6px;
-  border-radius: 14px;
+  padding: 10px 4px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  position: relative;
+}
+/* Hairline dividers replace card boxes on mobile */
+.stats-grid > .stats-card + .stats-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.10);
 }
 .stats-card-icon {
-  display: none;
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 6px;
 }
 .stats-number {
-  font-size: 22px;
+  font-size: 24px;
 }
 .stats-suffix {
-  font-size: 14px;
+  font-size: 15px;
 }
 .stats-label {
-  font-size: 7px;
-  letter-spacing: 0.06em;
-  margin-top: 2px;
-  line-height: 1.3;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+  line-height: 1.4;
+  text-wrap: balance;
 }
 .stats-marquee {
   margin-top: 12px;
@@ -1687,6 +1882,12 @@ textarea:focus-visible {
   .stats-card {
     padding: 18px 12px;
     border-radius: 18px;
+    background: rgba(57, 2, 2, 0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  /* No dividers on desktop — boxed cards return */
+  .stats-grid > .stats-card + .stats-card::before {
+    display: none;
   }
   .stats-card-icon {
     display: block;

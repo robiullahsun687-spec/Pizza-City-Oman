@@ -11,11 +11,8 @@ function toSlug(name: string): string {
   return (name || "").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
-const FALLBACK_OUTLETS = ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja", "Al Khoud"];
-
 export default function HomeLocationChips({ branches, id = "home-locations" }: HomeLocationChipsProps) {
-  const active = (branches || []).filter((b) => b.isActive !== false).slice(0, 6);
-  const useFallback = active.length === 0;
+  const active = (branches || []).filter((b) => b.isActive !== false);
 
   return (
     <section id={id} className="container mx-auto px-4 md:px-8 mt-12 md:mt-16 scroll-mt-28 md:scroll-mt-36" aria-label="Our locations">
@@ -39,18 +36,9 @@ export default function HomeLocationChips({ branches, id = "home-locations" }: H
         </Link>
       </div>
 
-      {useFallback ? (
-        <div className="flex flex-wrap gap-2">
-          {FALLBACK_OUTLETS.map((name) => (
-            <Link
-              key={name}
-              to={`/locations/${toSlug(name)}`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border border-gray-200 bg-white hover:border-[var(--pc-red-500)] hover:text-[var(--pc-red-500)] transition-colors"
-            >
-              <MapPin size={14} className="text-[var(--pc-amber-400)]" aria-hidden="true" />
-              {name}
-            </Link>
-          ))}
+      {active.length === 0 ? (
+        <div className="rounded-[20px] border border-gray-100 p-6 text-center text-sm font-bold text-[var(--pc-gray-500)]">
+          Outlet locations are loading. Please check back in a moment.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

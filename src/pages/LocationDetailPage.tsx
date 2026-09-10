@@ -5,17 +5,7 @@ import { motion } from "motion/react";
 import { Branch } from "../types";
 import { getBranchAltText } from "../lib/altText";
 
-/* ─────────────────────── Fallback branch data ─────────────────────── */
-const FALLBACK_BRANCHES: Branch[] = [
-  { _id: "nizwa", name: "Nizwa", phone: "+968 96928714", whatsapp: "+968 96928714", address: "Near Nizwa Souq, Nizwa City Center, Nizwa, Oman", map: "https://maps.google.com/maps?q=Nizwa,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Nizwa", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/ihtck4pfz24g0xapusku" },
-  { _id: "samail", name: "Samail", phone: "+968 96928716", whatsapp: "+968 96928716", address: "Main Shopping High Street Plaza, Samail, Oman", map: "https://maps.google.com/maps?q=Samail,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Samail", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/cj2hccfpwabeealwgtqg" },
-  { _id: "sur", name: "Sur", phone: "+968 96928717", whatsapp: "+968 96928717", address: "Al-Muraj Street Commercial Corridor, Sur, Oman", map: "https://maps.google.com/maps?q=Sur,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Sur", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/ggqugkucybe9ckt0tub1" },
-  { _id: "quriyat", name: "Quriyat", phone: "+968 96928719", whatsapp: "+968 96928719", address: "Coastal Expressway High Road, Quriyat, Oman", map: "https://maps.google.com/maps?q=Quriyat,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Quriyat", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/bfuygklmwmdridzknxo9" },
-  { _id: "fanja", name: "Fanja", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Fanja, Oman", map: "https://maps.google.com/maps?q=Fanja,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Fanja", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/w_800,q_auto,f_auto/restaurant_banners/ihtck4pfz24g0xapusku" },
-  { _id: "alkhoud", name: "Al Khoud", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Al Khoud, Oman", map: "https://maps.app.goo.gl/uLHNwrGK2kaRFULdA", geo: "Al Khoud", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true },
-];
-
-/* ─────────────────── Helpers ─────────────────── */
+/* ─────────────────────── Helpers ─────────────────────── */
 
 /** Approximate GPS Coordinates for Oman Wilayats to provide valid numeric GeoCoordinates in Schema.org */
 const WILAYAT_COORDINATES: Record<string, { latitude: number; longitude: number }> = {
@@ -26,6 +16,10 @@ const WILAYAT_COORDINATES: Record<string, { latitude: number; longitude: number 
   fanja: { latitude: 23.4561, longitude: 58.1472 },
   "al-khoud": { latitude: 23.6190, longitude: 58.1965 },
   alkhoud: { latitude: 23.6190, longitude: 58.1965 },
+  "al khoud": { latitude: 23.6190, longitude: 58.1965 },
+  ibri: { latitude: 23.2250, longitude: 56.4333 },
+  mabela: { latitude: 23.6030, longitude: 58.1820 },
+  "al maabilaah": { latitude: 23.6030, longitude: 58.1820 },
 };
 
 /** Normalize Oman phone numbers to a clean "+968 XXXX XXXX" display and a tel: link */
@@ -96,8 +90,8 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
   const navigate = useNavigate();
 
   const activeBranches = useMemo(() => {
-    const src = branches && branches.length > 0 ? branches : FALLBACK_BRANCHES;
-    return src;
+    // Dynamic branches only — no static fallback (source of truth is /api/branches).
+    return (branches || []) as Branch[];
   }, [branches]);
 
   // Find the outlet matching this slug
@@ -205,6 +199,14 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
 
   /* ─── 404 / Inactive layout ─── */
   if (!outlet) {
+    if (!branches || branches.length === 0) {
+      return (
+        <div className="container mx-auto px-4 py-24 text-center space-y-6">
+          <h1 className="font-playfair font-black text-4xl text-[var(--pc-gray-700)]">Loading outlet…</h1>
+          <p className="text-[var(--pc-gray-500)]">Fetching the latest outlet information.</p>
+        </div>
+      );
+    }
     return (
       <div className="container mx-auto px-4 py-24 text-center space-y-6">
         <h1 className="font-playfair font-black text-4xl text-[var(--pc-gray-700)]">Location Not Found</h1>

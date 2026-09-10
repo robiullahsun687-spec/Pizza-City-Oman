@@ -34,7 +34,7 @@ import {
   Moon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Order, MenuItem, OUTLETS, OutletName, Branch } from "../types";
+import { Order, MenuItem, Branch } from "../types";
 import type { MenuItemSize } from "../lib/priceUtils";
 import { getDefaultSizes } from "../lib/priceUtils";
 import { getMenuItemAltText } from "../lib/altText";
@@ -3364,7 +3364,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                     <label className="text-xs font-black text-[var(--pc-gray-700)] uppercase tracking-wider block">Image Alt Text (SEO, optional)</label>
                     <input
                       type="text"
-                      placeholder="e.g., Wood-fired pizza family offer at Pizza City Oman"
+                      placeholder="e.g., Hand-crafted pizza family offer at Pizza City Oman"
                       value={bannerAltText}
                       onChange={(e) => setBannerAltText(e.target.value)}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-[var(--pc-gray-600)] focus:border-[var(--pc-amber-400)] focus:outline-none"

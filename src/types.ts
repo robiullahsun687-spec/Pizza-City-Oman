@@ -51,7 +51,7 @@ export interface Order {
   _id: string;
   items: OrderItem[];
   customer: Customer;
-  outlet: string; // 'Nizwa' | 'Samail' | 'Sur' | 'Quriyat' | 'Fanja'
+  outlet: string; // Branch.name — source of truth is /api/branches (MongoDB)
   status: 'pending' | 'preparing' | 'out-for-delivery' | 'delivered' | 'cancelled';
   total: number;
   timestamp: string;
@@ -73,15 +73,10 @@ export interface Branch {
   altText?: string;
 }
 
-export const OUTLETS = {
-  Nizwa: { phone: '96928714', name: 'Nizwa', location: 'Nizwa, Oman', coords: 'Nizwa' },
-  Samail: { phone: '96928716', name: 'Samail', location: 'Samail, Oman', coords: 'Samail' },
-  Sur: { phone: '96928717', name: 'Sur', location: 'Sur, Oman', coords: 'Sur' },
-  Quriyat: { phone: '96928719', name: 'Quriyat', location: 'Quriyat, Oman', coords: 'Quriyat' },
-  Fanja: { phone: '96749772', name: 'Fanja', location: 'Fanja, Oman', coords: 'Fanja' },
-} as const;
-
-export type OutletName = keyof typeof OUTLETS;
+// Outlet names are dynamic — the single source of truth is /api/branches (MongoDB).
+// There is intentionally no hardcoded OUTLETS constant (it previously capped the
+// system at 5 outlets while the database holds 8+). Use Branch.name directly.
+export type OutletName = string;
 
 export interface HeroBanner {
   _id: string;

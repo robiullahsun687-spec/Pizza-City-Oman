@@ -368,11 +368,14 @@ let inMemPromoCodes = [...SEED_PROMOS].map((it, idx) => ({
 let inMemOrders: InMemOrder[] = [];
 
 const SEED_BRANCHES = [
-  { name: "Nizwa", phone: "+968 96928714", whatsapp: "+968 96928714", address: "Near Nizwa Souq, Nizwa City Center, Nizwa, Oman", map: "https://maps.google.com/maps?q=Nizwa,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Nizwa", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=400&q=80" },
-  { name: "Samail", phone: "+968 96928716", whatsapp: "+968 96928716", address: "Main Shopping High Street Plaza, Samail, Oman", map: "https://maps.google.com/maps?q=Samail,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Samail", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://images.unsplash.com/photo-1595854341625-f33ee10dbf94?auto=format&fit=crop&w=400&q=80" },
-  { name: "Sur", phone: "+968 96928717", whatsapp: "+968 96928717", address: "Al-Muraj Street Commercial Corridor, Sur, Oman", map: "https://maps.google.com/maps?q=Sur,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Sur", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80" },
-  { name: "Quriyat", phone: "+968 96928719", whatsapp: "+968 96928719", address: "Coastal Expressway High Road, Quriyat, Oman", map: "https://maps.google.com/maps?q=Quriyat,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Quriyat", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&w=1200&q=80" },
-  { name: "Fanja", phone: "+968 96749772", whatsapp: "+968 96749772", address: "Main Highway Intersection Plaza Road, Fanja, Oman", map: "https://maps.google.com/maps?q=Fanja,Oman&t=&z=13&ie=UTF8&iwloc=&output=embed", geo: "Fanja", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=400&q=80" },
+  { name: "Nizwa", phone: "+968 96928714", whatsapp: "+968 96928714", address: "Nizwa 611, Oman.", map: "https://maps.app.goo.gl/y6cnhd1N6XvHcpGR7", geo: "Nizwa", hours: "Daily 10 AM – 1 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1787987586/restaurant_banners/hrutdvdixlp8mmdoalrx.jpg", altText: "Pizza City Nizwa Outlet in Nizwa, Oman." },
+  { name: "Samail", phone: "+968 96928716", whatsapp: "+968 96928716", address: "Al Jarda-Saumara Rd, Samail, Ad Dakhiliyah Governorate, Oman", map: "https://maps.app.goo.gl/tBUSRtDM4dDb8NUU6", geo: "Samail", hours: "Daily 11 AM – 1 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788001009/restaurant_banners/ybaxkzas3oyzcr4nluyw.jpg", altText: "Pizza City Samail Outlet." },
+  { name: "Sur", phone: "+968 96928717", whatsapp: "+968 96928717", address: "Sur Al Sharqiyah Government, City 411, Oman", map: "https://maps.app.goo.gl/KVc8BGDoQoH9jQ4G6", geo: "Sur", hours: "Daily 11 AM – 1 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788000815/restaurant_banners/ygyetjw6i9lc5wk5rfv7.jpg", altText: "Pizza City Sur Outlet." },
+  { name: "Quriyat", phone: "+968 91446573", whatsapp: "+968 91446573", address: "Lake Park, Qurayyat 120, Oman.", map: "https://maps.app.goo.gl/25HD9trNYvp3ZkfG8", geo: "Quriyat", hours: "Daily 11 AM – 1 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788000406/restaurant_banners/qssk5fr1augcyhaimm1y.jpg", altText: "Pizza City Quriyat Outlet in Quriyat, Oman." },
+  { name: "Fanja", phone: "+968 96749772", whatsapp: "+968 96749772", address: "opposite Hour Shopping Center, Fanja 623, Oman", map: "https://maps.app.goo.gl/NHzt85nLu6jG8EZn6", geo: "Fanja", hours: "Daily 10 AM – 1 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788000191/restaurant_banners/tzmeuhwpyblukjokj8nl.jpg", altText: "Pizza City Outlet in Fanja, Oman." },
+  { name: "Al Khoud", phone: "+968 96928715", whatsapp: "+968 96928715", address: "Al Khoud 6, Muscat, Oman", map: "https://www.google.com/maps/place/Pizza+City+Al+khud+06/@23.5753021,58.179791,17z/data=!3m1!4b1!4m6!3m5!1s0x3e8de30001646f7d:0x8ffc20c1c162ff1e!8m2!3d23.5752972!4d58.1823659!16s%2Fg%2F11nq95z6px?entry=ttu&g_ep=EgoyMDI2MDcwNy4wIKXMDSoASAFQAw%3D%3D", geo: "Al Khoud", hours: "Daily 11 AM – 11 PM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788000844/restaurant_banners/gq0zbhq9633pwes7hvrl.jpg", altText: "Pizza City Al Khoud Outlet in Muscat, Oman." },
+  { name: "Ibri", phone: "+968 96928719", whatsapp: "+968 96928719", address: "Ibri, Oman", map: "https://maps.app.goo.gl/RcfYoHZfo1w5BHFu5", geo: "Ibri", hours: "Daily 11 AM – 02 AM", delivery: false, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1787910939/restaurant_banners/fkq4fucarx3k9yfdwd2t.jpg", altText: "Pizza City Ibri Outlet in Ibri, Oman." },
+  { name: "Mabela", phone: "+968 96928720", whatsapp: "+968 96928720", address: "Al Maabilaah, Saeeb, Oman", map: "https://maps.app.goo.gl/h7dcRr2ZMrkupj7q8", geo: "Mabela", hours: "Daily 11 AM – 02 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788090589/restaurant_banners/svno1zdh4qxcodn6grqb.jpg", altText: "Pizza City Mabela Outlet in Saeeb, Oman." },
 ];
 
 let inMemBranches = [...SEED_BRANCHES].map((branch, idx) => ({
@@ -628,16 +631,59 @@ function writeLocalDocs(colName: string, docs: any[]) {
 
 
 
-// Outlets database map
-const OUTLET_MAPPINGS: Record<string, string> = {
-  Nizwa: "+968 96928714",
-  Samail: "+968 96928716",
-  Sur: "+968 96928717",
-  Quriyat: "+968 96928719",
-  Fanja: "+968 96749772",
-  AlKhoud: "+968 97939443",
-  Baraka: "+96894022343",
+// Canonical outlet aliases for backward compatibility (old names/slugs -> canonical Branch.name).
+// All outlet validation and RBAC matching MUST go through normalizeOutletName().
+// Phone numbers are NEVER sourced from here — always from MongoBranch / inMemBranches.
+const OUTLET_ALIASES: Record<string, string> = {
+  "ibri outlet": "Ibri",
+  "mabela outlet": "Mabela",
+  "alkhoud": "Al Khoud",
+  "al khoud": "Al Khoud",
+  "al-khoud": "Al Khoud",
+  "al khud": "Al Khoud",
+  "maabilaah": "Mabela",
+  "al maabilaah": "Mabela",
 };
+
+function normalizeOutletName(raw: unknown): string {
+  const trimmed = String(raw ?? "").trim();
+  if (!trimmed) return trimmed;
+  const canonical = OUTLET_ALIASES[trimmed.toLowerCase()];
+  if (canonical) {
+    console.warn(`[outlets] alias "${trimmed}" normalized to "${canonical}" — update stored outletAccess/order data.`);
+    return canonical;
+  }
+  return trimmed;
+}
+
+function outletEquals(a: unknown, b: unknown): boolean {
+  return normalizeOutletName(a).toLowerCase() === normalizeOutletName(b).toLowerCase();
+}
+
+// All stored spellings that resolve to the same canonical outlet (for DB queries
+// covering pre-normalization documents, e.g. "Ibri Outlet" vs "Ibri").
+function outletNameVariants(canonical: string): string[] {
+  const norm = normalizeOutletName(canonical);
+  const variants = new Set<string>([norm]);
+  for (const [alias, target] of Object.entries(OUTLET_ALIASES)) {
+    if (target.toLowerCase() === norm.toLowerCase()) {
+      variants.add(alias);
+    }
+  }
+  return [...variants];
+}
+
+function outletRegexVariants(canonical: string): RegExp[] {
+  return outletNameVariants(canonical).map(
+    (v) => new RegExp(`^${escapeRegex(v)}$`, "i")
+  );
+}
+
+// Production safety: never serve mock/in-memory data as if it were real in production.
+// When MongoDB is unreachable in production, DB-dependent routes must return 503.
+function dbUnavailableInProd(): boolean {
+  return process.env.NODE_ENV === "production" && !useMongoDB;
+}
 
 const SHEETS_CONFIG_PATH = path.join(process.cwd(), "sheets-config.json");
 
@@ -770,7 +816,7 @@ const checkOutletAccess = (paramKey: string) => {
       return res.status(400).json({ error: "Outlet parameter missing." });
     }
     const hasAccess = req.user.outletAccess.some(
-      (accessible) => accessible.toLowerCase() === outlet.toLowerCase()
+      (accessible) => outletEquals(accessible, outlet)
     );
     if (!hasAccess) {
       return res.status(403).json({ error: `Access Denied. You do not have access to the ${outlet} outlet.` });
@@ -824,7 +870,11 @@ app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
 
       return res.json({ token: accessToken, user: payload });
     } else {
-      // In-memory / simulation login fallback (or if mongo disconnected)
+      // No database connection. In production never mint mock admin tokens.
+      if (dbUnavailableInProd()) {
+        return res.status(503).json({ error: "Database unavailable. Please try again later." });
+      }
+      // In-memory / simulation login fallback (dev/test only)
       const expectedUsername = process.env.ADMIN_USERNAME;
       const expectedPassword = process.env.ADMIN_PASSWORD;
 
@@ -1043,11 +1093,21 @@ app.patch("/admin/api/users/:id/toggle", verifyToken, requireSuperAdmin, async (
 });
 
 // Server configuration health check & setup diagnostics
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+  let activeOutlets: number | undefined;
+  try {
+    if (useMongoDB) {
+      activeOutlets = await MongoBranch.countDocuments({ isActive: true });
+    } else {
+      activeOutlets = inMemBranches.filter((b) => b.isActive !== false).length;
+    }
+  } catch {
+    activeOutlets = undefined;
+  }
   res.json({
     status: "ok",
     database: useMongoDB ? "MongoDB Atlas" : "In-Memory/Local Fallback Mock Mode",
-    active_outlets: Object.keys(OUTLET_MAPPINGS).length,
+    active_outlets: activeOutlets,
     seeding: "complete",
   });
 });
@@ -1137,6 +1197,9 @@ app.get("/api/banners", async (req, res) => {
 
 // POST /api/orders — place new order, save to DB, trigger pre-filled WhatsApp link URL (with rate limiting)
 app.post("/api/orders", orderRateLimiter, async (req, res) => {
+  if (dbUnavailableInProd()) {
+    return res.status(503).json({ error: "Database unavailable. Please try again later." });
+  }
   const { items, customer, outlet, promoCode } = req.body;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
@@ -1259,29 +1322,22 @@ app.post("/api/orders", orderRateLimiter, async (req, res) => {
     const total = Math.max(0, Number((subtotal - discountAmt).toFixed(3)));
 
     let targetPhone = "";
-    let foundBranchName = outlet;
+    const requestedOutlet = normalizeOutletName(outlet);
+    let foundBranchName = requestedOutlet;
 
-    // Look up branch in Mongo / InMem to get WhatsApp/Phone number
+    // Look up branch in Mongo / InMem to get WhatsApp/Phone number.
+    // Phone is ALWAYS sourced from the branch record — never a static map.
     if (useMongoDB) {
-      const dbBranch = await MongoBranch.findOne({ name: { $regex: new RegExp(`^${escapeRegex(outlet)}$`, "i") } });
+      const dbBranch = await MongoBranch.findOne({ name: { $regex: new RegExp(`^${escapeRegex(requestedOutlet)}$`, "i") } });
       if (dbBranch) {
         targetPhone = dbBranch.whatsapp || dbBranch.phone;
         foundBranchName = dbBranch.name;
       }
     } else {
-      const inMemBranch = inMemBranches.find(b => b.name.toLowerCase() === outlet.toLowerCase());
+      const inMemBranch = inMemBranches.find((b) => outletEquals(b.name, requestedOutlet));
       if (inMemBranch) {
         targetPhone = inMemBranch.whatsapp || inMemBranch.phone;
         foundBranchName = inMemBranch.name;
-      }
-    }
-
-    // Fallback to static OUTLET_MAPPINGS
-    if (!targetPhone) {
-      const match = Object.keys(OUTLET_MAPPINGS).find(k => k.toLowerCase() === outlet.toLowerCase());
-      if (match) {
-        targetPhone = OUTLET_MAPPINGS[match];
-        foundBranchName = match;
       }
     }
 
@@ -1543,22 +1599,25 @@ app.post("/api/sheets/sync-all", verifyToken, requireSuperAdmin, async (req, res
 
 // GET /api/orders/:outletId/summary — fetch operational counts and revenue totals (Requires basic auth)
 app.get("/api/orders/:outletId/summary", verifyToken, checkOutletAccess("outletId"), async (req, res) => {
+  if (dbUnavailableInProd()) {
+    return res.status(503).json({ error: "Database unavailable. Please try again later." });
+  }
   const { outletId } = req.params;
 
   try {
     let orders;
     if (useMongoDB) {
-      if (outletId.toLowerCase() === "all") {
+      if (normalizeOutletName(outletId).toLowerCase() === "all") {
         orders = await MongoOrder.find({});
       } else {
-        orders = await MongoOrder.find({ outlet: new RegExp(`^${escapeRegex(outletId)}$`, "i") });
+        orders = await MongoOrder.find({ outlet: { $in: outletRegexVariants(outletId) } });
       }
     } else {
-      if (outletId.toLowerCase() === "all") {
+      if (normalizeOutletName(outletId).toLowerCase() === "all") {
         orders = inMemOrders;
       } else {
         orders = inMemOrders.filter(
-          (o) => o.outlet.toLowerCase() === outletId.toLowerCase()
+          (o) => outletEquals(o.outlet, outletId)
         );
       }
     }
@@ -2090,6 +2149,9 @@ app.delete("/admin/api/menu/:id", verifyToken, requireSuperAdmin, async (req, re
 
 // GET /api/branches — get active branches for public customer site
 app.get("/api/branches", async (req, res) => {
+  if (dbUnavailableInProd()) {
+    return res.status(503).json({ error: "Database unavailable. Please try again later." });
+  }
   try {
     let branches;
     if (useMongoDB) {
@@ -2105,6 +2167,9 @@ app.get("/api/branches", async (req, res) => {
 
 // GET /admin/api/branches — get all branches for admin console (Requires basic auth)
 app.get("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res) => {
+  if (dbUnavailableInProd()) {
+    return res.status(503).json({ error: "Database unavailable. Please try again later." });
+  }
   try {
     let branches;
     if (useMongoDB) {
@@ -2245,6 +2310,9 @@ app.delete("/admin/api/branches/:id", verifyToken, requireSuperAdmin, async (req
 
 // GET /api/orders/:outletId — get orders for a specific outlet or "all" (Requires basic auth)
 app.get("/api/orders/:outletId", verifyToken, checkOutletAccess("outletId"), async (req, res) => {
+  if (dbUnavailableInProd()) {
+    return res.status(503).json({ error: "Database unavailable. Please try again later." });
+  }
   const { outletId } = req.params;
   const { status } = req.query; // optional status filter
 
@@ -2252,8 +2320,8 @@ app.get("/api/orders/:outletId", verifyToken, checkOutletAccess("outletId"), asy
     let orders;
     if (useMongoDB) {
       let query: any = {};
-      if (outletId.toLowerCase() !== "all") {
-        query.outlet = { $regex: new RegExp(`^${escapeRegex(outletId)}$`, "i") };
+      if (normalizeOutletName(outletId).toLowerCase() !== "all") {
+        query.outlet = { $in: outletRegexVariants(outletId) };
       }
       if (status && typeof status === "string") {
         query.status = status;
@@ -2261,7 +2329,7 @@ app.get("/api/orders/:outletId", verifyToken, checkOutletAccess("outletId"), asy
       orders = await MongoOrder.find(query).sort({ timestamp: -1 });
     } else {
       orders = inMemOrders
-        .filter((o) => outletId.toLowerCase() === "all" || o.outlet.toLowerCase() === outletId.toLowerCase())
+        .filter((o) => normalizeOutletName(outletId).toLowerCase() === "all" || outletEquals(o.outlet, outletId))
         .filter((o) => !status || o.status === status)
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     }
@@ -2273,6 +2341,9 @@ app.get("/api/orders/:outletId", verifyToken, checkOutletAccess("outletId"), asy
 
 // PATCH /api/orders/:id/status — update active order status + build WhatsApp notification URL
 app.patch("/api/orders/:id/status", verifyToken, async (req, res) => {
+  if (dbUnavailableInProd()) {
+    return res.status(503).json({ error: "Database unavailable. Please try again later." });
+  }
   const { id } = req.params;
   const { status, outletName } = req.body;
 
@@ -2295,11 +2366,11 @@ app.patch("/api/orders/:id/status", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "Order not found." });
     }
 
-    // Check outlet access for moderator role
+    // Check outlet access for moderator role (alias-aware: "Ibri Outlet" == "Ibri")
     if (req.user && req.user.role !== "superadmin") {
       const orderOutlet = orderDoc.outlet || orderDoc.branch || "";
       const hasAccess = req.user.outletAccess.some(
-        (o: string) => o.toLowerCase() === orderOutlet.toLowerCase()
+        (o: string) => outletEquals(o, orderOutlet)
       );
       if (!hasAccess) {
         return res.status(403).json({ error: "Access Denied. You do not have access to this order's outlet." });
@@ -2618,8 +2689,8 @@ const STATIC_SEO: Record<string, { title: string; description: string; canonical
     canonical: "https://pizzacityoman.com/menu",
   },
   "/locations": {
-    title: "Our Locations — Nizwa, Samail, Sur, Quriyat, Fanja | Pizza City Oman",
-    description: "Find Pizza City Oman outlets near you: Nizwa, Samail, Sur, Quriyat, Fanja and Al Khoud. Addresses, phone numbers, hours and delivery info.",
+    title: "Our Locations — Pizza Outlets Across Oman | Pizza City Oman",
+    description: "Find Pizza City Oman outlets near you across Oman. Addresses, phone numbers, hours, delivery and pickup info for every branch.",
     canonical: "https://pizzacityoman.com/locations",
   },
   "/contact": {

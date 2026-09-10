@@ -27,9 +27,9 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     canonical: `${SITE_URL}/track-order`,
   },
   locations: {
-    title: "Our Locations — Nizwa, Samail, Sur, Quriyat, Fanja | Pizza City Oman",
+    title: "Our Locations — Pizza Outlets Across Oman | Pizza City Oman",
     description:
-      "Find Pizza City Oman outlets near you: Nizwa, Samail, Sur, Quriyat, Fanja and Al Khoud. Addresses, phone numbers, hours and delivery info.",
+      "Find Pizza City Oman outlets near you across Oman. Addresses, phone numbers, hours, delivery and pickup info for every branch.",
     canonical: `${SITE_URL}/locations`,
   },
   contact: {

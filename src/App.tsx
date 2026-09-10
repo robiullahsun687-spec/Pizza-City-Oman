@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { Suspense, lazy, useState, useEffect, useMemo, useRef } from "react";
 import { Routes, Route, Link, Navigate, matchPath, useLocation, useNavigate } from "react-router-dom";
 import Seo from "./components/Seo";
 import { PAGE_SEO, SECTION_TO_PATH, SITE_URL } from "./lib/seo";
@@ -13,18 +13,19 @@ import OutletSelector from "./components/OutletSelector";
 import OrderTracker from "./components/OrderTracker";
 import Loader from "./components/Loader";
 
-// Pages
+// Pages — HomePage/MenuPage stay eager (LCP-critical). All other routes are
+// code-split with React.lazy so the initial bundle only ships what's needed.
 import HomePage from "./pages/HomePage";
 import MenuPage from "./pages/MenuPage";
-import LocationsPage from "./pages/LocationsPage";
-import ContactPage from "./pages/ContactPage";
-import FaqPage from "./pages/FaqPage";
-import TrackOrderPage from "./pages/TrackOrderPage";
-import AdminPage from "./pages/AdminPage";
-import LocationDetailPage from "./pages/LocationDetailPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import TermsPage from "./pages/TermsPage";
-import ItemDetailPage from "./pages/ItemDetailPage";
+const LocationsPage = lazy(() => import("./pages/LocationsPage"));
+const LocationDetailPage = lazy(() => import("./pages/LocationDetailPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const FaqPage = lazy(() => import("./pages/FaqPage"));
+const TrackOrderPage = lazy(() => import("./pages/TrackOrderPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const ItemDetailPage = lazy(() => import("./pages/ItemDetailPage"));
 import ItemDetailContent from "./components/ItemDetailContent";
 import { getItemDetailData, itemSlug } from "./lib/itemSlug";
 
@@ -35,6 +36,15 @@ import type { MenuItemSize } from "./lib/priceUtils";
 import { SOCIAL_LINKS } from "./lib/socialLinks";
 
 const CART_STORAGE_KEY = "pizza_city_cart";
+
+// Shown while a code-split route chunk loads (React.lazy + Suspense).
+function RouteFallback() {
+  return (
+    <div className="flex justify-center py-16" aria-busy="true" aria-label="Loading page">
+      <Loader size={140} text="Loading page..." />
+    </div>
+  );
+}
 
 function loadCartFromStorage(): CartEntry[] {
   try {
@@ -215,7 +225,7 @@ export default function App() {
 
   const footerBranches = useMemo(() => {
     const list = branches && branches.length > 0 ? branches : [];
-    return list.filter((b) => b.isActive !== false).slice(0, 6);
+    return list.filter((b) => b.isActive !== false);
   }, [branches]);
 
   const refreshMenu = async () => {
@@ -742,6 +752,7 @@ export default function App() {
           When a quick-view modal is open, the background page stays mounted
           (Routes render at backgroundLocation) and the item overlays it. */}
       <div className={`pt-0 ${isAdminRoute ? "" : "md:pt-24"} flex-1 ${cartTotalQty > 0 ? 'pb-20 md:pb-0' : ''}`}>
+        <Suspense fallback={<RouteFallback />}>
         <Routes location={backgroundLocation || location}>
           <Route path="/" element={
             <>
@@ -820,6 +831,7 @@ export default function App() {
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
 
         {/* Item quick-view modal — overlay only; direct visits render the full page route instead */}
         <AnimatePresence>

@@ -281,9 +281,6 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                 key={label}
                 className="stats-card"
                 style={{
-                  background: "rgba(57, 2, 2, 0.05)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 18,
                   textAlign: "center",
                   display: "flex",
                   flexDirection: "column",
@@ -294,7 +291,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                 <IconComponent className="stats-card-icon" size={26} style={{ color: IconComponent === ChefHat ? "var(--pc-red-500)" : "var(--pc-amber-400)" }} aria-hidden="true" />
 
                 {/* Number + suffix */}
-                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 1 }}>
+                <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
                   <span className="stats-number" style={{ fontFamily: "var(--pc-font-display)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1 }}>
                     {number}
                   </span>
@@ -478,7 +475,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
         <>
           <HomeCategorySection
             id="home-cat-featured"
-            title="Featured Items & Combos"
+            title="Featured Items"
             subtitle="Our most-loved picks — limited-time favourites."
             items={itemsByCategory.featured}
             isLoading={isLoadingMenu}

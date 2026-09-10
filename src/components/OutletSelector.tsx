@@ -20,7 +20,7 @@ import {
   Ruler,
   Flame,
 } from "lucide-react";
-import { MenuItem, OUTLETS, OutletName, CartEntry, Branch } from "../types";
+import { MenuItem, CartEntry, Branch } from "../types";
 import { getVolumeDiscountPercentage, getSizeAdjustedPrice, getDefaultSizes } from "../lib/priceUtils";
 import { getMenuItemAltText } from "../lib/altText";
 import type { MenuItemSize } from "../lib/priceUtils";
@@ -166,20 +166,12 @@ export default function OutletSelector({
 
   if (!isOpen) return null;
 
-  // Group outlets based on search query
+  // Group outlets based on search query (dynamic branches only — no static fallback)
   const q = searchQuery.toLowerCase().trim();
   const filteredDynamicBranches = localBranches.filter((b) => {
     return (
       b.name.toLowerCase().includes(q) ||
       b.address.toLowerCase().includes(q)
-    );
-  });
-
-  const filteredOutletsKeys = (Object.keys(OUTLETS) as OutletName[]).filter((key) => {
-    const outlet = OUTLETS[key];
-    return (
-      outlet.name.toLowerCase().includes(q) ||
-      outlet.location.toLowerCase().includes(q)
     );
   });
 
@@ -892,8 +884,9 @@ export default function OutletSelector({
               <div className="space-y-3">
                 {isLoadingBranches ? (
                   <p className="text-center text-xs text-[var(--pc-color-text-muted-light)] py-4">Synchronizing branch status indices...</p>
-                ) : localBranches.length > 0 ? (
-                  filteredDynamicBranches.length > 0 ? (
+                ) : localBranches.length === 0 ? (
+                  <p className="text-center text-sm text-[var(--pc-color-text-muted-light)] py-4">No outlets available right now. Please try again in a moment.</p>
+                ) : filteredDynamicBranches.length > 0 ? (
                     filteredDynamicBranches.map((branch) => (
                       <div
                         key={branch._id || branch.id}
@@ -906,10 +899,15 @@ export default function OutletSelector({
                         <div className="flex-1 text-left min-w-0">
                           <h5 className="font-body font-extrabold text-sm text-[var(--pc-color-text-primary-light)]">
                             Pizza City — {branch.name}
+                            {branch.delivery === false && (
+                              <span className="ml-2 inline-block align-middle text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                Pickup only
+                              </span>
+                            )}
                           </h5>
                           <div className="flex items-center gap-1.5 mt-1 text-xs text-[var(--pc-color-text-secondary-light)]">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
-                            <span className="truncate">{branch.hours || "Open Now · Daily 11 AM - 11 PM"}</span>
+                            <span className="truncate">{branch.delivery === false ? "Pickup only" : (branch.hours || "Open Now · Daily 11 AM - 11 PM")}</span>
                             <span className="flex-shrink-0">·</span>
                             <Phone size={11} className="flex-shrink-0" aria-hidden="true" />
                             <span className="truncate">{branch.phone}</span>
@@ -922,40 +920,7 @@ export default function OutletSelector({
                     ))
                   ) : (
                     <p className="text-center text-sm text-[var(--pc-color-text-muted-light)] py-4">No matching active outlets found.</p>
-                  )
-                ) : filteredOutletsKeys.length > 0 ? (
-                  filteredOutletsKeys.map((key) => {
-                    const outlet = OUTLETS[key];
-                    return (
-                      <div
-                        key={key}
-                        onClick={() => handleOrderSubmission(key)}
-                        className="flex items-center gap-4 p-4 bg-white hover:bg-[var(--pc-color-primary)]/5 rounded-2xl cursor-pointer border border-transparent hover:border-[var(--pc-color-border-light)] transition-all shadow-sm active:scale-[0.98]"
-                      >
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--pc-color-primary)]/10 to-[var(--pc-color-cta)]/10 border border-[var(--pc-color-border-light)] flex items-center justify-center flex-shrink-0">
-                          <Store size={22} className="text-[var(--pc-color-primary)]" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <h5 className="font-body font-extrabold text-sm text-[var(--pc-color-text-primary-light)]">
-                            Pizza City — {outlet.name}
-                          </h5>
-                          <div className="flex items-center gap-1.5 mt-1 text-xs text-[var(--pc-color-text-secondary-light)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
-                            <span className="truncate">Open Now · {outlet.location}</span>
-                            <span className="flex-shrink-0">·</span>
-                            <Phone size={11} className="flex-shrink-0" aria-hidden="true" />
-                            <span className="truncate">+968 {outlet.phone}</span>
-                          </div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[var(--pc-color-primary)] to-[var(--pc-color-cta)] flex items-center justify-center text-white shadow-md flex-shrink-0">
-                          <ArrowRight size={16} aria-hidden="true" />
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-center text-sm text-[var(--pc-color-text-muted-light)] py-4">No matching outlets found.</p>
-                )}
+                  )}
               </div>
 
               <div className="flex gap-3 mt-4">

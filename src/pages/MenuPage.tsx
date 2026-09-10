@@ -20,7 +20,7 @@ interface MenuPageProps {
 }
 
 const FILTERS = [
-  { id: "all", label: "All Categories", short: "All", icon: Sparkles },
+  { id: "all", label: "All Items", short: "All", icon: Sparkles },
   { id: "featured", label: "Featured", short: "Featured", icon: Star },
   { id: "combo", label: "Combo", short: "Combo", icon: Layers },
   { id: "pizza", label: "Pizzas", short: "Pizzas", icon: Flame },
@@ -30,7 +30,7 @@ const FILTERS = [
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
-  featured: "Featured Items & Combos",
+  featured: "Featured Items",
   pizza: "Handcrafted Pizzas",
   sides: "Savoury Sides & Appetizers",
   drinks: "Ice Cold Drinks & Revivers",
@@ -87,6 +87,21 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   // Refs so the rail can auto-center whichever chip is active
   const filterRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const railRef = useRef<HTMLDivElement>(null);
+  const [canRailLeft, setCanRailLeft] = useState(false);
+  const [canRailRight, setCanRailRight] = useState(false);
+
+  const checkRailScroll = () => {
+    const el = railRef.current;
+    if (!el) return;
+    setCanRailLeft(el.scrollLeft > 8);
+    setCanRailRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+  };
+
+  useEffect(() => {
+    checkRailScroll();
+    window.addEventListener("resize", checkRailScroll);
+    return () => window.removeEventListener("resize", checkRailScroll);
+  }, [menuItems]);
 
   // Scroll spy — automatically tracks the category in view (grouped "all" view)
   useEffect(() => {
@@ -186,7 +201,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   const featuredItems = getFeaturedItems(searchFilteredItems);
 
   const grouped = [
-    ...(featuredItems.length > 0 ? [{ id: "featured", label: CATEGORY_LABELS["featured"] || "Featured Items & Combos", items: featuredItems }] : []),
+    ...(featuredItems.length > 0 ? [{ id: "featured", label: CATEGORY_LABELS["featured"] || "Featured Items", items: featuredItems }] : []),
     ...CATEGORY_ORDER.filter(cat => cat !== "featured").map(cat => ({
       id: cat,
       label: CATEGORY_LABELS[cat] || cat,
@@ -213,17 +228,21 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
     return undefined;
   };
 
+  // pt-16 on mobile clears the fixed h-14 navbar so the rail header never slides under it
   return (
-    <div className="container mx-auto px-2 md:px-8 pb-2 animate-fadeIn overflow-x-clip">
-      {/* Sticky Filter Bar — hidden until user scrolls down into menu items */}
+    <div className="container mx-auto px-2 md:px-8 pt-16 md:pt-0 pb-2 animate-fadeIn overflow-x-clip">
+      {/* Sticky Filter Bar — hidden until user scrolls down into menu items.
+          Compact pills + counts + active behavior unchanged; height capped
+          at 76px, lightweight lucide icons only (3D art lives in the rail). */}
       <div
         className={`sticky z-[35] -mx-2 md:-mx-8 transition-all duration-300 ease-out ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"
           } ${showStickyBar
-            ? "px-3 md:px-8 py-2 opacity-100 pointer-events-auto translate-y-0 max-h-24 mb-3"
+            ? "px-3 md:px-8 py-2 opacity-100 pointer-events-auto translate-y-0 max-h-[76px] mb-3"
             : "px-0 py-0 opacity-0 pointer-events-none -translate-y-4 max-h-0 overflow-hidden border-none shadow-none mb-0"
           }`}
       >
-        <div ref={railRef} className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-proximity scroll-smooth overscroll-contain py-1 px-1">
+        <div className="menu-filter-rail-wrap relative">
+        <div ref={railRef} onScroll={checkRailScroll} className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-proximity scroll-smooth overscroll-contain py-1 px-1">
           {FILTERS.map((cat) => {
             const isActiveChip = menuFilter === "all" ? activeTab === cat.id : menuFilter === cat.id;
             const Icon = cat.icon;
@@ -250,9 +269,12 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
             );
           })}
         </div>
+          <span className={`edge-fade edge-fade--left${canRailLeft ? " is-visible" : ""}`} aria-hidden="true" />
+          <span className={`edge-fade edge-fade--right${canRailRight ? " is-visible" : ""}`} aria-hidden="true" />
+        </div>
       </div>
 
-      {/* Static Visual Category Cards Slider (Screenshot Style) */}
+      {/* Category discovery rail — playful 3D-cartoon icons, same selection contract */}
       <MenuCategorySlider menuItems={menuItems} selectedId={menuFilter} onSelect={scrollToCategory} />
 
       {isLoadingMenu ? (
@@ -273,7 +295,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         /* Grouped view: all categories with scroll spy anchors */
         <section className="menu-section font-body">
           <div className="menu-section__inner">
-            <div id="menu-anchor-top" className="text-center space-y-2 mb-6 md:mb-8 pt-1">
+            <div id="menu-anchor-top" className="text-center space-y-2 mb-4 md:mb-8 pt-1 scroll-mt-28">
               <div className="flex items-center justify-center gap-3">
                 <span className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/50" />
                 <span
@@ -327,7 +349,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         /* Single category view */
         <MenuCardGrid
           title={
-            menuFilter === "featured" ? "⭐ Featured Items & Combos"
+            menuFilter === "featured" ? "⭐ Featured Items"
               : menuFilter === "pizza" ? "Handcrafted Pizzas"
                 : menuFilter === "sides" ? "Savoury Sides & Appetizers"
                   : menuFilter === "drinks" ? "Ice Cold Drinks & Revivers"
