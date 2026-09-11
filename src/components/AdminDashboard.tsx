@@ -38,6 +38,7 @@ import { Order, MenuItem, Branch } from "../types";
 import type { MenuItemSize } from "../lib/priceUtils";
 import { getDefaultSizes } from "../lib/priceUtils";
 import { getMenuItemAltText } from "../lib/altText";
+import { FALLBACK_FOOD_IMAGE } from "../lib/images";
 
 interface AdminDashboardProps {
   onShowToast: (msg: string) => void;
@@ -379,7 +380,9 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
     } else if (branches && branches.length > 0) {
       branchKeys = branches.filter(b => b.isActive !== false).map(b => b.name);
     } else {
-      branchKeys = ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja","Al Khoud"];
+      // No static outlet fallback — branches come from /api/branches; this
+      // effect re-runs when they load (see deps), or stays empty if API is down.
+      branchKeys = [];
     }
     const results: Record<string, { totalOrders: number; totalRevenue: number; pending: number }> = {};
 
@@ -855,7 +858,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       title: bannerTitle.trim(),
       subtitle: bannerSubtitle.trim(),
       badge: bannerBadge.trim(),
-      image: bannerImage.trim() || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
+      image: bannerImage.trim() || FALLBACK_FOOD_IMAGE,
       altText: bannerAltText.trim(),
       buttonText: bannerButtonText.trim(),
       buttonLink: bannerButtonLink.trim(),
@@ -1235,7 +1238,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
       subCategory: fieldSubcat.trim(),
       description: fieldDesc.trim(),
       badge: fieldBadge,
-      image: fieldImage.trim() || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80",
+      image: fieldImage.trim() || FALLBACK_FOOD_IMAGE,
       altText: fieldAltText.trim(),
       available: fieldAvailable,
       featured: fieldFeatured,
@@ -1660,7 +1663,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
 
                 {/* Filter outlet list — superadmins see all, moderators see only their assigned outlets */}
                 {(isSuperAdmin
-                  ? (branches && branches.length > 0 ? branches.map(b => b.name) : ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja"])
+                  ? (branches && branches.length > 0 ? branches.map(b => b.name) : [])
                   : (currentUser?.outletAccess || [])
                 ).map((branch: string) => {
                   const data = summaryData[branch] || { pending: 0 };
@@ -1907,7 +1910,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                       {(isSuperAdmin
                         ? (branches && branches.length > 0
                             ? branches.filter(b => b.isActive !== false).map(b => b.name)
-                            : ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja"])
+                            : [])
                         : (currentUser?.outletAccess?.length ? currentUser.outletAccess : [])
                       ).map((branch) => {
                         const branchTodayOrders = todayOrders.filter(o => o.outlet === branch);
@@ -2022,7 +2025,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                       </button>
                        {((branches && branches.length > 0)
                         ? branches.filter(b => b.isActive !== false).map(b => b.name)
-                        : ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja"]
+                        : []
                       ).map((branch) => (
                         <button
                           key={branch}
@@ -2321,7 +2324,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                           >
                             <div className="relative aspect-video bg-gray-50 overflow-hidden">
                               <img 
-                                src={item.image || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80"} 
+                                src={item.image || FALLBACK_FOOD_IMAGE} 
                                 alt={getMenuItemAltText(item)}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
@@ -3816,7 +3819,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                   <div className="space-y-1.5">
                     <label className="text-xs font-black text-[var(--pc-gray-700)] uppercase block">Outlet Access</label>
                     <div className="grid grid-cols-2 gap-2">
-                      {(branches.length ? branches.map(b => b.name) : ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja"]).map((outlet) => (
+                      {(branches.length ? branches.map(b => b.name) : []).map((outlet) => (
                         <label key={outlet} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
                           <input
                             type="checkbox"

@@ -3,6 +3,7 @@ import { Routes, Route, Link, Navigate, matchPath, useLocation, useNavigate } fr
 import Seo from "./components/Seo";
 import { PAGE_SEO, SECTION_TO_PATH, SITE_URL } from "./lib/seo";
 import { LOGO_ALT, getMenuItemAltText } from "./lib/altText";
+import { FALLBACK_FOOD_IMAGE } from "./lib/images";
 import { 
   Menu as MenuIcon, X, ShoppingCart, MapPin, Lock, Sun, Flame, ShoppingBag, Search, ArrowLeft
 } from "lucide-react";
@@ -1057,7 +1058,7 @@ export default function App() {
               {/* Item Header */}
               <div className="flex items-center gap-3 mb-5">
                 <img
-                  src={selectedConfigureItem.image || "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=400,fit=crop/dfZWWj1nq2KWjIwX/pizza-placeholder.jpg"}
+                  src={selectedConfigureItem.image || FALLBACK_FOOD_IMAGE}
                   alt={getMenuItemAltText(selectedConfigureItem)}
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                 />

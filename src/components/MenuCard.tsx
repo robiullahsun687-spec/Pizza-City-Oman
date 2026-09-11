@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { MenuItem } from "../types";
 import { getDefaultSizes } from "../lib/priceUtils";
 import { getMenuItemAltText } from "../lib/altText";
+import { FALLBACK_FOOD_IMAGE } from "../lib/images";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -155,7 +156,7 @@ export default function MenuCard({ item, onOrder, badge, index = 0, displayToast
         </button>
         <div className="overflow-hidden">
           <img
-            src={item.image || "https://via.placeholder.com/400x300?text=No+Image"}
+            src={item.image || FALLBACK_FOOD_IMAGE}
             alt={getMenuItemAltText(item)}
             className={`w-full aspect-[4/3] object-cover transition-transform duration-500 ease-out ${isUnavailable ? "" : "group-hover:scale-105"}`}
             referrerPolicy="no-referrer"

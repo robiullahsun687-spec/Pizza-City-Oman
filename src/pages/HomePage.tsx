@@ -320,7 +320,9 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
             }}
           >
             {(() => {
-              const chips = ["Nizwa", "Samail", "Sur", "Quriyat", "Fanja", "Al Khoud", "Baraka","Mabela","Ibri"];
+              // Dynamic outlet chips from /api/branches — no hardcoded list
+              // (previously included "Baraka", which is not a real outlet).
+              const chips = (branches || []).filter(b => b.isActive !== false).map(b => b.name);
               const render = (ariaHidden: boolean) =>
                 chips.map((chip) => (
                   <span

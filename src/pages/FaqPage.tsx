@@ -7,9 +7,9 @@ export default function FaqPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const FAQS = [
-    { q: "How long does delivery take?", a: "We aim for 30 minutes or less across Nizwa, Samail, Sur, Quriyat, and Fanja. If we exceed that, your next order is on us!" },
+    { q: "How long does delivery take?", a: "We aim for 30 minutes or less from all our outlets across Oman. If we exceed that, your next order is on us!" },
     { q: "How can I place an order?", a: "Just click the 'Order Now' or 'Add to Cart' buttons here! It builds your invoice list, inserts it into our Express-MongoDB backend, and immediately opens WhatsApp with the pre-filled invoice message for your outlet of choice!" },
-    { q: "What active areas do you offer delivery?", a: "We offer hot and fast delivery from our 5 regional stations: Nizwa, Samail, Sur, Quriyat, and Fanja. Follow us on Instagram @_pizza.city_ to get updates when we open near you." },
+    { q: "What active areas do you offer delivery?", a: "We offer hot and fast delivery from all our outlets across Oman — see the Locations page for addresses and hours. Follow us on Instagram @_pizza.city_ to get updates when we open near you." },
     { q: "Am I able to configure custom toppings?", a: "Absolutely. When placing your automated WhatsApp text checkout, you can append any custom configurations, extra toppings, or instructions like 'make it extra hot'!" },
     { q: "What payment systems are available?", a: "We currently accept cash-on-delivery, local bank transfer, or card systems. Integrated Oman payment gateways like Thawani are currently under active development." },
     { q: "Are all components of the pizza clean and fresh?", a: "Yes, 100%! We source premium whole-milk mozzarella and hand-stretch our dough daily. No frozen crusts or canned shortcuts are ever permitted." },

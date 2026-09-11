@@ -385,10 +385,10 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                           🍕 Fresh Out Oven!
                         </div>
 
-                        {/* Elegant Diagonal Calligraphy Banner */}
+                        {/* Elegant Diagonal Calligraphy Banner (decorative — no fixed price claim) */}
                         <div className="absolute -bottom-6 -right-6 px-4 py-2 bg-[var(--pc-red-500)] text-white border-1 border-yellow-500/30 rounded-2xl shadow-xl rotate-[12deg] font-playfair font-black text-xs leading-none text-center">
                           <span className="block text-[8px] tracking-widest text-yellow-300 font-bold uppercase mb-0.5">La Margherita</span>
-                          OMR 3.500 Only
+                          Fresh Out Oven
                         </div>
 
                       </div>

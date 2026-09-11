@@ -289,34 +289,9 @@ const SEED_MENU_ITEMS = [
   },
 ];
 
-
-// Define structures for in-memory databases (graceful fallback)
-interface InMemOrder {
-  _id: string;
-  items: Array<{ menuItemId: string; name: string; size?: string; price: number; quantity: number }>;
-  customer: { name: string; phone: string; email?: string; notes?: string };
-  outlet: string;
-  status: string;
-  subtotal?: number;
-  discountAmt?: number;
-  promoCode?: string;
-  total: number;
-  timestamp: string;
-}
-
-interface InMemBanner {
-  _id: string;
-  title: string;
-  subtitle: string;
-  badge: string;
-  image: string;
-  buttonText: string;
-  buttonLink: string;
-  isActive: boolean;
-  stylePattern?: string;
-  type?: string;
-}
-
+// MongoDB is the only data store — there are no in-memory/mock collections.
+// (Removed: inMemMenuItems, inMemBanners, inMemPromoCodes, inMemOrders,
+// inMemBranches and the dead data-local JSON persistence.)
 const SEED_BANNERS = [
   {
    title: "Bold Flavours. Unforgotable Moments.",
@@ -342,16 +317,10 @@ const SEED_BANNERS = [
   }
 ];
 
-let inMemMenuItems = [...SEED_MENU_ITEMS].map((item: any, idx) => ({
-  _id: `m_${idx + 1}`,
-  ...item,
-  sizes: item.sizes || getDefaultSizes(item.category),
-}));
-
-let inMemBanners: InMemBanner[] = [...SEED_BANNERS].map((banner, idx) => ({
-  _id: `b_${idx + 1}`,
-  ...banner,
-}));
+// NOTE: SEED_* arrays below are seed-only — they populate a fresh MongoDB via
+// seedMongoIfEmpty() and are NEVER served directly. All routes require MongoDB:
+// public reads return [] in dev / 503 in production when down (see requireDb,
+// dbUnavailableInProd); writes/admin/track always return 503 when down.
 
 const SEED_PROMOS = [
   { code: "PIZZA10", discountType: "percentage", discountValue: 10, minOrderAmount: 0, isActive: true },
@@ -360,13 +329,7 @@ const SEED_PROMOS = [
   { code: "FLAT1OMR", discountType: "flat", discountValue: 1.0, minOrderAmount: 5, isActive: true }
 ];
 
-let inMemPromoCodes = [...SEED_PROMOS].map((it, idx) => ({
-  _id: `p_${idx + 1}`,
-  ...it
-}));
-
-let inMemOrders: InMemOrder[] = [];
-
+// Configuration variables
 const SEED_BRANCHES = [
   { name: "Nizwa", phone: "+968 96928714", whatsapp: "+968 96928714", address: "Nizwa 611, Oman.", map: "https://maps.app.goo.gl/y6cnhd1N6XvHcpGR7", geo: "Nizwa", hours: "Daily 10 AM – 1 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1787987586/restaurant_banners/hrutdvdixlp8mmdoalrx.jpg", altText: "Pizza City Nizwa Outlet in Nizwa, Oman." },
   { name: "Samail", phone: "+968 96928716", whatsapp: "+968 96928716", address: "Al Jarda-Saumara Rd, Samail, Ad Dakhiliyah Governorate, Oman", map: "https://maps.app.goo.gl/tBUSRtDM4dDb8NUU6", geo: "Samail", hours: "Daily 11 AM – 1 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788001009/restaurant_banners/ybaxkzas3oyzcr4nluyw.jpg", altText: "Pizza City Samail Outlet." },
@@ -377,11 +340,6 @@ const SEED_BRANCHES = [
   { name: "Ibri", phone: "+968 96928719", whatsapp: "+968 96928719", address: "Ibri, Oman", map: "https://maps.app.goo.gl/RcfYoHZfo1w5BHFu5", geo: "Ibri", hours: "Daily 11 AM – 02 AM", delivery: false, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1787910939/restaurant_banners/fkq4fucarx3k9yfdwd2t.jpg", altText: "Pizza City Ibri Outlet in Ibri, Oman." },
   { name: "Mabela", phone: "+968 96928720", whatsapp: "+968 96928720", address: "Al Maabilaah, Saeeb, Oman", map: "https://maps.app.goo.gl/h7dcRr2ZMrkupj7q8", geo: "Mabela", hours: "Daily 11 AM – 02 AM", delivery: true, isActive: true, image: "https://res.cloudinary.com/dc6pr0lxh/image/upload/v1788090589/restaurant_banners/svno1zdh4qxcodn6grqb.jpg", altText: "Pizza City Mabela Outlet in Saeeb, Oman." },
 ];
-
-let inMemBranches = [...SEED_BRANCHES].map((branch, idx) => ({
-  _id: `br_${idx + 1}`,
-  ...branch
-}));
 
 // Configuration variables
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -594,46 +552,8 @@ if (isUriValid) {
   useMongoDB = false;
 }
 
-// Local JSON file directory for in-memory fallback data persistence
-const LOCAL_DATA_DIR = path.join(process.cwd(), "data-local");
-
-function ensureLocalDataDir() {
-  if (!fs.existsSync(LOCAL_DATA_DIR)) {
-    fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
-  }
-}
-
-function getLocalFile(colName: string): string {
-  ensureLocalDataDir();
-  return path.join(LOCAL_DATA_DIR, `${colName}.json`);
-}
-
-function readLocalDocs(colName: string): any[] {
-  try {
-    const file = getLocalFile(colName);
-    if (fs.existsSync(file)) {
-      return JSON.parse(fs.readFileSync(file, "utf8"));
-    }
-  } catch (err) {
-    console.error(`Error reading local docs for ${colName}:`, err);
-  }
-  return [];
-}
-
-function writeLocalDocs(colName: string, docs: any[]) {
-  try {
-    const file = getLocalFile(colName);
-    fs.writeFileSync(file, JSON.stringify(docs, null, 2), "utf8");
-  } catch (err) {
-    console.error(`Error writing local docs for ${colName}:`, err);
-  }
-}
-
-
-
 // Canonical outlet aliases for backward compatibility (old names/slugs -> canonical Branch.name).
 // All outlet validation and RBAC matching MUST go through normalizeOutletName().
-// Phone numbers are NEVER sourced from here — always from MongoBranch / inMemBranches.
 const OUTLET_ALIASES: Record<string, string> = {
   "ibri outlet": "Ibri",
   "mabela outlet": "Mabela",
@@ -683,6 +603,28 @@ function outletRegexVariants(canonical: string): RegExp[] {
 // When MongoDB is unreachable in production, DB-dependent routes must return 503.
 function dbUnavailableInProd(): boolean {
   return process.env.NODE_ENV === "production" && !useMongoDB;
+}
+
+// All routes require MongoDB — there are no in-memory/mock fallbacks.
+// Writes, admin, auth, and tracking endpoints use this: 503 in every env when down.
+const requireDb = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (!useMongoDB) {
+    return res.status(503).json({ error: "Database unavailable. Please try again later." });
+  }
+  next();
+};
+
+// Public catalog reads (menu/banners/promos/branches) stay available in dev without
+// a database by returning [] (frontends render empty states); in production they
+// return 503 like everything else. Returns true when it already responded.
+function respondDbDownForRead(res: express.Response): boolean {
+  if (useMongoDB) return false;
+  if (dbUnavailableInProd()) {
+    res.status(503).json({ error: "Database unavailable. Please try again later." });
+  } else {
+    res.json([]);
+  }
+  return true;
 }
 
 const SHEETS_CONFIG_PATH = path.join(process.cwd(), "sheets-config.json");
@@ -837,70 +779,48 @@ app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
   }
 
   try {
-    if (useMongoDB) {
-      const user = await MongoUser.findOne({ username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") } });
-      if (!user || !user.isActive) {
-        return res.status(401).json({ error: "Invalid username or password, or user is inactive." });
-      }
+    if (!useMongoDB) {
+      // No database connection — never mint mock admin tokens in any environment.
+      return res.status(503).json({ error: "Database unavailable. Please try again later." });
+    }
+    const user = await MongoUser.findOne({ username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") } });
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: "Invalid username or password, or user is inactive." });
+    }
 
-      const isMatch = await bcrypt.compare(password, user.passwordHash);
-      if (!isMatch) {
-        return res.status(401).json({ error: "Invalid username or password." });
-      }
-
-      user.lastLogin = new Date();
-      await user.save();
-
-      const payload = {
-        userId: user._id.toString(),
-        username: user.username,
-        role: user.role as "superadmin" | "moderator",
-        outletAccess: user.outletAccess,
-      };
-
-      const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
-      const refreshToken = jwt.sign({ userId: user._id.toString() }, JWT_REFRESH_SECRET, { expiresIn: "7d" });
-
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-
-      return res.json({ token: accessToken, user: payload });
-    } else {
-      // No database connection. In production never mint mock admin tokens.
-      if (dbUnavailableInProd()) {
-        return res.status(503).json({ error: "Database unavailable. Please try again later." });
-      }
-      // In-memory / simulation login fallback (dev/test only)
-      const expectedUsername = process.env.ADMIN_USERNAME;
-      const expectedPassword = process.env.ADMIN_PASSWORD;
-
-      if (!expectedUsername || !expectedPassword) {
-        return res.status(503).json({ error: "Admin credentials not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD environment variables." });
-      }
-
-      if (username.toLowerCase() === expectedUsername.toLowerCase() && password === expectedPassword) {
-        const payload = {
-          userId: "fallback-admin-id",
-          username: expectedUsername,
-          role: "superadmin" as const,
-          outletAccess: [] as string[],
-        };
-        const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
-        return res.json({ token: accessToken, user: payload });
-      }
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
       return res.status(401).json({ error: "Invalid username or password." });
     }
+
+    user.lastLogin = new Date();
+    await user.save();
+
+    const payload = {
+      userId: user._id.toString(),
+      username: user.username,
+      role: user.role as "superadmin" | "moderator",
+      outletAccess: user.outletAccess,
+    };
+
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
+    const refreshToken = jwt.sign({ userId: user._id.toString() }, JWT_REFRESH_SECRET, { expiresIn: "7d" });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return res.json({ token: accessToken, user: payload });
   } catch (err: any) {
     return res.status(500).json({ error: "Server login error: " + err.message });
   }
 });
 
 // POST /api/auth/refresh — issue new accessToken using refreshToken cookie
-app.post("/api/auth/refresh", async (req, res) => {
+app.post("/api/auth/refresh", requireDb, async (req, res) => {
   const refreshToken = getCookie(req, "refreshToken");
   if (!refreshToken) {
     return res.status(401).json({ error: "Refresh token required." });
@@ -910,34 +830,20 @@ app.post("/api/auth/refresh", async (req, res) => {
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
     const userId = decoded.userId;
 
-    if (useMongoDB) {
-      const user = await MongoUser.findById(userId);
-      if (!user || !user.isActive) {
-        return res.status(401).json({ error: "Invalid user or inactive." });
-      }
-
-      const payload = {
-        userId: user._id.toString(),
-        username: user.username,
-        role: user.role as "superadmin" | "moderator",
-        outletAccess: user.outletAccess,
-      };
-
-      const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
-      return res.json({ token: accessToken, user: payload });
-    } else {
-      if (userId === "fallback-admin-id") {
-        const payload = {
-          userId: "fallback-admin-id",
-          username: process.env.ADMIN_USERNAME,
-          role: "superadmin" as const,
-          outletAccess: [] as string[],
-        };
-        const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
-        return res.json({ token: accessToken, user: payload });
-      }
-      return res.status(401).json({ error: "Invalid session." });
+    const user = await MongoUser.findById(userId);
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: "Invalid user or inactive." });
     }
+
+    const payload = {
+      userId: user._id.toString(),
+      username: user.username,
+      role: user.role as "superadmin" | "moderator",
+      outletAccess: user.outletAccess,
+    };
+
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
+    return res.json({ token: accessToken, user: payload });
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired refresh token." });
   }
@@ -958,155 +864,127 @@ app.post("/api/auth/logout", (req, res) => {
 // ==========================================
 
 // GET /admin/api/users — list all users
-app.get("/admin/api/users", verifyToken, requireSuperAdmin, async (req, res) => {
+app.get("/admin/api/users", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   try {
-    if (useMongoDB) {
-      const users = await MongoUser.find({}, { passwordHash: 0 }).sort({ username: 1 });
-      return res.json(users);
-    } else {
-      return res.json([{
-        _id: "fallback-admin-id",
-        username: process.env.ADMIN_USERNAME,
-        role: "superadmin",
-        outletAccess: [],
-        isActive: true,
-      }]);
-    }
+    const users = await MongoUser.find({}, { passwordHash: 0 }).sort({ username: 1 });
+    return res.json(users);
   } catch (err: any) {
     return res.status(500).json({ error: "Failed to fetch users: " + err.message });
   }
 });
 
 // POST /admin/api/users — create a new user
-app.post("/admin/api/users", verifyToken, requireSuperAdmin, async (req, res) => {
+app.post("/admin/api/users", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { username, password, role, outletAccess } = req.body;
   if (!username || !password || !role) {
     return res.status(400).json({ error: "Username, password and role are required." });
   }
 
   try {
-    if (useMongoDB) {
-      const existingUser = await MongoUser.findOne({ username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") } });
-      if (existingUser) {
-        return res.status(400).json({ error: "Username already exists." });
-      }
-
-      const passwordHash = await bcrypt.hash(password, 12);
-      const user = await MongoUser.create({
-        username,
-        passwordHash,
-        role,
-        outletAccess: outletAccess || [],
-        isActive: true,
-      });
-
-      const userObj = user.toObject() as any;
-      delete userObj.passwordHash;
-      return res.json({ success: true, user: userObj });
-    } else {
-      return res.status(400).json({ error: "Cannot create user in local simulation mode." });
+    const existingUser = await MongoUser.findOne({ username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") } });
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already exists." });
     }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await MongoUser.create({
+      username,
+      passwordHash,
+      role,
+      outletAccess: outletAccess || [],
+      isActive: true,
+    });
+
+    const userObj = user.toObject() as any;
+    delete userObj.passwordHash;
+    return res.json({ success: true, user: userObj });
   } catch (err: any) {
     return res.status(500).json({ error: "Failed to create user: " + err.message });
   }
 });
 
 // PATCH /admin/api/users/:id — update user
-app.patch("/admin/api/users/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/users/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
   const { username, password, role, outletAccess, isActive } = req.body;
 
   try {
-    if (useMongoDB) {
-      const user = await MongoUser.findById(id);
-      if (!user) {
-        return res.status(404).json({ error: "User not found." });
-      }
-
-      if (username) {
-        const existingUser = await MongoUser.findOne({
-          username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") },
-          _id: { $ne: id }
-        });
-        if (existingUser) {
-          return res.status(400).json({ error: "Username already exists." });
-        }
-        user.username = username;
-      }
-
-      if (password) {
-        user.passwordHash = await bcrypt.hash(password, 12);
-      }
-
-      if (role) user.role = role;
-      if (outletAccess) user.outletAccess = outletAccess;
-      if (isActive !== undefined) user.isActive = isActive;
-
-      await user.save();
-      const userObj = user.toObject() as any;
-      delete userObj.passwordHash;
-      return res.json({ success: true, user: userObj });
-    } else {
-      return res.status(400).json({ error: "Cannot update user in local simulation mode." });
+    const user = await MongoUser.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
     }
+
+    if (username) {
+      const existingUser = await MongoUser.findOne({
+        username: { $regex: new RegExp(`^${escapeRegex(username)}$`, "i") },
+        _id: { $ne: id }
+      });
+      if (existingUser) {
+        return res.status(400).json({ error: "Username already exists." });
+      }
+      user.username = username;
+    }
+
+    if (password) {
+      user.passwordHash = await bcrypt.hash(password, 12);
+    }
+
+    if (role) user.role = role;
+    if (outletAccess) user.outletAccess = outletAccess;
+    if (isActive !== undefined) user.isActive = isActive;
+
+    await user.save();
+    const userObj = user.toObject() as any;
+    delete userObj.passwordHash;
+    return res.json({ success: true, user: userObj });
   } catch (err: any) {
     return res.status(500).json({ error: "Failed to update user: " + err.message });
   }
 });
 
 // DELETE /admin/api/users/:id — delete user
-app.delete("/admin/api/users/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.delete("/admin/api/users/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
   try {
-    if (useMongoDB) {
-      const user = await MongoUser.findByIdAndDelete(id);
-      if (!user) {
-        return res.status(404).json({ error: "User not found." });
-      }
-      return res.json({ success: true, message: "User deleted successfully." });
-    } else {
-      return res.status(400).json({ error: "Cannot delete user in local simulation mode." });
+    const user = await MongoUser.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
     }
+    return res.json({ success: true, message: "User deleted successfully." });
   } catch (err: any) {
     return res.status(500).json({ error: "Failed to delete user: " + err.message });
   }
 });
 
 // PATCH /admin/api/users/:id/toggle — toggle user active status
-app.patch("/admin/api/users/:id/toggle", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/users/:id/toggle", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
   try {
-    if (useMongoDB) {
-      const user = await MongoUser.findById(id);
-      if (!user) {
-        return res.status(404).json({ error: "User not found." });
-      }
-      user.isActive = !user.isActive;
-      await user.save();
-      return res.json({ success: true, isActive: user.isActive });
-    } else {
-      return res.status(400).json({ error: "Cannot toggle user in local simulation mode." });
+    const user = await MongoUser.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
     }
+    user.isActive = !user.isActive;
+    await user.save();
+    return res.json({ success: true, isActive: user.isActive });
   } catch (err: any) {
     return res.status(500).json({ error: "Failed to toggle user status: " + err.message });
   }
 });
 
-// Server configuration health check & setup diagnostics
+// Server configuration health check & setup diagnostics (always responds, even when DB is down)
 app.get("/api/health", async (req, res) => {
   let activeOutlets: number | undefined;
   try {
     if (useMongoDB) {
       activeOutlets = await MongoBranch.countDocuments({ isActive: true });
-    } else {
-      activeOutlets = inMemBranches.filter((b) => b.isActive !== false).length;
     }
   } catch {
     activeOutlets = undefined;
   }
   res.json({
-    status: "ok",
-    database: useMongoDB ? "MongoDB Atlas" : "In-Memory/Local Fallback Mock Mode",
+    status: useMongoDB ? "ok" : "degraded",
+    database: useMongoDB ? "MongoDB Atlas" : "unavailable",
     active_outlets: activeOutlets,
     seeding: "complete",
   });
@@ -1114,18 +992,12 @@ app.get("/api/health", async (req, res) => {
 
 // GET /api/menu — fetch all menu items (filter by category)
 app.get("/api/menu", async (req, res) => {
+  if (respondDbDownForRead(res)) return;
   const { category } = req.query;
 
   try {
-    let items;
-    if (useMongoDB) {
-      const query = category ? { category: String(category) } : {};
-      items = await MongoMenuItem.find(query);
-    } else {
-      items = category
-        ? inMemMenuItems.filter((item) => item.category === category)
-        : inMemMenuItems;
-    }
+    const query = category ? { category: String(category) } : {};
+    const items = await MongoMenuItem.find(query);
     return res.json(items);
   } catch (error: any) {
     return res.status(500).json({ error: "Error retrieving menu catalog: " + error.message });
@@ -1134,13 +1006,9 @@ app.get("/api/menu", async (req, res) => {
 
 // GET /api/promos/list — retrieve active promo codes for customer checkout
 app.get("/api/promos/list", async (req, res) => {
+  if (respondDbDownForRead(res)) return;
   try {
-    let promos;
-    if (useMongoDB) {
-      promos = await MongoPromoCode.find({ isActive: true });
-    } else {
-      promos = inMemPromoCodes.filter((promo) => promo.isActive !== false);
-    }
+    const promos = await MongoPromoCode.find({ isActive: true });
     return res.json(promos);
   } catch (error: any) {
     return res.status(500).json({ error: "Error retrieving promos: " + error.message });
@@ -1148,19 +1016,14 @@ app.get("/api/promos/list", async (req, res) => {
 });
 
 // POST /api/promos/validate — validate and calculate promo code discounts
-app.post("/api/promos/validate", async (req, res) => {
+app.post("/api/promos/validate", requireDb, async (req, res) => {
   const { code, cartTotal } = req.body;
   if (!code) {
     return res.status(400).json({ success: false, error: "Promo code is blank." });
   }
 
   try {
-    let promo;
-    if (useMongoDB) {
-      promo = await MongoPromoCode.findOne({ code: new RegExp(`^${escapeRegex(code.trim())}$`, "i"), isActive: true });
-    } else {
-      promo = inMemPromoCodes.find((p) => p.code.toLowerCase() === code.trim().toLowerCase() && p.isActive);
-    }
+    const promo = await MongoPromoCode.findOne({ code: new RegExp(`^${escapeRegex(code.trim())}$`, "i"), isActive: true });
 
     if (!promo) {
       return res.status(200).json({ success: false, error: "Invalid, expired, or non-existent coupon code." });
@@ -1182,13 +1045,9 @@ app.post("/api/promos/validate", async (req, res) => {
 
 // GET /api/banners — fetch all active banners
 app.get("/api/banners", async (req, res) => {
+  if (respondDbDownForRead(res)) return;
   try {
-    let banners;
-    if (useMongoDB) {
-      banners = await MongoBanner.find({ isActive: true });
-    } else {
-      banners = inMemBanners.filter((banner) => banner.isActive !== false);
-    }
+    const banners = await MongoBanner.find({ isActive: true });
     return res.json(banners);
   } catch (error: any) {
     return res.status(500).json({ error: "Error retrieving active banners: " + error.message });
@@ -1196,10 +1055,7 @@ app.get("/api/banners", async (req, res) => {
 });
 
 // POST /api/orders — place new order, save to DB, trigger pre-filled WhatsApp link URL (with rate limiting)
-app.post("/api/orders", orderRateLimiter, async (req, res) => {
-  if (dbUnavailableInProd()) {
-    return res.status(503).json({ error: "Database unavailable. Please try again later." });
-  }
+app.post("/api/orders", orderRateLimiter, requireDb, async (req, res) => {
   const { items, customer, outlet, promoCode } = req.body;
 
   if (!items || !Array.isArray(items) || items.length === 0) {
@@ -1226,15 +1082,11 @@ app.post("/api/orders", orderRateLimiter, async (req, res) => {
       }
 
       let foundItem: any;
-      if (useMongoDB) {
-        if (mongoose.Types.ObjectId.isValid(menuItemId)) {
-          foundItem = await MongoMenuItem.findById(menuItemId);
-        }
-        if (!foundItem) {
-          foundItem = await MongoMenuItem.findOne({ _id: menuItemId });
-        }
-      } else {
-        foundItem = inMemMenuItems.find((m: any) => m._id === menuItemId);
+      if (mongoose.Types.ObjectId.isValid(menuItemId)) {
+        foundItem = await MongoMenuItem.findById(menuItemId);
+      }
+      if (!foundItem) {
+        foundItem = await MongoMenuItem.findOne({ _id: menuItemId });
       }
 
       if (!foundItem) {
@@ -1291,13 +1143,7 @@ app.post("/api/orders", orderRateLimiter, async (req, res) => {
 
     if (promoCode && typeof promoCode === "string" && promoCode.trim()) {
       const cleanCode = promoCode.trim().toUpperCase();
-      let promo: any;
-
-      if (useMongoDB) {
-        promo = await MongoPromoCode.findOne({ code: new RegExp(`^${escapeRegex(cleanCode)}$`, "i"), isActive: true });
-      } else {
-        promo = inMemPromoCodes.find((p) => p.code.toLowerCase() === cleanCode.toLowerCase() && p.isActive);
-      }
+      const promo: any = await MongoPromoCode.findOne({ code: new RegExp(`^${escapeRegex(cleanCode)}$`, "i"), isActive: true });
 
       if (!promo) {
         return res.status(400).json({ error: `Promo code "${cleanCode}" is invalid or expired.` });
@@ -1325,57 +1171,30 @@ app.post("/api/orders", orderRateLimiter, async (req, res) => {
     const requestedOutlet = normalizeOutletName(outlet);
     let foundBranchName = requestedOutlet;
 
-    // Look up branch in Mongo / InMem to get WhatsApp/Phone number.
+    // Look up branch in MongoDB to get WhatsApp/Phone number.
     // Phone is ALWAYS sourced from the branch record — never a static map.
-    if (useMongoDB) {
-      const dbBranch = await MongoBranch.findOne({ name: { $regex: new RegExp(`^${escapeRegex(requestedOutlet)}$`, "i") } });
-      if (dbBranch) {
-        targetPhone = dbBranch.whatsapp || dbBranch.phone;
-        foundBranchName = dbBranch.name;
-      }
-    } else {
-      const inMemBranch = inMemBranches.find((b) => outletEquals(b.name, requestedOutlet));
-      if (inMemBranch) {
-        targetPhone = inMemBranch.whatsapp || inMemBranch.phone;
-        foundBranchName = inMemBranch.name;
-      }
+    const dbBranch = await MongoBranch.findOne({ name: { $regex: new RegExp(`^${escapeRegex(requestedOutlet)}$`, "i") } });
+    if (dbBranch) {
+      targetPhone = dbBranch.whatsapp || dbBranch.phone;
+      foundBranchName = dbBranch.name;
     }
 
     if (!targetPhone) {
       return res.status(400).json({ error: `Valid branch is required. Could not find active branch matching "${outlet}".` });
     }
 
-    let savedOrder: any;
-    if (useMongoDB) {
-      const newOrder = new MongoOrder({
-        items: computedItems,
-        customer,
-        outlet: foundBranchName,
-        subtotal,
-        discountAmt,
-        promoCode: appliedCode,
-        total,
-        status: "pending",
-        timestamp: new Date(),
-      });
-      savedOrder = await newOrder.save();
-    } else {
-      const newId = `ord_${Date.now()}`;
-      const inMemOrder: InMemOrder = {
-        _id: newId,
-        items: computedItems,
-        customer,
-        outlet: foundBranchName,
-        subtotal,
-        discountAmt,
-        promoCode: appliedCode,
-        total,
-        status: "pending",
-        timestamp: new Date().toISOString(),
-      };
-      inMemOrders.push(inMemOrder);
-      savedOrder = inMemOrder;
-    }
+    const newOrder = new MongoOrder({
+      items: computedItems,
+      customer,
+      outlet: foundBranchName,
+      subtotal,
+      discountAmt,
+      promoCode: appliedCode,
+      total,
+      status: "pending",
+      timestamp: new Date(),
+    });
+    const savedOrder: any = await newOrder.save();
 
     // Build the WhatsApp message trigger block per outlet
     const cleanPhone = targetPhone.replace(/\s+/g, "").replace("+", "");
@@ -1430,7 +1249,7 @@ app.post("/api/orders", orderRateLimiter, async (req, res) => {
 });
 
 // GET /api/orders/track/:id — Public order tracker status endpoint
-app.get("/api/orders/track/:id", async (req, res) => {
+app.get("/api/orders/track/:id", requireDb, async (req, res) => {
   const { id } = req.params;
   if (!id) {
     return res.status(400).json({ error: "Order reference number or ID is required" });
@@ -1442,55 +1261,40 @@ app.get("/api/orders/track/:id", async (req, res) => {
 
   try {
     let order: any;
-    if (useMongoDB) {
-      // 1) Full ObjectId lookup — only if valid 24-hex ObjectId
-      if (mongoose.Types.ObjectId.isValid(cleanId)) {
-        try {
-          order = await MongoOrder.findById(cleanId);
-        } catch {
-          // ignore CastError, will try suffix search below
-        }
+    // 1) Full ObjectId lookup — only if valid 24-hex ObjectId
+    if (mongoose.Types.ObjectId.isValid(cleanId)) {
+      try {
+        order = await MongoOrder.findById(cleanId);
+      } catch {
+        // ignore CastError, will try suffix search below
       }
+    }
 
-      // 2) Suffix search for 6-char codes — case-insensitive, most-recent first
-      //    Previous logic did findOne({_id: id}) BEFORE suffix check, which throws
-      //    CastError for 6-char strings and prevents suffix search from ever running.
-      //    Also limited to last 100 orders and was case-sensitive + returned oldest match on collision.
-      if (!order && cleanId.length === 6) {
-        const normalized = cleanId.toLowerCase();
-        try {
-          // Efficient DB-side suffix match using $regexMatch on stringified _id
-          // Sort by timestamp desc to return most recent order if suffix collides
-          order = await MongoOrder.findOne({
-            $expr: {
-              $regexMatch: {
-                input: { $toString: "$_id" },
-                regex: normalized + "$",
-                options: "i",
-              },
-            },
-          }).sort({ timestamp: -1 } as any);
-        } catch {
-          // Fallback if $regexMatch/$toString not supported by Mongo version
-        }
-        if (!order) {
-          // Fallback scan — 500 recent orders, case-insensitive, most recent wins
-          const recentOrders = await MongoOrder.find().sort({ timestamp: -1 }).limit(500);
-          order = recentOrders.find((o) => o._id.toString().slice(-6).toLowerCase() === normalized);
-        }
-      }
-    } else {
+    // 2) Suffix search for 6-char codes — case-insensitive, most-recent first
+    //    Previous logic did findOne({_id: id}) BEFORE suffix check, which throws
+    //    CastError for 6-char strings and prevents suffix search from ever running.
+    //    Also limited to last 100 orders and was case-sensitive + returned oldest match on collision.
+    if (!order && cleanId.length === 6) {
       const normalized = cleanId.toLowerCase();
-      // Exact match case-insensitive
-      order = inMemOrders.find((o) => o._id.toLowerCase() === normalized);
-      // Suffix match — reverse scan for most recent, case-insensitive
-      if (!order && cleanId.length === 6) {
-        for (let i = inMemOrders.length - 1; i >= 0; i--) {
-          if (inMemOrders[i]._id.slice(-6).toLowerCase() === normalized) {
-            order = inMemOrders[i];
-            break;
-          }
-        }
+      try {
+        // Efficient DB-side suffix match using $regexMatch on stringified _id
+        // Sort by timestamp desc to return most recent order if suffix collides
+        order = await MongoOrder.findOne({
+          $expr: {
+            $regexMatch: {
+              input: { $toString: "$_id" },
+              regex: normalized + "$",
+              options: "i",
+            },
+          },
+        }).sort({ timestamp: -1 } as any);
+      } catch {
+        // Fallback if $regexMatch/$toString not supported by Mongo version
+      }
+      if (!order) {
+        // Fallback scan — 500 recent orders, case-insensitive, most recent wins
+        const recentOrders = await MongoOrder.find().sort({ timestamp: -1 }).limit(500);
+        order = recentOrders.find((o) => o._id.toString().slice(-6).toLowerCase() === normalized);
       }
     }
 
@@ -1547,19 +1351,14 @@ app.post("/api/sheets/config", verifyToken, requireSuperAdmin, (req, res) => {
   return res.json({ success: true, config: updated });
 });
 
-app.post("/api/sheets/sync-all", verifyToken, requireSuperAdmin, async (req, res) => {
+app.post("/api/sheets/sync-all", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const config = loadSheetsConfig();
   if (!config.webAppUrl) {
     return res.status(400).json({ error: "Google Sheets Web App URL is not configured." });
   }
 
   try {
-    let allOrders: any[];
-    if (useMongoDB) {
-      allOrders = await MongoOrder.find({}).sort({ timestamp: -1 });
-    } else {
-      allOrders = inMemOrders.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    }
+    const allOrders: any[] = await MongoOrder.find({}).sort({ timestamp: -1 });
 
     if (allOrders.length === 0) {
       return res.json({ success: true, message: "No orders found to sync.", count: 0 });
@@ -1598,28 +1397,15 @@ app.post("/api/sheets/sync-all", verifyToken, requireSuperAdmin, async (req, res
 });
 
 // GET /api/orders/:outletId/summary — fetch operational counts and revenue totals (Requires basic auth)
-app.get("/api/orders/:outletId/summary", verifyToken, checkOutletAccess("outletId"), async (req, res) => {
-  if (dbUnavailableInProd()) {
-    return res.status(503).json({ error: "Database unavailable. Please try again later." });
-  }
+app.get("/api/orders/:outletId/summary", verifyToken, checkOutletAccess("outletId"), requireDb, async (req, res) => {
   const { outletId } = req.params;
 
   try {
     let orders;
-    if (useMongoDB) {
-      if (normalizeOutletName(outletId).toLowerCase() === "all") {
-        orders = await MongoOrder.find({});
-      } else {
-        orders = await MongoOrder.find({ outlet: { $in: outletRegexVariants(outletId) } });
-      }
+    if (normalizeOutletName(outletId).toLowerCase() === "all") {
+      orders = await MongoOrder.find({});
     } else {
-      if (normalizeOutletName(outletId).toLowerCase() === "all") {
-        orders = inMemOrders;
-      } else {
-        orders = inMemOrders.filter(
-          (o) => outletEquals(o.outlet, outletId)
-        );
-      }
+      orders = await MongoOrder.find({ outlet: { $in: outletRegexVariants(outletId) } });
     }
 
     // Totals
@@ -1698,14 +1484,9 @@ app.post(
 );
 
 // GET /admin/api/promos — fetch all promo codes (Requires basic auth)
-app.get("/admin/api/promos", verifyToken, requireSuperAdmin, async (req, res) => {
+app.get("/admin/api/promos", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   try {
-    let promos;
-    if (useMongoDB) {
-      promos = await MongoPromoCode.find({});
-    } else {
-      promos = inMemPromoCodes;
-    }
+    const promos = await MongoPromoCode.find({});
     return res.json(promos);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to fetch promo codes: " + error.message });
@@ -1713,7 +1494,7 @@ app.get("/admin/api/promos", verifyToken, requireSuperAdmin, async (req, res) =>
 });
 
 // POST /admin/api/promos — add a new promo code (Requires basic auth)
-app.post("/admin/api/promos", verifyToken, requireSuperAdmin, async (req, res) => {
+app.post("/admin/api/promos", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { code, discountType, discountValue, minOrderAmount, isActive } = req.body;
 
   if (!code || !discountType || discountValue === undefined) {
@@ -1722,45 +1503,27 @@ app.post("/admin/api/promos", verifyToken, requireSuperAdmin, async (req, res) =
 
   try {
     const uppercaseCode = code.trim().toUpperCase();
-    if (useMongoDB) {
-      const existing = await MongoPromoCode.findOne({ code: uppercaseCode });
-      if (existing) {
-        return res.status(400).json({ error: "Promo code with this code already exists." });
-      }
-
-      const newPromo = new MongoPromoCode({
-        code: uppercaseCode,
-        discountType,
-        discountValue: Number(discountValue),
-        minOrderAmount: Number(minOrderAmount) || 0,
-        isActive: isActive !== false
-      });
-      await newPromo.save();
-      return res.json(newPromo);
-    } else {
-      const existing = inMemPromoCodes.some((p) => p.code === uppercaseCode);
-      if (existing) {
-        return res.status(400).json({ error: "Promo code with this code already exists." });
-      }
-
-      const newPromo = {
-        _id: `p_${Date.now()}`,
-        code: uppercaseCode,
-        discountType,
-        discountValue: Number(discountValue),
-        minOrderAmount: Number(minOrderAmount) || 0,
-        isActive: isActive !== false
-      };
-      inMemPromoCodes.push(newPromo);
-      return res.json(newPromo);
+    const existing = await MongoPromoCode.findOne({ code: uppercaseCode });
+    if (existing) {
+      return res.status(400).json({ error: "Promo code with this code already exists." });
     }
+
+    const newPromo = new MongoPromoCode({
+      code: uppercaseCode,
+      discountType,
+      discountValue: Number(discountValue),
+      minOrderAmount: Number(minOrderAmount) || 0,
+      isActive: isActive !== false
+    });
+    await newPromo.save();
+    return res.json(newPromo);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to add promo: " + error.message });
   }
 });
 
 // PATCH /admin/api/promos/:id — update or toggle promo code (Requires basic auth)
-app.patch("/admin/api/promos/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/promos/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   const allowedPromoFields = ["code", "discountType", "discountValue", "minOrderAmount", "isActive"];
@@ -1786,20 +1549,9 @@ app.patch("/admin/api/promos/:id", verifyToken, requireSuperAdmin, async (req, r
   }
 
   try {
-    let updatedPromo;
-    if (useMongoDB) {
-      updatedPromo = await MongoPromoCode.findByIdAndUpdate(id, updates, { returnDocument: "after" });
-      if (!updatedPromo) {
-        return res.status(404).json({ error: "Promo not found." });
-      }
-    } else {
-      const idx = inMemPromoCodes.findIndex((p) => p._id === id);
-      if (idx !== -1) {
-        inMemPromoCodes[idx] = { ...inMemPromoCodes[idx], ...updates };
-        updatedPromo = inMemPromoCodes[idx];
-      } else {
-        return res.status(404).json({ error: "Promo not found." });
-      }
+    const updatedPromo = await MongoPromoCode.findByIdAndUpdate(id, updates, { returnDocument: "after" });
+    if (!updatedPromo) {
+      return res.status(404).json({ error: "Promo not found." });
     }
     return res.json(updatedPromo);
   } catch (error: any) {
@@ -1808,21 +1560,12 @@ app.patch("/admin/api/promos/:id", verifyToken, requireSuperAdmin, async (req, r
 });
 
 // DELETE /admin/api/promos/:id — delete promo code (Requires basic auth)
-app.delete("/admin/api/promos/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.delete("/admin/api/promos/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
   try {
-    if (useMongoDB) {
-      const deleted = await MongoPromoCode.findByIdAndDelete(id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Promo not found." });
-      }
-    } else {
-      const idx = inMemPromoCodes.findIndex((p) => p._id === id);
-      if (idx !== -1) {
-        inMemPromoCodes.splice(idx, 1);
-      } else {
-        return res.status(404).json({ error: "Promo not found." });
-      }
+    const deleted = await MongoPromoCode.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ error: "Promo not found." });
     }
     return res.json({ success: true, message: "Promo code deleted." });
   } catch (error: any) {
@@ -1831,14 +1574,9 @@ app.delete("/admin/api/promos/:id", verifyToken, requireSuperAdmin, async (req, 
 });
 
 // GET /admin/api/banners — fetch all banners (for admin management; Basic Auth)
-app.get("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) => {
+app.get("/admin/api/banners", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   try {
-    let banners;
-    if (useMongoDB) {
-      banners = await MongoBanner.find({});
-    } else {
-      banners = inMemBanners;
-    }
+    const banners = await MongoBanner.find({});
     return res.json(banners);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to fetch admin banners: " + error.message });
@@ -1846,27 +1584,16 @@ app.get("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) =
 });
 
 // PATCH /admin/api/banners/:id/toggle — toggle banner active state (Requires basic auth)
-app.patch("/admin/api/banners/:id/toggle", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/banners/:id/toggle", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   try {
-    let updatedBanner;
-    if (useMongoDB) {
-      const current = await MongoBanner.findById(id);
-      if (!current) {
-        return res.status(404).json({ error: "Banner not found." });
-      }
-      current.isActive = !current.isActive;
-      updatedBanner = await current.save();
-    } else {
-      const idx = inMemBanners.findIndex((b) => b._id === id);
-      if (idx !== -1) {
-        inMemBanners[idx].isActive = !inMemBanners[idx].isActive;
-        updatedBanner = inMemBanners[idx];
-      } else {
-        return res.status(404).json({ error: "Banner not found." });
-      }
+    const current = await MongoBanner.findById(id);
+    if (!current) {
+      return res.status(404).json({ error: "Banner not found." });
     }
+    current.isActive = !current.isActive;
+    const updatedBanner = await current.save();
     return res.json(updatedBanner);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to toggle banner active state: " + error.message });
@@ -1874,45 +1601,26 @@ app.patch("/admin/api/banners/:id/toggle", verifyToken, requireSuperAdmin, async
 });
 
 // POST /admin/api/banners — add a new banner (Requires basic auth)
-app.post("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) => {
+app.post("/admin/api/banners", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { title, subtitle, badge, image, altText, buttonText, buttonLink, isActive, stylePattern, type } = req.body;
   if (!title) {
     return res.status(400).json({ error: "Banner title is required." });
   }
 
   try {
-    let savedBanner;
-    if (useMongoDB) {
-      const newBanner = new MongoBanner({
-        title,
-        subtitle: subtitle || "",
-        badge: badge || "",
-        image: image || "",
-        altText: altText || "",
-        buttonText: buttonText || "Order Now",
-        buttonLink: buttonLink || "#menu",
-        isActive: isActive !== false,
-        stylePattern: stylePattern || "attached",
-        type: type || "all",
-      });
-      savedBanner = await newBanner.save();
-    } else {
-      const newId = `b_${Date.now()}`;
-      savedBanner = {
-        _id: newId,
-        title,
-        subtitle: subtitle || "",
-        badge: badge || "",
-        image: image || "",
-        altText: altText || "",
-        buttonText: buttonText || "Order Now",
-        buttonLink: buttonLink || "#menu",
-        isActive: isActive !== false,
-        stylePattern: stylePattern || "attached",
-        type: type || "all",
-      };
-      inMemBanners.push(savedBanner);
-    }
+    const newBanner = new MongoBanner({
+      title,
+      subtitle: subtitle || "",
+      badge: badge || "",
+      image: image || "",
+      altText: altText || "",
+      buttonText: buttonText || "Order Now",
+      buttonLink: buttonLink || "#menu",
+      isActive: isActive !== false,
+      stylePattern: stylePattern || "attached",
+      type: type || "all",
+    });
+    const savedBanner = await newBanner.save();
     return res.status(201).json(savedBanner);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to create new banner: " + error.message });
@@ -1920,7 +1628,7 @@ app.post("/admin/api/banners", verifyToken, requireSuperAdmin, async (req, res) 
 });
 
 // PATCH /admin/api/banners/:id — update existing banner (Requires basic auth)
-app.patch("/admin/api/banners/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/banners/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   const allowedBannerFields = ["title", "subtitle", "badge", "image", "altText", "buttonText", "buttonLink", "isActive", "stylePattern", "type"];
@@ -1932,20 +1640,9 @@ app.patch("/admin/api/banners/:id", verifyToken, requireSuperAdmin, async (req, 
   }
 
   try {
-    let updatedBanner;
-    if (useMongoDB) {
-      updatedBanner = await MongoBanner.findByIdAndUpdate(id, updates, { returnDocument: "after" });
-      if (!updatedBanner) {
-        return res.status(404).json({ error: "Banner not found." });
-      }
-    } else {
-      const idx = inMemBanners.findIndex((b) => b._id === id);
-      if (idx !== -1) {
-        inMemBanners[idx] = { ...inMemBanners[idx], ...updates };
-        updatedBanner = inMemBanners[idx];
-      } else {
-        return res.status(404).json({ error: "Banner not found." });
-      }
+    const updatedBanner = await MongoBanner.findByIdAndUpdate(id, updates, { returnDocument: "after" });
+    if (!updatedBanner) {
+      return res.status(404).json({ error: "Banner not found." });
     }
     return res.json(updatedBanner);
   } catch (error: any) {
@@ -1954,22 +1651,13 @@ app.patch("/admin/api/banners/:id", verifyToken, requireSuperAdmin, async (req, 
 });
 
 // DELETE /admin/api/banners/:id — delete banner (Requires basic auth)
-app.delete("/admin/api/banners/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.delete("/admin/api/banners/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   try {
-    if (useMongoDB) {
-      const deleted = await MongoBanner.findByIdAndDelete(id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Banner not found." });
-      }
-    } else {
-      const idx = inMemBanners.findIndex((b) => b._id === id);
-      if (idx !== -1) {
-        inMemBanners.splice(idx, 1);
-      } else {
-        return res.status(404).json({ error: "Banner not found." });
-      }
+    const deleted = await MongoBanner.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ error: "Banner not found." });
     }
     return res.json({ success: true, message: "Banner deleted successfully." });
   } catch (error: any) {
@@ -1978,37 +1666,25 @@ app.delete("/admin/api/banners/:id", verifyToken, requireSuperAdmin, async (req,
 });
 
 // PATCH /admin/api/menu/:id/toggle — toggle menu item availability (Requires basic auth)
-app.patch("/admin/api/menu/:id/toggle", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/menu/:id/toggle", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   try {
-    let updatedItem;
-    if (useMongoDB) {
-      const item = await MongoMenuItem.findById(id);
-      if (item) {
-        item.available = !item.available;
-        updatedItem = await item.save();
-      }
-    } else {
-      const idx = inMemMenuItems.findIndex((item) => item._id === id);
-      if (idx !== -1) {
-        inMemMenuItems[idx].available = !inMemMenuItems[idx].available;
-        updatedItem = inMemMenuItems[idx];
-      }
+    const item = await MongoMenuItem.findById(id);
+    if (item) {
+      item.available = !item.available;
+      const updatedItem = await item.save();
+      return res.json({ success: true, available: updatedItem.available });
     }
 
-    if (!updatedItem) {
-      return res.status(404).json({ error: "Menu item not found." });
-    }
-
-    return res.json({ success: true, available: updatedItem.available });
+    return res.status(404).json({ error: "Menu item not found." });
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to toggle menu item: " + error.message });
   }
 });
 
 // POST /admin/api/menu — add a new menu item to catalog (Requires basic auth)
-app.post("/admin/api/menu", verifyToken, requireSuperAdmin, async (req, res) => {
+app.post("/admin/api/menu", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { name, category, price, description, image, altText, available, subCategory, badge, featured, discountPrice, discountPercentage, sizes, pinnedFeatured } = req.body;
 
   if (!name || price === undefined) {
@@ -2045,15 +1721,8 @@ app.post("/admin/api/menu", verifyToken, requireSuperAdmin, async (req, res) => 
       sizes: sizes || undefined,
     };
 
-    let savedItem;
-    if (useMongoDB) {
-      const newItem = new MongoMenuItem(payload);
-      savedItem = await newItem.save();
-    } else {
-      const _id = `m_${Date.now()}`;
-      savedItem = { _id, ...payload };
-      inMemMenuItems.push(savedItem);
-    }
+    const newItem = new MongoMenuItem(payload);
+    const savedItem = await newItem.save();
 
     return res.status(201).json({ success: true, item: savedItem });
   } catch (error: any) {
@@ -2062,7 +1731,7 @@ app.post("/admin/api/menu", verifyToken, requireSuperAdmin, async (req, res) => 
 });
 
 // PATCH /admin/api/menu/:id — update existing menu item (Requires basic auth)
-app.patch("/admin/api/menu/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/menu/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   const allowedMenuFields = ["name", "category", "price", "description", "image", "altText", "available", "subCategory", "badge", "featured", "pinnedFeatured", "discountPrice", "discountPercentage", "sizes"];
@@ -2090,29 +1759,16 @@ app.patch("/admin/api/menu/:id", verifyToken, requireSuperAdmin, async (req, res
   }
 
   try {
-    let updatedItem;
-    if (useMongoDB) {
-      const doc = await MongoMenuItem.findById(id);
-      if (!doc) {
-        return res.status(404).json({ error: "Menu item not found." });
-      }
-      if (updates.sizes !== undefined) {
-        doc.sizes = updates.sizes;
-        doc.markModified("sizes");
-      }
-      doc.set(updates);
-      updatedItem = await doc.save();
-    } else {
-      const idx = inMemMenuItems.findIndex((item) => item._id === id);
-      if (idx !== -1) {
-        inMemMenuItems[idx] = { ...inMemMenuItems[idx], ...updates };
-        updatedItem = inMemMenuItems[idx];
-      }
-    }
-
-    if (!updatedItem) {
+    const doc = await MongoMenuItem.findById(id);
+    if (!doc) {
       return res.status(404).json({ error: "Menu item not found." });
     }
+    if (updates.sizes !== undefined) {
+      doc.sizes = updates.sizes;
+      doc.markModified("sizes");
+    }
+    doc.set(updates);
+    const updatedItem = await doc.save();
 
     return res.json({ success: true, item: updatedItem });
   } catch (error: any) {
@@ -2121,23 +1777,12 @@ app.patch("/admin/api/menu/:id", verifyToken, requireSuperAdmin, async (req, res
 });
 
 // DELETE /admin/api/menu/:id — delete menu item (Requires basic auth)
-app.delete("/admin/api/menu/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.delete("/admin/api/menu/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   try {
-    let deleted = false;
-    if (useMongoDB) {
-      const result = await MongoMenuItem.findByIdAndDelete(id);
-      deleted = !!result;
-    } else {
-      const idx = inMemMenuItems.findIndex((item) => item._id === id);
-      if (idx !== -1) {
-        inMemMenuItems.splice(idx, 1);
-        deleted = true;
-      }
-    }
-
-    if (!deleted) {
+    const result = await MongoMenuItem.findByIdAndDelete(id);
+    if (!result) {
       return res.status(404).json({ error: "Menu item not found to delete." });
     }
 
@@ -2149,16 +1794,9 @@ app.delete("/admin/api/menu/:id", verifyToken, requireSuperAdmin, async (req, re
 
 // GET /api/branches — get active branches for public customer site
 app.get("/api/branches", async (req, res) => {
-  if (dbUnavailableInProd()) {
-    return res.status(503).json({ error: "Database unavailable. Please try again later." });
-  }
+  if (respondDbDownForRead(res)) return;
   try {
-    let branches;
-    if (useMongoDB) {
-      branches = await MongoBranch.find({ isActive: true });
-    } else {
-      branches = inMemBranches.filter(b => b.isActive !== false);
-    }
+    const branches = await MongoBranch.find({ isActive: true });
     return res.json(branches);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to fetch branches: " + error.message });
@@ -2166,17 +1804,9 @@ app.get("/api/branches", async (req, res) => {
 });
 
 // GET /admin/api/branches — get all branches for admin console (Requires basic auth)
-app.get("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res) => {
-  if (dbUnavailableInProd()) {
-    return res.status(503).json({ error: "Database unavailable. Please try again later." });
-  }
+app.get("/admin/api/branches", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   try {
-    let branches;
-    if (useMongoDB) {
-      branches = await MongoBranch.find({});
-    } else {
-      branches = inMemBranches;
-    }
+    const branches = await MongoBranch.find({});
     return res.json(branches);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to fetch admin branches: " + error.message });
@@ -2184,28 +1814,16 @@ app.get("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res) 
 });
 
 // PATCH /admin/api/branches/:id/toggle — toggle branch active status (Requires basic auth)
-app.patch("/admin/api/branches/:id/toggle", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/branches/:id/toggle", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   try {
-    let updatedBranch;
-    if (useMongoDB) {
-      const branch = await MongoBranch.findById(id);
-      if (branch) {
-        branch.isActive = !branch.isActive;
-        updatedBranch = await branch.save();
-      }
-    } else {
-      const idx = inMemBranches.findIndex(b => b._id === id);
-      if (idx !== -1) {
-        inMemBranches[idx].isActive = !inMemBranches[idx].isActive;
-        updatedBranch = inMemBranches[idx];
-      }
-    }
-
-    if (!updatedBranch) {
+    const branch = await MongoBranch.findById(id);
+    if (!branch) {
       return res.status(404).json({ error: "Branch not found." });
     }
+    branch.isActive = !branch.isActive;
+    const updatedBranch = await branch.save();
     return res.json({ success: true, isActive: updatedBranch.isActive });
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to toggle branch status: " + error.message });
@@ -2213,14 +1831,13 @@ app.patch("/admin/api/branches/:id/toggle", verifyToken, requireSuperAdmin, asyn
 });
 
 // POST /admin/api/branches — add a new branch (Requires basic auth)
-app.post("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res) => {
+app.post("/admin/api/branches", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { name, phone, whatsapp, address, map, geo, hours, delivery, isActive, image, altText } = req.body;
   if (!name || !phone || !whatsapp || !address) {
     return res.status(400).json({ error: "Branch name, phone, whatsapp, and address are required." });
   }
 
   try {
-    let savedBranch;
     const payload = {
       name,
       phone,
@@ -2235,14 +1852,8 @@ app.post("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res)
       altText: altText || "",
     };
 
-    if (useMongoDB) {
-      const newBranch = new MongoBranch(payload);
-      savedBranch = await newBranch.save();
-    } else {
-      const newId = `br_${Date.now()}`;
-      savedBranch = { _id: newId, ...payload };
-      inMemBranches.push(savedBranch);
-    }
+    const newBranch = new MongoBranch(payload);
+    const savedBranch = await newBranch.save();
     return res.status(201).json(savedBranch);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to create new branch: " + error.message });
@@ -2250,7 +1861,7 @@ app.post("/admin/api/branches", verifyToken, requireSuperAdmin, async (req, res)
 });
 
 // PATCH /admin/api/branches/:id — update existing branch (Requires basic auth)
-app.patch("/admin/api/branches/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.patch("/admin/api/branches/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   const allowedBranchFields = ["name", "phone", "whatsapp", "address", "map", "geo", "hours", "delivery", "isActive", "image", "altText"];
@@ -2262,16 +1873,7 @@ app.patch("/admin/api/branches/:id", verifyToken, requireSuperAdmin, async (req,
   }
 
   try {
-    let updatedBranch;
-    if (useMongoDB) {
-      updatedBranch = await MongoBranch.findByIdAndUpdate(id, updates, { returnDocument: "after" });
-    } else {
-      const idx = inMemBranches.findIndex(b => b._id === id);
-      if (idx !== -1) {
-        inMemBranches[idx] = { ...inMemBranches[idx], ...updates };
-        updatedBranch = inMemBranches[idx];
-      }
-    }
+    const updatedBranch = await MongoBranch.findByIdAndUpdate(id, updates, { returnDocument: "after" });
 
     if (!updatedBranch) {
       return res.status(404).json({ error: "Branch not found." });
@@ -2283,23 +1885,13 @@ app.patch("/admin/api/branches/:id", verifyToken, requireSuperAdmin, async (req,
 });
 
 // DELETE /admin/api/branches/:id — delete branch (Requires basic auth)
-app.delete("/admin/api/branches/:id", verifyToken, requireSuperAdmin, async (req, res) => {
+app.delete("/admin/api/branches/:id", verifyToken, requireSuperAdmin, requireDb, async (req, res) => {
   const { id } = req.params;
 
   try {
-    let deleted = false;
-    if (useMongoDB) {
-      const result = await MongoBranch.findByIdAndDelete(id);
-      deleted = !!result;
-    } else {
-      const idx = inMemBranches.findIndex(b => b._id === id);
-      if (idx !== -1) {
-        inMemBranches.splice(idx, 1);
-        deleted = true;
-      }
-    }
+    const result = await MongoBranch.findByIdAndDelete(id);
 
-    if (!deleted) {
+    if (!result) {
       return res.status(404).json({ error: "Branch not found to delete." });
     }
     return res.json({ success: true });
@@ -2309,30 +1901,19 @@ app.delete("/admin/api/branches/:id", verifyToken, requireSuperAdmin, async (req
 });
 
 // GET /api/orders/:outletId — get orders for a specific outlet or "all" (Requires basic auth)
-app.get("/api/orders/:outletId", verifyToken, checkOutletAccess("outletId"), async (req, res) => {
-  if (dbUnavailableInProd()) {
-    return res.status(503).json({ error: "Database unavailable. Please try again later." });
-  }
+app.get("/api/orders/:outletId", verifyToken, checkOutletAccess("outletId"), requireDb, async (req, res) => {
   const { outletId } = req.params;
   const { status } = req.query; // optional status filter
 
   try {
-    let orders;
-    if (useMongoDB) {
-      let query: any = {};
-      if (normalizeOutletName(outletId).toLowerCase() !== "all") {
-        query.outlet = { $in: outletRegexVariants(outletId) };
-      }
-      if (status && typeof status === "string") {
-        query.status = status;
-      }
-      orders = await MongoOrder.find(query).sort({ timestamp: -1 });
-    } else {
-      orders = inMemOrders
-        .filter((o) => normalizeOutletName(outletId).toLowerCase() === "all" || outletEquals(o.outlet, outletId))
-        .filter((o) => !status || o.status === status)
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    const query: any = {};
+    if (normalizeOutletName(outletId).toLowerCase() !== "all") {
+      query.outlet = { $in: outletRegexVariants(outletId) };
     }
+    if (status && typeof status === "string") {
+      query.status = status;
+    }
+    const orders = await MongoOrder.find(query).sort({ timestamp: -1 });
     return res.json(orders);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to query outlet orders: " + error.message });
@@ -2340,10 +1921,7 @@ app.get("/api/orders/:outletId", verifyToken, checkOutletAccess("outletId"), asy
 });
 
 // PATCH /api/orders/:id/status — update active order status + build WhatsApp notification URL
-app.patch("/api/orders/:id/status", verifyToken, async (req, res) => {
-  if (dbUnavailableInProd()) {
-    return res.status(503).json({ error: "Database unavailable. Please try again later." });
-  }
+app.patch("/api/orders/:id/status", verifyToken, requireDb, async (req, res) => {
   const { id } = req.params;
   const { status, outletName } = req.body;
 
@@ -2353,14 +1931,8 @@ app.patch("/api/orders/:id/status", verifyToken, async (req, res) => {
   }
 
   try {
-    let orderDoc: any;
-
     // First fetch the order to check outlet access
-    if (useMongoDB) {
-      orderDoc = await MongoOrder.findById(id);
-    } else {
-      orderDoc = inMemOrders.find((o) => o._id === id);
-    }
+    const orderDoc: any = await MongoOrder.findById(id);
 
     if (!orderDoc) {
       return res.status(404).json({ error: "Order not found." });
@@ -2377,20 +1949,11 @@ app.patch("/api/orders/:id/status", verifyToken, async (req, res) => {
       }
     }
 
-    let updatedOrder;
-    if (useMongoDB) {
-      updatedOrder = await MongoOrder.findByIdAndUpdate(
-        id,
-        { status },
-        { returnDocument: "after" }
-      );
-    } else {
-      const idx = inMemOrders.findIndex((o) => o._id === id);
-      if (idx !== -1) {
-        inMemOrders[idx].status = status;
-        updatedOrder = inMemOrders[idx];
-      }
-    }
+    const updatedOrder = await MongoOrder.findByIdAndUpdate(
+      id,
+      { status },
+      { returnDocument: "after" }
+    );
 
     // Optional Google Sheets status update trigger
     const config = loadSheetsConfig();
@@ -2486,15 +2049,11 @@ function findMenuItemBySlug(items: any[], slug: string): any | null {
 // Dynamic real-time sitemap reflecting all active outlets from DB
 app.get("/sitemap.xml", async (req, res) => {
   try {
+    // DB-driven only — no seed/mock fallback. Without a database the sitemap
+    // still serves static pages, just without branch/menu slugs.
     let branchesList: any[] = [];
     if (useMongoDB) {
       branchesList = await MongoBranch.find({ isActive: { $ne: false } }).lean();
-    } else {
-      branchesList = inMemBranches.filter(b => b.isActive !== false);
-    }
-
-    if (!branchesList || branchesList.length === 0) {
-      branchesList = SEED_BRANCHES;
     }
 
     const today = new Date().toISOString().split("T")[0];
@@ -2519,8 +2078,6 @@ app.get("/sitemap.xml", async (req, res) => {
       let menuList: any[] = [];
       if (useMongoDB) {
         menuList = await MongoMenuItem.find({ available: { $ne: false } }).lean();
-      } else {
-        menuList = inMemMenuItems.filter((m: any) => m.available !== false);
       }
       for (const m of menuList) {
         if (!m || !m.name) continue;
@@ -2545,14 +2102,11 @@ app.get("/sitemap.xml", async (req, res) => {
 async function renderLocationPage(req: express.Request, res: express.Response, next: express.NextFunction, vite?: any) {
   try {
     const slug = (req.params.slug || "").toLowerCase();
+    // DB-driven only — without a database (or an unknown slug) the branch
+    // lookup misses and the 404 template below is served. No seed fallback.
     let branchesList: any[] = [];
     if (useMongoDB) {
       branchesList = await MongoBranch.find().lean();
-    } else {
-      branchesList = inMemBranches;
-    }
-    if (!branchesList || branchesList.length === 0) {
-      branchesList = SEED_BRANCHES;
     }
 
     const branch = branchesList.find(b => toSlug(b.name) === slug || toSlug(b._id?.toString() || "") === slug);
@@ -2776,11 +2330,11 @@ async function renderStaticSeoPage(req: express.Request, res: express.Response, 
 async function renderMenuItemPage(req: express.Request, res: express.Response, next: express.NextFunction, vite?: any) {
   try {
     const slug = (req.params.slug || "").toLowerCase();
+    // DB-driven only — without a database the lookup misses and the request
+    // falls through to the client router. No seed/mock fallback.
     let menuList: any[] = [];
     if (useMongoDB) {
       menuList = await MongoMenuItem.find().lean();
-    } else {
-      menuList = inMemMenuItems;
     }
     if (!menuList || menuList.length === 0) {
       return next();
