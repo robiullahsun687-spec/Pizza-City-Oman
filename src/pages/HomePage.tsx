@@ -11,6 +11,7 @@ import HomeLocationChips from "../components/home/HomeLocationChips";
 import { HeroBanner, MenuItem, Branch } from "../types";
 import { getFeaturedItems, getCategoryItems } from "../lib/menuSelectors";
 import { getBannerAltText } from "../lib/altText";
+import MediaRenderer from "../components/MediaRenderer";
 
 interface HomePageProps {
   banners: HeroBanner[];
@@ -261,16 +262,16 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
         </div>
       </section>
 
-      {/* Statistics Teaser bar — redesigned */}
-      <section style={{ background: "var(--pc-gray-900)" }} className="text-white">
-        {/* Gradient divider line */}
-        <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(215,43,43,0.3), rgba(242,101,34,0.3), transparent)", marginBottom: 0 }} />
+      {/* Statistics Teaser bar — daylight: warm cream; midnight: dark (via CSS) */}
+      <section className="stats-section">
+        {/* Divider line */}
+        <div className="stats-divider" />
 
-        {/* Inner wrapper with radial glow */}
-        <div className="stats-teaser-pad" style={{ background: "radial-gradient(ellipse at center, rgba(215,43,43,0.08) 0%, transparent 70%)" }}>
+        {/* Inner wrapper */}
+        <div className="stats-teaser-pad stats-section__inner">
 
           {/* Stats grid — single row on mobile, 2×2 on desktop */}
-          <div className="stats-grid" style={{ display: "grid" }}>
+          <div className="stats-grid">
             {[
               { icon: Rocket, color: "var(--pc-amber-400)", number: "30", suffix: "Min", label: "Delivery Guarantee" },
               { icon: MapPin, color: "var(--pc-amber-400)", number: "9",  suffix: "",    label: "Outlets Across Oman" },
@@ -287,23 +288,23 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                   alignItems: "center",
                 }}
               >
-                {/* Icon */}
-                <IconComponent className="stats-card-icon" size={26} style={{ color: IconComponent === ChefHat ? "var(--pc-red-500)" : "var(--pc-amber-400)" }} aria-hidden="true" />
+                {/* Icon — daylight: brand red via CSS; midnight: amber/red via CSS */}
+                <IconComponent className={`stats-card-icon${IconComponent === ChefHat ? " stats-card-icon--red" : ""}`} size={26} aria-hidden="true" />
 
                 {/* Number + suffix */}
                 <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4 }}>
-                  <span className="stats-number" style={{ fontFamily: "var(--pc-font-display)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1 }}>
+                  <span className="stats-number">
                     {number}
                   </span>
                   {suffix && (
-                    <span className="stats-suffix" style={{ fontFamily: "var(--pc-font-display)", fontWeight: 700, color: "var(--pc-amber-400)", lineHeight: 1 }}>
+                    <span className="stats-suffix">
                       {suffix}
                     </span>
                   )}
                 </span>
 
-                {/* Label — FIXED: was rgba(255,255,255,0.40) = 2.8:1 ❌ → 0.65 = 8.1:1 ✅ */}
-                <p className="stats-label" style={{ fontFamily: "var(--pc-font-sans)", fontWeight: 500, textTransform: "uppercase", color: "rgba(255,255,255,0.65)" }}>
+                {/* Label */}
+                <p className="stats-label">
                   {label}
                 </p>
               </div>
@@ -328,21 +329,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                   <span
                     key={chip}
                     aria-hidden={ariaHidden || undefined}
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.09)",
-                      borderRadius: 50,
-                      padding: "5px 12px",
-                      fontFamily: "var(--pc-font-sans)",
-                      fontSize: 10,
-                      color: "rgba(255,255,255,0.70)",
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
-                      cursor: "default",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
+                    className="outlet-chip"
                   >
                     <MapPin size={12} style={{ color: "var(--pc-amber-400)" }} aria-hidden="true" />
                     {chip}
@@ -360,20 +347,13 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
           {/* Bottom micro strip */}
           <div
             className="stats-strip"
-            style={{
-              borderTop: "1px solid rgba(255,255,255,0.06)",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
           >
-            {/* FIXED: was rgba(255,255,255,0.35) = 2.0:1 ❌ → 0.60 = 7.0:1 ✅ */}
-            <span style={{ fontFamily: "var(--pc-font-sans)", fontSize: 10, color: "rgba(255,255,255,0.62)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-              <Leaf size={14} style={{ color: "var(--pc-amber-400)" }} aria-hidden="true" />
+            <span className="stats-strip__text">
+              <Leaf size={14} className="stats-strip__icon" aria-hidden="true" />
               100% Fresh Ingredients
             </span>
-            <span style={{ fontFamily: "var(--pc-font-sans)", fontSize: 10, color: "rgba(255,255,255,0.62)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-              Order via WhatsApp <MessageCircle size={14} style={{ color: "var(--pc-amber-400)" }} aria-hidden="true" />
+            <span className="stats-strip__text">
+              Order via WhatsApp <MessageCircle size={14} className="stats-strip__icon" aria-hidden="true" />
             </span>
           </div>
 
@@ -446,12 +426,13 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                     aria-label={offer.title}
                     className="offer-card w-full h-48 sm:h-60 lg:h-[340px] rounded-3xl overflow-hidden border border-white/10 shadow-sm hover:shadow-xl hover:border-white/20 cursor-pointer relative bg-[var(--pc-gray-900)] group/card"
                   >
-                    <img
+                    <MediaRenderer
                       src={offer.image}
                       alt={getBannerAltText(offer)}
                       className="w-full h-full object-cover group-hover/card:scale-[1.03] transition-transform duration-500"
                       loading="lazy"
                       referrerPolicy="no-referrer"
+                      width={800}
                     />
                   </button>
                 </motion.div>

@@ -16,13 +16,15 @@ function formatOmanPhone(raw: string): { display: string; tel: string } {
   return { display, tel };
 }
 
-/** Cloudinary URL with responsive width and auto-format */
+/** Cloudinary URL with responsive width and auto-format.
+ *  GIF-safe: f_auto 400s on animated GIFs, so GIFs get width/q_auto only. */
 function cloudinaryUrl(imageUrl?: string, width = 400): string | undefined {
   if (!imageUrl) return undefined;
   if (imageUrl.includes("res.cloudinary.com")) {
+    const isGif = imageUrl.split("?")[0].split("#")[0].toLowerCase().endsWith(".gif");
     return imageUrl.replace(
       /\/upload\/(.*?)\//,
-      `/upload/w_${width},q_auto,f_auto/`
+      isGif ? `/upload/w_${width},q_auto/` : `/upload/w_${width},q_auto,f_auto/`
     );
   }
   return imageUrl;

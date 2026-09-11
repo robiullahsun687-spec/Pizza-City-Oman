@@ -998,6 +998,9 @@ app.get("/api/menu", async (req, res) => {
   try {
     const query = category ? { category: String(category) } : {};
     const items = await MongoMenuItem.find(query);
+    // Dynamic catalog, but changes are admin-driven and infrequent — allow a
+    // minute of edge caching with stale-while-revalidate for repeat visits.
+    res.header("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     return res.json(items);
   } catch (error: any) {
     return res.status(500).json({ error: "Error retrieving menu catalog: " + error.message });
@@ -1048,6 +1051,7 @@ app.get("/api/banners", async (req, res) => {
   if (respondDbDownForRead(res)) return;
   try {
     const banners = await MongoBanner.find({ isActive: true });
+    res.header("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     return res.json(banners);
   } catch (error: any) {
     return res.status(500).json({ error: "Error retrieving active banners: " + error.message });

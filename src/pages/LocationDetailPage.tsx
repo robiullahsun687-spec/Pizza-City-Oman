@@ -60,15 +60,17 @@ function parseHoursToSchema(hours?: string) {
   }];
 }
 
-/** Build Cloudinary URL with optimized transformations */
+/** Build Cloudinary URL with optimized transformations.
+ *  GIF-safe: f_auto 400s on animated GIFs, so GIFs get width/q_auto only. */
 function cloudinaryUrl(imageUrl?: string, width = 800): string | undefined {
   if (!imageUrl) return undefined;
   // If already a Cloudinary URL, ensure it has auto-format and responsive width
   if (imageUrl.includes("res.cloudinary.com")) {
+    const isGif = imageUrl.split("?")[0].split("#")[0].toLowerCase().endsWith(".gif");
     // Replace or inject transformation params
     return imageUrl.replace(
       /\/upload\/(.*?)\//,
-      `/upload/w_${width},q_auto,f_auto/`
+      isGif ? `/upload/w_${width},q_auto/` : `/upload/w_${width},q_auto,f_auto/`
     );
   }
   return imageUrl;

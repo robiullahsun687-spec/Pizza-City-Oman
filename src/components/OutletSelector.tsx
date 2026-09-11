@@ -24,6 +24,7 @@ import { MenuItem, CartEntry, Branch } from "../types";
 import { getVolumeDiscountPercentage, getSizeAdjustedPrice, getDefaultSizes } from "../lib/priceUtils";
 import { getMenuItemAltText } from "../lib/altText";
 import { FALLBACK_FOOD_IMAGE } from "../lib/images";
+import MediaRenderer from "./MediaRenderer";
 import type { MenuItemSize } from "../lib/priceUtils";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -521,7 +522,7 @@ export default function OutletSelector({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {menuItems.filter(i => i.available !== false).slice(0, 4).map(item => (
                       <div key={item._id} className="cart-card flex items-center gap-3 p-3 text-left group">
-                        <img                           src={item.image || FALLBACK_FOOD_IMAGE} alt={getMenuItemAltText(item)} className="w-16 h-16 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
+                        <MediaRenderer src={item.image || FALLBACK_FOOD_IMAGE} alt={getMenuItemAltText(item)} width={400} loading="lazy" className="w-16 h-16 rounded-xl object-cover shadow-sm group-hover:scale-105 transition-transform" />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-extrabold text-xs text-[var(--pc-color-text-primary-light)] truncate">{item.name}</h5>
                           <span className="font-body text-xs font-black text-[var(--pc-color-primary)]">OMR {item.discountPrice && item.discountPrice < item.price ? item.discountPrice.toFixed(2) : item.price.toFixed(2)}</span>
@@ -630,9 +631,11 @@ export default function OutletSelector({
                       className="bg-gray-50 p-3 rounded-xl border border-[var(--pc-color-border-light)] flex flex-col gap-2"
                     >
                       <div className="flex gap-3">
-                        <img
+                        <MediaRenderer
                           src={entry.item.image || FALLBACK_FOOD_IMAGE}
                           alt={getMenuItemAltText(entry.item)}
+                          width={400}
+                          loading="lazy"
                           className="w-11 h-11 rounded-lg object-cover flex-shrink-0"
                         />
                         <div className="flex-1 flex justify-between items-start gap-2 min-w-0">

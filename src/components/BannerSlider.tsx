@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight, ArrowRight, Flame, Shield, Truck } from "lucide-react";
 import { HeroBanner } from "../types";
 import { getBannerAltText } from "../lib/altText";
+import MediaRenderer from "./MediaRenderer";
 
 interface BannerSliderProps {
   onOrderNow: () => void;
@@ -154,10 +155,11 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                 className="absolute inset-0 w-full h-full cursor-pointer overflow-hidden group/fullimage"
                 title={currentBanner.title}
               >
-                <img
+                <MediaRenderer
                   src={currentBanner.image}
                   alt={getBannerAltText(currentBanner)}
                   referrerPolicy="no-referrer"
+                  width={1600}
                   className="w-full h-full object-cover group-hover/fullimage:scale-[1.015] transition-transform duration-700 ease-out"
                 />
               </div>
@@ -169,10 +171,11 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                 {/* If there's an image, render it as background cover with dark overlay */}
                 {currentBanner.image && (
                   <div className="absolute inset-0 overflow-hidden">
-                    <img
+                    <MediaRenderer
                       src={currentBanner.image}
                       alt={getBannerAltText(currentBanner)}
                       referrerPolicy="no-referrer"
+                      width={1200}
                       className={`w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ${isModern ? "opacity-60 sm:opacity-50" : "opacity-50 sm:opacity-40"}`}
                     />
                     <div className={`absolute inset-0 ${isModern ? "bg-gradient-to-t from-[#090302]/90 via-[#090302]/60 to-[#090302]/40 sm:bg-gradient-to-r sm:from-[#090302]/90 sm:via-[#090302]/70 sm:to-transparent" : "bg-gradient-to-r from-[#090302]/95 via-[#090302]/85 to-transparent"}`} />

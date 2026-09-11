@@ -393,6 +393,14 @@ export default function App() {
     navigate(`/menu/${itemSlug(product)}`, { state: { backgroundLocation: location } });
   };
 
+  // Tapping a specific navbar search result opens its quick-view modal instead
+  // of dumping the raw query onto the menu page (the old goToMenuResults path).
+  const selectSearchResult = (product: MenuItem) => {
+    setDrawerOpen(false);
+    closeNavSearch();
+    openQuickView(product);
+  };
+
   const closeQuickView = () => {
     skipScrollTopOnce.current = true;
     if (backgroundLocation) {
@@ -596,8 +604,8 @@ export default function App() {
                 <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] rounded-3xl overflow-hidden glass-navbar nav-search-panel p-2">
                   {navSearchResults.slice(0, 5).map((item) => (
                     <button
-                      key={item.id}
-                      onClick={goToMenuResults}
+                      key={item._id}
+                      onClick={() => selectSearchResult(item)}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-left hover:bg-white/5 active:bg-white/10 transition-colors"
                     >
                       <img

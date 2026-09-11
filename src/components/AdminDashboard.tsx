@@ -39,6 +39,7 @@ import type { MenuItemSize } from "../lib/priceUtils";
 import { getDefaultSizes } from "../lib/priceUtils";
 import { getMenuItemAltText } from "../lib/altText";
 import { FALLBACK_FOOD_IMAGE } from "../lib/images";
+import MediaRenderer from "./MediaRenderer";
 
 interface AdminDashboardProps {
   onShowToast: (msg: string) => void;
@@ -2323,9 +2324,11 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                             }`}
                           >
                             <div className="relative aspect-video bg-gray-50 overflow-hidden">
-                              <img 
-                                src={item.image || FALLBACK_FOOD_IMAGE} 
+                              <MediaRenderer
+                                src={item.image || FALLBACK_FOOD_IMAGE}
                                 alt={getMenuItemAltText(item)}
+                                width={800}
+                                loading="lazy"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
                               

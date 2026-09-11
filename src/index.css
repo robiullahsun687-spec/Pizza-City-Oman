@@ -1833,7 +1833,22 @@ textarea:focus-visible {
 }
 
 /* Statistics teaser bar — divider strip on mobile (airy, no boxes),
-   roomy 2×2 boxed cards on desktop */
+   roomy 2×2 boxed cards on desktop.
+   DAYLIGHT (default): warm ivory/cream section, espresso type, white cards.
+   MIDNIGHT OVEN (.midnight-oven …): original dark surfaces preserved exactly. */
+.stats-section {
+  background: #F5EDE3;
+  color: #2A1400;
+  border-top: 1px solid #E5D9D0;
+  border-bottom: 1px solid #E5D9D0;
+}
+.stats-divider {
+  height: 1px;
+  background: #E5D9D0;
+}
+.stats-section__inner {
+  background: transparent;
+}
 .stats-teaser-pad {
   padding: 16px 12px 18px;
 }
@@ -1849,7 +1864,7 @@ textarea:focus-visible {
   border: none;
   position: relative;
 }
-/* Hairline dividers replace card boxes on mobile */
+/* Hairline dividers replace card boxes on mobile — warm espresso in daylight */
 .stats-grid > .stats-card + .stats-card::before {
   content: "";
   position: absolute;
@@ -1857,19 +1872,28 @@ textarea:focus-visible {
   top: 12px;
   bottom: 12px;
   width: 1px;
-  background: rgba(255, 255, 255, 0.10);
+  background: rgba(42, 20, 0, 0.12);
 }
 .stats-card-icon {
   display: block;
   width: 20px;
   height: 20px;
   margin-bottom: 6px;
+  color: #D72B2B;
 }
 .stats-number {
   font-size: 24px;
+  font-family: var(--pc-font-display);
+  font-weight: 700;
+  line-height: 1;
+  color: #2A1400;
 }
 .stats-suffix {
   font-size: 15px;
+  font-family: var(--pc-font-display);
+  font-weight: 700;
+  line-height: 1;
+  color: #D72B2B;
 }
 .stats-label {
   font-size: 9px;
@@ -1877,6 +1901,10 @@ textarea:focus-visible {
   margin-top: 4px;
   line-height: 1.4;
   text-wrap: balance;
+  font-family: var(--pc-font-sans);
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #7A5C40;
 }
 .stats-marquee {
   margin-top: 12px;
@@ -1884,6 +1912,37 @@ textarea:focus-visible {
 .stats-strip {
   margin-top: 12px;
   padding: 10px 0;
+  border-top: 1px solid #E5D9D0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.stats-strip__text {
+  font-family: var(--pc-font-sans);
+  font-size: 10px;
+  color: #7A5C40;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.stats-strip__icon {
+  color: #D72B2B;
+}
+/* Outlet chips — white pills with warm border + espresso text in daylight */
+.outlet-chip {
+  background: #FFFFFF;
+  border: 1px solid #E5D9D0;
+  border-radius: 50px;
+  padding: 5px 12px;
+  font-family: var(--pc-font-sans);
+  font-size: 10px;
+  color: #2A1400;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 @media (min-width: 768px) {
@@ -1897,8 +1956,9 @@ textarea:focus-visible {
   .stats-card {
     padding: 18px 12px;
     border-radius: 18px;
-    background: rgba(57, 2, 2, 0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #FFFFFF;
+    border: 1px solid #EAD9C6;
+    box-shadow: 0 1px 4px rgba(42, 20, 0, 0.06);
   }
   /* No dividers on desktop — boxed cards return */
   .stats-grid > .stats-card + .stats-card::before {
@@ -1925,6 +1985,59 @@ textarea:focus-visible {
   .stats-strip {
     margin-top: 16px;
     padding: 12px 0;
+  }
+}
+
+/* --- Midnight Oven: preserve original dark stats surfaces exactly --- */
+.midnight-oven .stats-section {
+  background: var(--pc-gray-900);
+  color: #FFFFFF;
+  border-top: none;
+  border-bottom: none;
+}
+.midnight-oven .stats-divider {
+  background: linear-gradient(90deg, transparent, rgba(215,43,43,0.3), rgba(242,101,34,0.3), transparent);
+}
+.midnight-oven .stats-section__inner {
+  background: radial-gradient(ellipse at center, rgba(215,43,43,0.08) 0%, transparent 70%);
+}
+.midnight-oven .stats-grid > .stats-card + .stats-card::before {
+  background: rgba(255, 255, 255, 0.10);
+}
+.midnight-oven .stats-card-icon {
+  color: var(--pc-amber-400);
+}
+.midnight-oven .stats-card-icon--red {
+  color: var(--pc-red-500);
+}
+.midnight-oven .stats-strip__icon {
+  color: var(--pc-amber-400);
+}
+.midnight-oven .stats-number {
+  color: #FFFFFF;
+}
+.midnight-oven .stats-suffix {
+  color: var(--pc-amber-400);
+}
+.midnight-oven .stats-label {
+  color: rgba(255, 255, 255, 0.65);
+}
+.midnight-oven .stats-strip {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.midnight-oven .stats-strip__text {
+  color: rgba(255, 255, 255, 0.62);
+}
+.midnight-oven .outlet-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.70);
+}
+@media (min-width: 768px) {
+  .midnight-oven .stats-card {
+    background: rgba(57, 2, 2, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: none;
   }
 }
 

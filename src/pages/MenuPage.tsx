@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Search, Flame, ChefHat, Wine, Cookie, Sparkles, Star, Layers } from "lucide-react";
+import { Search, X, Flame, ChefHat, Wine, Cookie, Sparkles, Star, Layers } from "lucide-react";
 import { MenuItem } from "../types";
 import { useLocation, useNavigate } from "react-router-dom";
 import MenuCardGrid from "../components/MenuCardGrid";
@@ -231,16 +231,56 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
   // pt-16 on mobile clears the fixed h-14 navbar so the rail header never slides under it
   return (
     <div className="container mx-auto px-2 md:px-8 pt-16 md:pt-0 pb-2 animate-fadeIn overflow-x-clip">
-      {/* Sticky Filter Bar — hidden until user scrolls down into menu items.
+      {/* Sticky bar — search row is always visible; filter pills collapse until
+          the user scrolls down into menu items (height capped at 76px). */}
+      <div
+        className={`sticky z-[35] -mx-2 md:-mx-8 transition-all duration-300 ease-out ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"}`}
+      >
+        {/* Dedicated menu search — mirrors the admin menu manager */}
+        <div className="px-3 md:px-8 pt-2">
+          <div className="relative max-w-xl mx-auto">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--pc-gray-500)] pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search pizzas, ingredients, categories..."
+              aria-label="Search menu"
+              className="w-full bg-[var(--pc-gray-100)] border border-[var(--pc-red-500)]/20 rounded-2xl pl-10 pr-10 py-2.5 text-sm text-[var(--pc-gray-600)] font-bold placeholder:font-medium placeholder:text-[var(--pc-gray-500)]/70 focus:outline-none focus:border-[var(--pc-amber-400)] focus:ring-1 focus:ring-[var(--pc-amber-400)]"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-[var(--pc-gray-500)] hover:text-[var(--pc-red-500)] hover:bg-[var(--pc-red-500)]/10 transition-colors"
+              >
+                <X size={15} />
+              </button>
+            )}
+          </div>
+          {hasSearch && (
+            <p className="max-w-xl mx-auto pt-1.5 pb-0.5 text-[11px] font-bold text-[var(--pc-gray-500)] flex items-center justify-between gap-2">
+              <span>{filteredItems.length} {filteredItems.length === 1 ? "item" : "items"} for "{searchQuery.trim()}"</span>
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                className="text-[var(--pc-red-500)] hover:underline font-black shrink-0"
+              >
+                Clear
+              </button>
+            </p>
+          )}
+        </div>
+        {/* Sticky Filter Bar — hidden until user scrolls down into menu items.
           Compact pills + counts + active behavior unchanged; height capped
           at 76px, lightweight lucide icons only (3D art lives in the rail). */}
-      <div
-        className={`sticky z-[35] -mx-2 md:-mx-8 transition-all duration-300 ease-out ${navHidden ? "menu-filter-bar--flush" : "menu-filter-bar"
-          } ${showStickyBar
+        <div
+          className={`transition-all duration-300 ease-out ${showStickyBar
             ? "px-3 md:px-8 py-2 opacity-100 pointer-events-auto translate-y-0 max-h-[76px] mb-3"
             : "px-0 py-0 opacity-0 pointer-events-none -translate-y-4 max-h-0 overflow-hidden border-none shadow-none mb-0"
-          }`}
-      >
+            }`}
+        >
         <div className="menu-filter-rail-wrap relative">
         <div ref={railRef} onScroll={checkRailScroll} className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-proximity scroll-smooth overscroll-contain py-1 px-1">
           {FILTERS.map((cat) => {
@@ -271,6 +311,7 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
         </div>
           <span className={`edge-fade edge-fade--left${canRailLeft ? " is-visible" : ""}`} aria-hidden="true" />
           <span className={`edge-fade edge-fade--right${canRailRight ? " is-visible" : ""}`} aria-hidden="true" />
+        </div>
         </div>
       </div>
 
