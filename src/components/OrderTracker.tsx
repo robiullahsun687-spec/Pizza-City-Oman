@@ -357,14 +357,14 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
                     Push Alerts Enabled
                   </div>
                 ) : notificationPermission === "denied" ? (
-                  <div className="flex items-center gap-1.5 bg-red-50 text-red-800 border border-red-150 text-[10px] font-black px-3 py-1.5 rounded-xl" title="Please enable notifications from site settings">
+                  <div className="flex items-center gap-1.5 bg-red-50 text-red-800 border border-red-200 text-[10px] font-black px-3 py-1.5 rounded-xl" title="Please enable notifications from site settings">
                     <BellOff size={12} strokeWidth={2.5} />
                     Push Alerts Blocked
                   </div>
                 ) : (
                   <button
                     onClick={requestNotificationPermission}
-                    className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100/80 text-orange-850 border border-orange-200/50 text-[10px] font-black px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100/80 text-orange-800 border border-orange-200/50 text-[10px] font-black px-3 py-1.5 rounded-xl transition-all cursor-pointer"
                   >
                     <Bell size={12} className="animate-bounce" />
                     Request Push Permission
@@ -486,7 +486,7 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
           ) : order ? (
             <div className="bg-white rounded-[2rem] border border-gray-200 overflow-hidden shadow-xs">
               {/* Tracker Top Ribbon */}
-              <div className="bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] p-6 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="bg-gradient-to-r from-[var(--pc-red-500)] to-[var(--pc-amber-400)] p-6 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.35)]">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] bg-white/20 border border-white/30 text-white font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
@@ -504,9 +504,9 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
                 </div>
 
                 <div className="text-left sm:text-right space-y-0.5 select-none shrink-0 border-l sm:border-l-0 sm:border-r border-white/20 pl-4 sm:pl-0 sm:pr-4">
-                  <p className="text-[10px] text-orange-200 font-extrabold uppercase tracking-wider">Branch Outlet</p>
+                  <p className="text-[10px] text-white/90 font-extrabold uppercase tracking-wider">Branch Outlet</p>
                   <p className="text-sm font-black flex items-center gap-1.5">
-                    <MapPin size={14} className="text-orange-200" />
+                    <MapPin size={14} className="text-white/90" />
                     Pizza City {order.outlet}
                   </p>
                 </div>
@@ -515,7 +515,7 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
               {/* Physical Progress Flow timeline */}
               <div className="p-6 md:p-8 space-y-8">
                 {isCancelled ? (
-                  <div className="bg-red-50 border border-red-150 rounded-2xl p-4 flex gap-4 items-start">
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex gap-4 items-start">
                     <XCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
                     <div className="space-y-1 text-left">
                       <p className="font-extrabold text-xs text-red-950">This order has been cancelled</p>
@@ -582,7 +582,7 @@ export default function OrderTracker({ initialOrderId = "", onShowToast, isDarkM
                 )}
 
                 {/* Tracking status details block */}
-                <div className="bg-neutral-50/70 border border-neutral-100 rounded-3xl p-5 space-y-4">
+                <div className="bg-white border border-gray-200 rounded-3xl p-5 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-200/60 text-xs">
                     <span className="text-gray-400 flex items-center gap-1.5 font-bold">
                       <Clock size={13} />

@@ -2198,7 +2198,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                                     onClick={() => handleUpdateOrderStatus(order._id, "out-for-delivery", order.outlet)}
                                     className={`py-2 px-3 rounded-xl text-[10px] font-black tracking-wider uppercase transition-all flex items-center justify-center gap-1 cursor-pointer border ${
                                       order.status === "out-for-delivery"
-                                        ? "bg-orange-150 border-[var(--pc-amber-400)]/30 text-[var(--pc-red-500)]"
+                                        ? "bg-orange-50 border-[var(--pc-amber-400)]/30 text-[var(--pc-red-500)]"
                                         : "bg-white hover:bg-orange-50 border-gray-200 text-gray-700 hover:border-[var(--pc-amber-400)]/20"
                                     }`}
                                   >
@@ -2423,7 +2423,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                       <p className="text-xs text-[var(--pc-gray-500)] font-bold">Synchronizing active advertisements...</p>
                     </div>
                   ) : banners.length === 0 ? (
-                    <div className="bg-amber-50 border border-amber-150 rounded-3xl p-8 text-center space-y-3">
+                    <div className="bg-amber-50 border border-amber-200 rounded-3xl p-8 text-center space-y-3">
                       <Sliders className="mx-auto text-amber-500" size={32} />
                       <p className="font-playfair font-black text-lg text-[var(--pc-gray-600)]">No Slideshow Banners</p>
                       <p className="text-xs text-[var(--pc-gray-500)] max-w-sm mx-auto">Click "Add Promo Slide" to design your first beautiful banner. It will immediately show up at the header of your customer website!</p>
@@ -2456,7 +2456,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                               className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center border shadow-md cursor-pointer transition-all ${
                                 slide.isActive !== false
                                   ? "bg-green-600 border-green-500 text-white"
-                                  : "bg-red-650 border-red-500 text-white"
+                                  : "bg-red-600 border-red-500 text-white"
                               }`}
                               title={slide.isActive !== false ? "Hide from storefront" : "Publish to storefront"}
                             >

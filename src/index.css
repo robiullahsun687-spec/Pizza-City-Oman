@@ -127,18 +127,31 @@ h4,
 .midnight-oven .text-amber-800 {
   color: #fbbf24 !important;
 }
+.midnight-oven .text-orange-800 {
+  color: #fb923c !important;
+}
+.midnight-oven .text-emerald-600 {
+  color: #34d399 !important;
+}
 
 /* --- Background colors — light bg that slips through --- */
 .midnight-oven .bg-slate-50,
 .midnight-oven .bg-neutral-50,
-.midnight-oven .bg-gray-50 {
+.midnight-oven .bg-gray-50,
+.midnight-oven .bg-gray-50\/50,
+.midnight-oven .bg-neutral-50\/70 {
   background-color: var(--pc-gray-200) !important;
 }
-.midnight-oven .bg-amber-100 {
+.midnight-oven .bg-amber-100,
+.midnight-oven .bg-amber-50\/75,
+.midnight-oven .bg-amber-50\/95 {
   background-color: rgba(245, 158, 11, 0.15) !important;
   color: #fbbf24 !important;
 }
-.midnight-oven .bg-orange-50 {
+.midnight-oven .bg-orange-50,
+.midnight-oven .bg-orange-50\/30,
+.midnight-oven .bg-orange-50\/40,
+.midnight-oven .bg-orange-100\/80 {
   background-color: rgba(249, 115, 22, 0.15) !important;
   color: #fb923c !important;
 }
@@ -161,7 +174,8 @@ h4,
 .midnight-oven .hover\:bg-blue-50:hover {
   background-color: rgba(59, 130, 246, 0.1) !important;
 }
-.midnight-oven .hover\:bg-orange-50:hover {
+.midnight-oven .hover\:bg-orange-50:hover,
+.midnight-oven .hover\:bg-orange-100\/80:hover {
   background-color: rgba(249, 115, 22, 0.1) !important;
 }
 .midnight-oven .hover\:bg-green-50:hover {
@@ -358,6 +372,7 @@ h4,
 .midnight-oven .border-gray-100,
 .midnight-oven .border-gray-150,
 .midnight-oven .border-gray-200,
+.midnight-oven .border-gray-200\/60,
 .midnight-oven .border-gray-300 {
   border-color: rgba(255, 85, 34, 0.15) !important;
 }

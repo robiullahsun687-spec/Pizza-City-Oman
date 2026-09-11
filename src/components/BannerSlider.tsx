@@ -285,15 +285,15 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                           transition={{ delay: 0.3 }}
                           className="flex flex-wrap gap-2 sm:gap-4 pt-1"
                         >
-                          <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-200/60 font-bold">
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-100 font-bold [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                             <Flame size={12} className="text-orange-400 animate-pulse sm:size-14" />
                             <span className="hidden xs:inline sm:inline">Oven-Baked Fresh</span>
                           </div>
-                          <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-200/60 font-bold">
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-100 font-bold [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                             <Shield size={12} className="text-amber-400 sm:size-14" />
                             <span className="hidden xs:inline sm:inline">Premium Base</span>
                           </div>
-                          <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-200/60 font-bold">
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-orange-100 font-bold [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]">
                             <Truck size={12} className="text-red-400 sm:size-14" />
                             <span className="hidden xs:inline sm:inline">Fastest Routing</span>
                           </div>
