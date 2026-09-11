@@ -1093,13 +1093,13 @@ export default function App() {
                         const isActive = selectedSize === s.name;
                         return (
                           <button key={s.name} onClick={() => setSelectedSize(s.name)}
-                            className={`flex flex-col items-center py-3 px-2 rounded-xl border font-bold text-sm transition-all ${
+                            className={`min-w-0 flex flex-col items-center py-3 px-1 rounded-xl border font-bold text-[13px] transition-all ${
                               isActive
                                 ? "bg-[var(--pc-color-primary)] text-white border-transparent shadow-md"
                                 : "bg-white text-[var(--pc-color-text-muted-light)] border-[var(--pc-color-border-light)] hover:border-[var(--pc-color-primary)] hover:text-[var(--pc-color-primary)]"
                             }`}
                           >
-                            <span className="font-body">{s.label}</span>
+                            <span className="font-body whitespace-nowrap">{s.label}</span>
                             <span className={`text-[10px] mt-0.5 ${isActive ? "text-white/80" : "text-[var(--pc-color-primary)]"}`}>
                               OMR {sizePrice.toFixed(3)}
                             </span>

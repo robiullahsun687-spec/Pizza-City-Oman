@@ -159,7 +159,7 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                   src={currentBanner.image}
                   alt={getBannerAltText(currentBanner)}
                   referrerPolicy="no-referrer"
-                  width={1600}
+                  width={1000}
                   className="w-full h-full object-cover group-hover/fullimage:scale-[1.015] transition-transform duration-700 ease-out"
                 />
               </div>
@@ -175,7 +175,7 @@ export default function BannerSlider({ onOrderNow, banners, isLoading }: BannerS
                       src={currentBanner.image}
                       alt={getBannerAltText(currentBanner)}
                       referrerPolicy="no-referrer"
-                      width={1200}
+                      width={1000}
                       className={`w-full h-full object-cover scale-105 transition-transform duration-[8000ms] ${isModern ? "opacity-60 sm:opacity-50" : "opacity-50 sm:opacity-40"}`}
                     />
                     <div className={`absolute inset-0 ${isModern ? "bg-gradient-to-t from-[#090302]/90 via-[#090302]/60 to-[#090302]/40 sm:bg-gradient-to-r sm:from-[#090302]/90 sm:via-[#090302]/70 sm:to-transparent" : "bg-gradient-to-r from-[#090302]/95 via-[#090302]/85 to-transparent"}`} />
