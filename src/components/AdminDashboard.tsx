@@ -37,9 +37,8 @@ import { Link } from "react-router-dom";
 import { Order, MenuItem, Branch } from "../types";
 import type { MenuItemSize } from "../lib/priceUtils";
 import { getDefaultSizes } from "../lib/priceUtils";
-import { getMenuItemAltText } from "../lib/altText";
+import { getMenuItemAltText, getBannerAltText, getBranchAltText } from "../lib/altText";
 import { FALLBACK_FOOD_IMAGE } from "../lib/images";
-import MediaRenderer from "./MediaRenderer";
 
 interface AdminDashboardProps {
   onShowToast: (msg: string) => void;
@@ -2324,11 +2323,9 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                             }`}
                           >
                             <div className="relative aspect-video bg-gray-50 overflow-hidden">
-                              <MediaRenderer
-                                src={item.image || FALLBACK_FOOD_IMAGE}
+                              <img 
+                                src={item.image || FALLBACK_FOOD_IMAGE} 
                                 alt={getMenuItemAltText(item)}
-                                width={800}
-                                loading="lazy"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
                               
@@ -2447,7 +2444,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                           <div className="h-44 w-full relative overflow-hidden bg-gray-50">
                             <img 
                               src={slide.image} 
-                              alt={slide.title} 
+                              alt={getBannerAltText(slide)} 
                               referrerPolicy="no-referrer"
                               className="w-full h-full object-cover"
                             />
@@ -2693,7 +2690,7 @@ export default function AdminDashboard({ onShowToast, onMenuUpdated, isDarkMode,
                               {branch.image ? (
                                 <img 
                                   src={branch.image} 
-                                  alt={branch.name} 
+                                  alt={getBranchAltText(branch)} 
                                   className="w-full h-full object-cover"
                                   referrerPolicy="no-referrer"
                                 />

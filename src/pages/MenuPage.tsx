@@ -347,9 +347,12 @@ export default function MenuPage({ menuItems, isLoadingMenu, menuFilter, setMenu
                 </span>
                 <span className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/50" />
               </div>
-              <h2 className="font-display font-black text-3xl sm:text-4xl md:text-5xl tracking-wide leading-tight">
-                Our Gourmet Menu
-              </h2>
+              <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl tracking-wide leading-tight">
+                Pizza Menu — Prices &amp; Order Online in Oman
+              </h1>
+              <p lang="ar" dir="rtl" className="text-xs sm:text-sm max-w-xl mx-auto font-body opacity-70">
+                بيتزا سيتي عمان — قائمة البيتزا الكاملة بالأسعار (ر.ع.) والتوصيل السريع
+              </p>
               <p className="text-xs sm:text-sm max-w-xl mx-auto font-body opacity-80" style={{ color: "var(--menu-text-secondary)" }}>
                 Hand-made recipes with premium components, oven-baked hot and delivered instantly.
               </p>

@@ -610,7 +610,7 @@ export default function App() {
                     >
                       <img
                         src={item.image}
-                        alt=""
+                        alt={getMenuItemAltText(item)}
                         className="w-10 h-10 rounded-xl object-cover shrink-0 bg-white/10"
                       />
                       <div className="flex-1 min-w-0">

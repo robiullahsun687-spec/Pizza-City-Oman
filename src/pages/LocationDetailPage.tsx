@@ -60,17 +60,15 @@ function parseHoursToSchema(hours?: string) {
   }];
 }
 
-/** Build Cloudinary URL with optimized transformations.
- *  GIF-safe: f_auto 400s on animated GIFs, so GIFs get width/q_auto only. */
+/** Build Cloudinary URL with optimized transformations */
 function cloudinaryUrl(imageUrl?: string, width = 800): string | undefined {
   if (!imageUrl) return undefined;
   // If already a Cloudinary URL, ensure it has auto-format and responsive width
   if (imageUrl.includes("res.cloudinary.com")) {
-    const isGif = imageUrl.split("?")[0].split("#")[0].toLowerCase().endsWith(".gif");
     // Replace or inject transformation params
     return imageUrl.replace(
       /\/upload\/(.*?)\//,
-      isGif ? `/upload/w_${width},q_auto/` : `/upload/w_${width},q_auto,f_auto/`
+      `/upload/w_${width},q_auto,f_auto/`
     );
   }
   return imageUrl;
@@ -265,7 +263,7 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
       {/* ─── Back navigation ─── */}
       <div className="container mx-auto px-4 md:px-8 pt-4 pb-2">
         <Link
-          to="/"
+          to="/locations"
           className="inline-flex items-center gap-2 text-sm font-bold text-[var(--pc-gray-500)] hover:text-[var(--pc-red-500)] transition-colors"
         >
           <ArrowLeft size={16} />
@@ -328,6 +326,9 @@ export default function LocationDetailPage({ branches }: LocationDetailPageProps
               <h1 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">
                 Pizza City {outlet.name}
               </h1>
+              <p lang="ar" dir="rtl" className="text-xs text-[var(--pc-gray-500)]">
+                بيتزا سيتي {outlet.name} — بيتزا طازجة والتوصيل سريع داخل عُمان
+              </p>
               <p className="flex items-start gap-2 text-sm text-[var(--pc-gray-500)] leading-relaxed">
                 <MapPin size={16} className="text-[var(--pc-amber-400)] shrink-0 mt-0.5" />
                 {outlet.address}

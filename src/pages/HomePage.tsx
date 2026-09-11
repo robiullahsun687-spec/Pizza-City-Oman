@@ -11,7 +11,6 @@ import HomeLocationChips from "../components/home/HomeLocationChips";
 import { HeroBanner, MenuItem, Branch } from "../types";
 import { getFeaturedItems, getCategoryItems } from "../lib/menuSelectors";
 import { getBannerAltText } from "../lib/altText";
-import MediaRenderer from "../components/MediaRenderer";
 
 interface HomePageProps {
   banners: HeroBanner[];
@@ -150,6 +149,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
     <div className="pb-3">
       {/* Primary Semantic H1 for Search Engines & Screen Readers */}
       <h1 className="sr-only">Pizza City Oman — Handcrafted Oven-Baked Pizza, Sourdough Crust &amp; Online Delivery</h1>
+      <p lang="ar" dir="rtl" className="sr-only">بيتزا سيتي عمان — بيتزا طازجة بعجينة مخمّرة والتوصيل خلال ٣٠ دقيقة. اطلب عبر واتساب.</p>
 
       {/* Dynamic Web Banners Hero Gallery */}
       {/* Mobile: full-bleed behind dark translucent navbar; Desktop: contained with rounded corners */}
@@ -247,7 +247,7 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
             <motion.div animate={{ y: [0, -6, 0], x: [0, -6, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute bottom-10 right-2 text-2xl bg-white/90 p-2 rounded-full border border-[var(--pc-red-500)]/10 shadow-sm flex items-center justify-center">🧀</motion.div>
           </div>
           <motion.div whileHover={{ scale: 1.02 }} className="relative w-[90%] h-[90%] p-3 bg-white rounded-[48px] border border-[var(--pc-red-500)]/10 shadow-2xl overflow-hidden cursor-pointer group" onClick={() => { setPizzaRotation(prev => prev + 90); displayToast("🍕 Smooth rotational spin activated!"); }}>
-            <motion.img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=85" alt="Tasty Italian Margherita Pizza" animate={{ rotate: pizzaRotation }} whileHover={{ rotate: pizzaRotation + 45 }} transition={{ type: "spring", stiffness: 80, damping: 14 }} className="w-full h-full object-cover rounded-[38px] select-none" />
+            <motion.img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=900&q=85" alt="Handcrafted Margherita pizza with sourdough crust — Pizza City Oman" animate={{ rotate: pizzaRotation }} whileHover={{ rotate: pizzaRotation + 45 }} transition={{ type: "spring", stiffness: 80, damping: 14 }} className="w-full h-full object-cover rounded-[38px] select-none" />
             <div className="absolute inset-x-0 bottom-6 flex justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <span className="text-[10px] uppercase font-black tracking-widest text-[var(--pc-gray-700)] bg-white/95 px-3 py-1.5 rounded-full shadow-sm border border-gray-100">👆 Click to spin oven base</span>
             </div>
@@ -426,13 +426,12 @@ export default function HomePage({ banners, isLoadingBanners, setActiveTab, disp
                     aria-label={offer.title}
                     className="offer-card w-full h-48 sm:h-60 lg:h-[340px] rounded-3xl overflow-hidden border border-white/10 shadow-sm hover:shadow-xl hover:border-white/20 cursor-pointer relative bg-[var(--pc-gray-900)] group/card"
                   >
-                    <MediaRenderer
+                    <img
                       src={offer.image}
                       alt={getBannerAltText(offer)}
                       className="w-full h-full object-cover group-hover/card:scale-[1.03] transition-transform duration-500"
                       loading="lazy"
                       referrerPolicy="no-referrer"
-                      width={800}
                     />
                   </button>
                 </motion.div>

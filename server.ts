@@ -554,8 +554,7 @@ if (isUriValid) {
 
 // Canonical outlet aliases for backward compatibility (old names/slugs -> canonical Branch.name).
 // All outlet validation and RBAC matching MUST go through normalizeOutletName().
-const OUTLET_ALIASES: Record<string, string> = {
-  "ibri outlet": "Ibri",
+const OUTLET_ALIASES: Record<string, string> = {  "ibri outlet": "Ibri",
   "mabela outlet": "Mabela",
   "alkhoud": "Al Khoud",
   "al khoud": "Al Khoud",
@@ -565,12 +564,19 @@ const OUTLET_ALIASES: Record<string, string> = {
   "al maabilaah": "Mabela",
 };
 
+// Aliases already warned about this process lifetime (log sampling).
+const loggedOutletAliases = new Set<string>();
+
 function normalizeOutletName(raw: unknown): string {
   const trimmed = String(raw ?? "").trim();
   if (!trimmed) return trimmed;
   const canonical = OUTLET_ALIASES[trimmed.toLowerCase()];
   if (canonical) {
-    console.warn(`[outlets] alias "${trimmed}" normalized to "${canonical}" — update stored outletAccess/order data.`);
+    // Sampled: one log line per unique alias per process (hot path — never log every hit).
+    if (!loggedOutletAliases.has(trimmed.toLowerCase())) {
+      loggedOutletAliases.add(trimmed.toLowerCase());
+      console.warn(`[outlets] alias "${trimmed}" normalized to "${canonical}" — update stored outletAccess/order data.`);
+    }
     return canonical;
   }
   return trimmed;
@@ -1012,6 +1018,7 @@ app.get("/api/promos/list", async (req, res) => {
   if (respondDbDownForRead(res)) return;
   try {
     const promos = await MongoPromoCode.find({ isActive: true });
+    res.header("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     return res.json(promos);
   } catch (error: any) {
     return res.status(500).json({ error: "Error retrieving promos: " + error.message });
@@ -1077,6 +1084,24 @@ app.post("/api/orders", orderRateLimiter, requireDb, async (req, res) => {
     const computedItems: Array<{ menuItemId: string; name: string; size?: string; price: number; quantity: number }> = [];
     let subtotal = 0;
 
+    // Single batched fetch (was N+1 serial findById calls — one RTT total).
+    const requestedIds = items.map((item: any) => item.menuItemId);
+    const objectIds = requestedIds
+      .filter((id: any) => id && mongoose.Types.ObjectId.isValid(id))
+      .map((id: string) => new mongoose.Types.ObjectId(id));
+    const stringIds = requestedIds.filter(
+      (id: any) => id && !mongoose.Types.ObjectId.isValid(id)
+    );
+    const orClauses: any[] = [];
+    if (objectIds.length) orClauses.push({ _id: { $in: objectIds } });
+    if (stringIds.length) orClauses.push({ _id: { $in: stringIds } });
+    const menuDocs = orClauses.length
+      ? await MongoMenuItem.find({ $or: orClauses }).lean()
+      : [];
+    const menuById = new Map(
+      menuDocs.map((d: any) => [String(d._id), d])
+    );
+
     for (const item of items) {
       const menuItemId = item.menuItemId;
       const quantity = Math.max(1, Number(item.quantity) || 1);
@@ -1085,13 +1110,7 @@ app.post("/api/orders", orderRateLimiter, requireDb, async (req, res) => {
         return res.status(400).json({ error: "Each order item must reference a valid menuItemId." });
       }
 
-      let foundItem: any;
-      if (mongoose.Types.ObjectId.isValid(menuItemId)) {
-        foundItem = await MongoMenuItem.findById(menuItemId);
-      }
-      if (!foundItem) {
-        foundItem = await MongoMenuItem.findOne({ _id: menuItemId });
-      }
+      const foundItem: any = menuById.get(String(menuItemId));
 
       if (!foundItem) {
         return res.status(400).json({ error: `Menu item with ID "${menuItemId}" was not found.` });
@@ -1127,13 +1146,6 @@ app.post("/api/orders", orderRateLimiter, requireDb, async (req, res) => {
     }
 
     subtotal = Number(subtotal.toFixed(3));
-
-    // Debug log computed items before saving
-    console.error("💥 computedItems before save:", JSON.stringify(computedItems));
-    for (let idx = 0; idx < computedItems.length; idx++) {
-      const ci = computedItems[idx];
-      console.error(`  computedItems[${idx}]: menuItemId="${ci.menuItemId}" name="${ci.name}" price=${ci.price} type=${typeof ci.price} undefined=${ci.price === undefined} quantity=${ci.quantity}`);
-    }
 
     // Validate computed items have valid prices before saving
     const invalidItem = computedItems.find(i => !Number.isFinite(i.price) || i.price <= 0);
@@ -1405,27 +1417,53 @@ app.get("/api/orders/:outletId/summary", verifyToken, checkOutletAccess("outletI
   const { outletId } = req.params;
 
   try {
-    let orders;
-    if (normalizeOutletName(outletId).toLowerCase() === "all") {
-      orders = await MongoOrder.find({});
-    } else {
-      orders = await MongoOrder.find({ outlet: { $in: outletRegexVariants(outletId) } });
-    }
+    const match =
+      normalizeOutletName(outletId).toLowerCase() === "all"
+        ? {}
+        : { outlet: { $in: outletRegexVariants(outletId) } };
 
-    // Totals
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, o: any) => sum + (o.total || o.totalAmount || 0), 0);
+    // Single aggregation (was: load every order into Node and reduce in JS).
+    const [result] = await MongoOrder.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalRevenue: {
+            $sum: { $ifNull: ["$total", { $ifNull: ["$totalAmount", 0] }] },
+          },
+          pending: {
+            $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+          },
+          preparing: {
+            $sum: { $cond: [{ $eq: ["$status", "preparing"] }, 1, 0] },
+          },
+          outForDelivery: {
+            $sum: { $cond: [{ $eq: ["$status", "out-for-delivery"] }, 1, 0] },
+          },
+          delivered: {
+            $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] },
+          },
+          cancelled: {
+            $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] },
+          },
+        },
+      },
+    ]);
 
-    const statuses = ["pending", "preparing", "out-for-delivery", "delivered", "cancelled"];
-    const breakdown = statuses.map((status) => {
-      const count = orders.filter((o: any) => o.status === status).length;
-      return { _id: status, count };
-    });
+    const totals = {
+      totalOrders: result?.totalOrders ?? 0,
+      totalRevenue: result?.totalRevenue ?? 0,
+    };
+    const breakdown = [
+      { _id: "pending", count: result?.pending ?? 0 },
+      { _id: "preparing", count: result?.preparing ?? 0 },
+      { _id: "out-for-delivery", count: result?.outForDelivery ?? 0 },
+      { _id: "delivered", count: result?.delivered ?? 0 },
+      { _id: "cancelled", count: result?.cancelled ?? 0 },
+    ];
 
-    return res.json({
-      totals: { totalOrders, totalRevenue },
-      breakdown,
-    });
+    return res.json({ totals, breakdown });
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to generate dynamic summary: " + error.message });
   }
@@ -1801,6 +1839,8 @@ app.get("/api/branches", async (req, res) => {
   if (respondDbDownForRead(res)) return;
   try {
     const branches = await MongoBranch.find({ isActive: true });
+    // Branches change ~never — cache longer than the catalog endpoints.
+    res.header("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
     return res.json(branches);
   } catch (error: any) {
     return res.status(500).json({ error: "Failed to fetch branches: " + error.message });
@@ -2103,8 +2143,23 @@ app.get("/sitemap.xml", async (req, res) => {
   }
 });
 
-async function renderLocationPage(req: express.Request, res: express.Response, next: express.NextFunction, vite?: any) {
+// SEO template cache — index.html is read once and reused until modified.
+// Crawler bursts previously did a synchronous disk read per request.
+const seoTemplateCache = new Map<string, { mtimeMs: number; content: string }>();
+function readSeoTemplate(indexPath: string): string {
   try {
+    const mtimeMs = fs.statSync(indexPath).mtimeMs;
+    const cached = seoTemplateCache.get(indexPath);
+    if (cached && cached.mtimeMs === mtimeMs) return cached.content;
+    const content = fs.readFileSync(indexPath, "utf-8");
+    seoTemplateCache.set(indexPath, { mtimeMs, content });
+    return content;
+  } catch {
+    return fs.readFileSync(indexPath, "utf-8");
+  }
+}
+
+async function renderLocationPage(req: express.Request, res: express.Response, next: express.NextFunction, vite?: any) {  try {
     const slug = (req.params.slug || "").toLowerCase();
     // DB-driven only — without a database (or an unknown slug) the branch
     // lookup misses and the 404 template below is served. No seed fallback.
@@ -2242,23 +2297,23 @@ async function renderLocationPage(req: express.Request, res: express.Response, n
 // Static per-page SEO metadata (multi-page SPA routing — SSR-injected for crawlers)
 const STATIC_SEO: Record<string, { title: string; description: string; canonical: string }> = {
   "/menu": {
-    title: "Pizza Menu — Prices & Order Online | Pizza City Oman",
-    description: "Browse the full Pizza City Oman menu: handcrafted pizzas, combos, sides, drinks and desserts with prices in OMR. Order online via WhatsApp.",
+    title: "Pizza Menu Oman — Prices & 30-Min Delivery | Pizza City",
+    description: "Full Pizza City Oman menu with prices in OMR: handcrafted pizzas, combos, sides, drinks & desserts. 30-min delivery. Order via WhatsApp.",
     canonical: "https://pizzacityoman.com/menu",
   },
   "/locations": {
-    title: "Our Locations — Pizza Outlets Across Oman | Pizza City Oman",
-    description: "Find Pizza City Oman outlets near you across Oman. Addresses, phone numbers, hours, delivery and pickup info for every branch.",
+    title: "Pizza Locations Oman — Find Us Near You | Pizza City",
+    description: "Find Pizza City outlets near you: Nizwa, Samail, Sur, Quriyat, Fanja, Al Khoud, Ibri & Mabela. Addresses, hours, phone & delivery info.",
     canonical: "https://pizzacityoman.com/locations",
   },
   "/contact": {
-    title: "Contact Us — Phone, WhatsApp & Directions | Pizza City Oman",
-    description: "Contact Pizza City Oman: phone +968 9692 8714, WhatsApp ordering, email info@pizzacityoman.com. Open daily 11 AM – 2 AM in Muscat, Oman.",
+    title: "Contact Pizza City Oman — Phone, WhatsApp & Hours",
+    description: "Call +968 9692 8714 or WhatsApp your order. Email info@pizzacityoman.com. Open daily 11 AM – 2 AM in Muscat, Oman.",
     canonical: "https://pizzacityoman.com/contact",
   },
   "/faq": {
-    title: "FAQs — Delivery, Ordering & Halal Info | Pizza City Oman",
-    description: "Pizza City Oman FAQs: delivery times, how to order, delivery areas, custom toppings, payment methods and freshness. Answers in seconds.",
+    title: "Pizza Delivery FAQs — Halal, Ordering & Areas | Pizza City",
+    description: "Halal ingredients? Delivery time & areas? Payment methods? Pizza City Oman answers: 30-min delivery, custom toppings, freshness & more.",
     canonical: "https://pizzacityoman.com/faq",
   },
   "/track-order": {

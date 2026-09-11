@@ -20,3 +20,9 @@ public/uploads/
 .vscode/
 .opencode/
 .agents/
+
+# Vite cache
+.vite/
+
+# Local SEO audit artifacts (point-in-time reports, not source)
+pizzacityoman-audit/

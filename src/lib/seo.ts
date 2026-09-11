@@ -9,15 +9,15 @@ export interface PageSeo {
 
 export const PAGE_SEO: Record<string, PageSeo> = {
   home: {
-    title: "Pizza City Oman — Handcrafted Oven-Baked Pizza | Order Online",
+    title: "Pizza City Oman — Handcrafted Pizza | 30-Min Delivery",
     description:
-      "Pizza City Oman serves authentic handcrafted oven-baked pizzas, savoury sides, drinks and desserts. Explore the menu and order online via WhatsApp.",
+      "Handcrafted oven-baked pizzas, sides & desserts delivered hot in ~30 minutes across Oman. Open daily 11 AM – 2 AM. Order via WhatsApp: +968 9692 8714.",
     canonical: `${SITE_URL}/`,
   },
   menu: {
-    title: "Pizza Menu — Prices & Order Online | Pizza City Oman",
+    title: "Pizza Menu Oman — Prices & 30-Min Delivery | Pizza City",
     description:
-      "Browse the full Pizza City Oman menu: handcrafted pizzas, combos, sides, drinks and desserts with prices in OMR. Order online via WhatsApp.",
+      "Full Pizza City Oman menu with prices in OMR: handcrafted pizzas, combos, sides, drinks & desserts. 30-min delivery. Order via WhatsApp.",
     canonical: `${SITE_URL}/menu`,
   },
   trackOrder: {
@@ -27,21 +27,21 @@ export const PAGE_SEO: Record<string, PageSeo> = {
     canonical: `${SITE_URL}/track-order`,
   },
   locations: {
-    title: "Our Locations — Pizza Outlets Across Oman | Pizza City Oman",
+    title: "Pizza Locations Oman — Find Us Near You | Pizza City",
     description:
-      "Find Pizza City Oman outlets near you across Oman. Addresses, phone numbers, hours, delivery and pickup info for every branch.",
+      "Find Pizza City outlets near you: Nizwa, Samail, Sur, Quriyat, Fanja, Al Khoud, Ibri & Mabela. Addresses, hours, phone & delivery info.",
     canonical: `${SITE_URL}/locations`,
   },
   contact: {
-    title: "Contact Us — Phone, WhatsApp & Directions | Pizza City Oman",
+    title: "Contact Pizza City Oman — Phone, WhatsApp & Hours",
     description:
-      "Contact Pizza City Oman: phone +968 9692 8714, WhatsApp ordering, email info@pizzacityoman.com. Open daily 11 AM – 2 AM in Muscat, Oman.",
+      "Call +968 9692 8714 or WhatsApp your order. Email info@pizzacityoman.com. Open daily 11 AM – 2 AM in Muscat, Oman.",
     canonical: `${SITE_URL}/contact`,
   },
   faq: {
-    title: "FAQs — Delivery, Ordering & Halal Info | Pizza City Oman",
+    title: "Pizza Delivery FAQs — Halal, Ordering & Areas | Pizza City",
     description:
-      "Pizza City Oman FAQs: delivery times, how to order, delivery areas, custom toppings, payment methods and freshness. Answers in seconds.",
+      "Halal ingredients? Delivery time & areas? Payment methods? Pizza City Oman answers: 30-min delivery, custom toppings, freshness & more.",
     canonical: `${SITE_URL}/faq`,
   },
   privacy: {

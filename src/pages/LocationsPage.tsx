@@ -16,15 +16,13 @@ function formatOmanPhone(raw: string): { display: string; tel: string } {
   return { display, tel };
 }
 
-/** Cloudinary URL with responsive width and auto-format.
- *  GIF-safe: f_auto 400s on animated GIFs, so GIFs get width/q_auto only. */
+/** Cloudinary URL with responsive width and auto-format */
 function cloudinaryUrl(imageUrl?: string, width = 400): string | undefined {
   if (!imageUrl) return undefined;
   if (imageUrl.includes("res.cloudinary.com")) {
-    const isGif = imageUrl.split("?")[0].split("#")[0].toLowerCase().endsWith(".gif");
     return imageUrl.replace(
       /\/upload\/(.*?)\//,
-      isGif ? `/upload/w_${width},q_auto/` : `/upload/w_${width},q_auto,f_auto/`
+      `/upload/w_${width},q_auto,f_auto/`
     );
   }
   return imageUrl;
@@ -50,7 +48,10 @@ export default function LocationsPage({ branches }: LocationsPageProps) {
       {/* Hero section */}
       <div className="text-center space-y-1.5 max-w-xl mx-auto py-6">
         <span className="text-xs font-bold text-[var(--pc-amber-400)] uppercase tracking-widest block">Available Outlets</span>
-        <h2 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Our Pizza City Network</h2>
+        <h1 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Pizza City Outlets Across Oman</h1>
+        <p lang="ar" dir="rtl" className="text-xs text-[var(--pc-gray-500)] leading-relaxed">
+          فروع بيتزا سيتي في سلطنة عمان: نزوى، سمائل، صور، قريات، فنجاء، الخوض، عبري والمعبيلة
+        </p>
         <p className="text-xs text-[var(--pc-gray-500)] leading-relaxed">
           Come dine-in, collect order pick-ups, or select hot delivery directly to your home coordinates.
         </p>

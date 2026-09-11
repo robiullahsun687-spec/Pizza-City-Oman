@@ -8,7 +8,6 @@ import {
   getEffectiveBasePrice,
 } from "../lib/priceUtils";
 import { getMenuItemAltText } from "../lib/altText";
-import MediaRenderer from "./MediaRenderer";
 import MenuCard from "./MenuCard";
 
 interface ItemDetailContentProps {
@@ -64,7 +63,7 @@ export default function ItemDetailContent({
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="rounded-[20px] overflow-hidden bg-gray-100">
-          <MediaRenderer
+          <img
             src={item.image}
             alt={getMenuItemAltText(item)}
             className="w-full aspect-[4/3] object-cover"

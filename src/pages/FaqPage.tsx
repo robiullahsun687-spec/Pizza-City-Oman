@@ -8,11 +8,17 @@ export default function FaqPage() {
 
   const FAQS = [
     { q: "How long does delivery take?", a: "We aim for 30 minutes or less from all our outlets across Oman. If we exceed that, your next order is on us!" },
-    { q: "How can I place an order?", a: "Just click the 'Order Now' or 'Add to Cart' buttons here! It builds your invoice list, inserts it into our Express-MongoDB backend, and immediately opens WhatsApp with the pre-filled invoice message for your outlet of choice!" },
+    { q: "How can I place an order?", a: "Tap 'Order Now' or 'Add to Cart' to build your order, pick your outlet, and check out in one tap — we confirm on WhatsApp right away." },
     { q: "What active areas do you offer delivery?", a: "We offer hot and fast delivery from all our outlets across Oman — see the Locations page for addresses and hours. Follow us on Instagram @_pizza.city_ to get updates when we open near you." },
     { q: "Am I able to configure custom toppings?", a: "Absolutely. When placing your automated WhatsApp text checkout, you can append any custom configurations, extra toppings, or instructions like 'make it extra hot'!" },
     { q: "What payment systems are available?", a: "We currently accept cash-on-delivery, local bank transfer, or card systems. Integrated Oman payment gateways like Thawani are currently under active development." },
     { q: "Are all components of the pizza clean and fresh?", a: "Yes, 100%! We source premium whole-milk mozzarella and hand-stretch our dough daily. No frozen crusts or canned shortcuts are ever permitted." },
+    { q: "Is Pizza City halal?", a: "Yes — 100% halal. All meats are halal-certified and our kitchens follow strict halal preparation standards across every Oman outlet." },
+    { q: "Do you deliver to Ibri and Mabela?", a: "Yes! Our Ibri and Al Mabela (Seeb) outlets serve their surrounding areas with fast delivery. Check the Locations page for hours and phone numbers." },
+    { q: "What is the 30-minute guarantee?", a: "If your order takes longer than 30 minutes from confirmation to your door, contact us with your order ID and your next order is on us." },
+    { q: "Do you cater birthdays and bulk office orders?", a: "Yes — for parties of 10+ or office lunches, message us on WhatsApp at +968 9692 8714 at least a day ahead and we'll prepare a bulk quote." },
+    { q: "Which outlet is open the latest?", a: "Most outlets serve until 1–2 AM daily. Hours vary by branch (Al Khoud closes 11 PM) — see each location page for today's exact hours." },
+    { q: "Can I pay online with Thawani?", a: "Online card payment via Oman gateways is under active development. Today you can pay cash on delivery, by bank transfer, or by card at the outlet." },
   ];
 
   // Inject FAQPage Schema.org JSON-LD for rich snippet search results
@@ -54,7 +60,7 @@ export default function FaqPage() {
     <div className="container mx-auto px-4 md:px-8 pb-16 space-y-8 animate-fadeIn">
       <div className="text-center space-y-1.5 max-w-xl mx-auto py-6">
         <span className="text-xs font-bold text-[var(--pc-amber-400)] uppercase tracking-widest block font-sans">Support</span>
-        <h2 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Answers to Common Queries</h2>
+        <h1 className="font-playfair font-black text-3xl md:text-4xl text-[var(--pc-gray-700)]">Pizza Delivery FAQs — Ordering, Halal & Areas</h1>
         <p className="text-xs text-[var(--pc-gray-500)] leading-relaxed">
           Search questions or look at the accordion blocks below to resolve your inquiries instantly.
         </p>
